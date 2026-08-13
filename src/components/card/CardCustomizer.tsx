@@ -49,19 +49,26 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
           <label className="block text-xs font-mono text-slate-400 mb-2 uppercase font-bold">
             CARD RARITY TIER SKIN
           </label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {[
-              { id: 'bronze', label: '🥉 BRONZE' },
-              { id: 'silver', label: '🥈 SILVER' },
+              { id: 'toty', label: '💎 TOTY 26' },
+              { id: 'toty_icon', label: '🔵 TOTY ICON' },
+              { id: 'icon', label: '👑 ICON' },
+              { id: 'scream', label: '🌙 SCREAM' },
+              { id: 'world_tour', label: '🌈 WORLD TOUR' },
+              { id: 'totw', label: '⚡ TOTW 26' },
+              { id: 'heroes', label: '🦸 HEROES' },
+              { id: 'tots', label: '🌟 TOTS' },
+              { id: 'evos', label: '🧪 EVOS' },
+              { id: 'centurions', label: '🔴 CENTURIONS' },
               { id: 'gold', label: '🥇 GOLD' },
-              { id: 'hero', label: '💜 HERO' },
-              { id: 'toty', label: '🔷 TOTY' },
-              { id: 'icon', label: '👑 ICON' }
+              { id: 'silver', label: '🥈 SILVER' },
+              { id: 'bronze', label: '🥉 BRONZE' },
             ].map((r) => (
               <button
                 key={r.id}
                 onClick={() => handleRarityChange(r.id as CardRarity)}
-                className={`py-2 px-3 rounded-xl text-xs font-bold font-mono transition-all border ${
+                className={`py-2 px-2.5 rounded-xl text-[11px] font-bold font-mono transition-all border ${
                   card.rarity === r.id
                     ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow'
                     : 'bg-slate-800/80 text-slate-300 border-slate-700 hover:bg-slate-700'

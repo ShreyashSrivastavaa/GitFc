@@ -1,13 +1,15 @@
 import React, { useState, useRef } from 'react';
 import type { EAFCDevCard } from '../../types';
-import { Sparkles, ShieldCheck } from 'lucide-react';
+import { Sparkles, ShieldCheck, User } from 'lucide-react';
 
 interface EAFCCardProps {
-  card: EAFCDevCard;
+  card?: EAFCDevCard | null;
   scale?: number;
   interactive?: boolean;
   elementId?: string;
   showDetails?: boolean;
+  isEmpty?: boolean;
+  rarityOverride?: string;
 }
 
 export const EAFCCard: React.FC<EAFCCardProps> = ({
@@ -15,11 +17,15 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
   scale = 1,
   interactive = true,
   elementId,
-  showDetails = true
+  showDetails = true,
+  isEmpty = false,
+  rarityOverride,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [transformStyle, setTransformStyle] = useState('rotateX(0deg) rotateY(0deg)');
   const [shineStyle, setShineStyle] = useState({ opacity: 0, x: '50%', y: '50%' });
+
+  const effectiveRarity = rarityOverride || card?.rarity || 'toty';
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!interactive || !cardRef.current) return;
@@ -37,7 +43,7 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
     setShineStyle({
       opacity: 0.8,
       x: `${((x / rect.width) * 100).toFixed(1)}%`,
-      y: `${((y / rect.height) * 100).toFixed(1)}%`
+      y: `${((y / rect.height) * 100).toFixed(1)}%`,
     });
   };
 
@@ -48,46 +54,115 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
   };
 
   const getRarityConfig = () => {
-    switch (card.rarity) {
+    switch (effectiveRarity) {
+      case 'toty_icon':
+        return {
+          bgClass: 'bg-eafc-toty_icon icon-glow-effect',
+          headerColor: 'text-amber-950 font-black',
+          badgeBg: 'bg-blue-600/20 text-blue-900 border-blue-400/40 font-black',
+          glowColor: 'rgba(96, 165, 250, 0.6)',
+          label: 'TOTY ICON',
+          orb: '🔵',
+        };
       case 'icon':
         return {
           bgClass: 'bg-eafc-icon icon-glow-effect',
-          headerColor: 'text-amber-300',
-          badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
-          glowColor: 'rgba(251, 191, 36, 0.5)',
-          label: 'ICON'
+          headerColor: 'text-amber-950 font-black',
+          badgeBg: 'bg-amber-950/20 text-amber-950 border-amber-950/40 font-black',
+          glowColor: 'rgba(251, 191, 36, 0.6)',
+          label: 'ICON',
+          orb: '👑',
         };
       case 'toty':
         return {
           bgClass: 'bg-eafc-toty toty-glow-effect',
-          headerColor: 'text-blue-200',
-          badgeBg: 'bg-blue-500/20 text-blue-300 border-blue-400/40',
-          glowColor: 'rgba(59, 130, 246, 0.5)',
-          label: 'TOTY'
+          headerColor: 'text-blue-100',
+          badgeBg: 'bg-blue-500/20 text-blue-200 border-blue-400/40',
+          glowColor: 'rgba(59, 130, 246, 0.6)',
+          label: 'TOTY 26',
+          orb: '💎',
         };
+      case 'scream':
+        return {
+          bgClass: 'bg-eafc-scream',
+          headerColor: 'text-sky-200',
+          badgeBg: 'bg-sky-950/40 text-sky-300 border-sky-400/40',
+          glowColor: 'rgba(14, 165, 233, 0.6)',
+          label: 'SCREAM HEROES',
+          orb: '🌙',
+        };
+      case 'world_tour':
+        return {
+          bgClass: 'bg-eafc-world_tour',
+          headerColor: 'text-slate-950 font-black',
+          badgeBg: 'bg-slate-950/40 text-white border-white/40 font-black',
+          glowColor: 'rgba(251, 146, 60, 0.6)',
+          label: 'WORLD TOUR',
+          orb: '🌈',
+        };
+      case 'totw':
+        return {
+          bgClass: 'bg-eafc-totw',
+          headerColor: 'text-amber-400',
+          badgeBg: 'bg-amber-500/20 text-amber-300 border-amber-400/40',
+          glowColor: 'rgba(234, 179, 8, 0.5)',
+          label: 'TOTW 26',
+          orb: '⚡',
+        };
+      case 'heroes':
       case 'hero':
         return {
-          bgClass: 'bg-eafc-hero',
+          bgClass: 'bg-eafc-heroes',
           headerColor: 'text-purple-200',
           badgeBg: 'bg-purple-500/20 text-purple-300 border-purple-400/40',
-          glowColor: 'rgba(168, 85, 247, 0.4)',
-          label: 'HERO'
+          glowColor: 'rgba(192, 132, 252, 0.5)',
+          label: 'HEROES',
+          orb: '🦸',
+        };
+      case 'tots':
+        return {
+          bgClass: 'bg-eafc-tots',
+          headerColor: 'text-sky-100',
+          badgeBg: 'bg-sky-500/20 text-sky-200 border-sky-400/40',
+          glowColor: 'rgba(56, 189, 248, 0.5)',
+          label: 'TOTS',
+          orb: '🌟',
+        };
+      case 'evos':
+        return {
+          bgClass: 'bg-eafc-evos',
+          headerColor: 'text-emerald-200',
+          badgeBg: 'bg-emerald-500/20 text-emerald-300 border-emerald-400/40',
+          glowColor: 'rgba(74, 222, 128, 0.5)',
+          label: 'EVOLUTIONS',
+          orb: '🧪',
+        };
+      case 'centurions':
+        return {
+          bgClass: 'bg-eafc-centurions',
+          headerColor: 'text-amber-200',
+          badgeBg: 'bg-red-950/30 text-amber-300 border-amber-500/40',
+          glowColor: 'rgba(245, 158, 11, 0.5)',
+          label: 'CENTURIONS',
+          orb: '🔴',
         };
       case 'gold':
         return {
           bgClass: 'bg-eafc-gold',
-          headerColor: 'text-amber-950',
-          badgeBg: 'bg-amber-950/20 text-amber-950 border-amber-950/30',
+          headerColor: 'text-amber-950 font-black',
+          badgeBg: 'bg-amber-950/20 text-amber-950 border-amber-950/30 font-bold',
           glowColor: 'rgba(243, 198, 76, 0.4)',
-          label: 'GOLD'
+          label: 'GOLD',
+          orb: '🥇',
         };
       case 'silver':
         return {
           bgClass: 'bg-eafc-silver',
-          headerColor: 'text-slate-900',
+          headerColor: 'text-slate-900 font-bold',
           badgeBg: 'bg-slate-900/20 text-slate-900 border-slate-900/30',
           glowColor: 'rgba(209, 213, 219, 0.4)',
-          label: 'SILVER'
+          label: 'SILVER',
+          orb: '🥈',
         };
       default:
         return {
@@ -95,14 +170,97 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
           headerColor: 'text-amber-100',
           badgeBg: 'bg-black/30 text-amber-200 border-amber-500/30',
           glowColor: 'rgba(200, 125, 70, 0.3)',
-          label: 'BRONZE'
+          label: 'BRONZE',
+          orb: '🥉',
         };
     }
   };
 
   const config = getRarityConfig();
-  const isDarkCard = card.rarity === 'toty' || card.rarity === 'hero' || card.rarity === 'icon' || card.rarity === 'bronze';
+  const isDarkCard = effectiveRarity === 'toty' || effectiveRarity === 'hero' || effectiveRarity === 'icon' || effectiveRarity === 'bronze' || effectiveRarity === 'tots' || effectiveRarity === 'flashback' || effectiveRarity === 'evos' || effectiveRarity === 'centurions';
 
+  // If card is empty or null, render empty shell template
+  if (isEmpty || !card) {
+    return (
+      <div className="card-perspective inline-block select-none" style={{ transform: `scale(${scale})` }}>
+        <div
+          id={elementId}
+          ref={cardRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          style={{ transform: transformStyle }}
+          className={`card-tilt-inner relative w-[340px] h-[520px] rounded-3xl p-4 shadow-2xl border-4 ${config.bgClass} flex flex-col justify-between overflow-hidden cursor-pointer transition-shadow duration-300`}
+        >
+          <div
+            className="absolute inset-0 holographic-overlay transition-opacity duration-300 pointer-events-none"
+            style={{
+              opacity: shineStyle.opacity,
+              background: `radial-gradient(circle at ${shineStyle.x} ${shineStyle.y}, rgba(255, 255, 255, 0.45) 0%, transparent 60%)`,
+            }}
+          />
+
+          <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none" />
+
+          {/* EMPTY CARD TOP HEADER */}
+          <div className="relative z-10 flex items-start justify-between">
+            <div className="flex flex-col items-center">
+              <span className={`font-display font-black text-5xl tracking-tighter leading-none ${config.headerColor} opacity-40`}>
+                --
+              </span>
+              <span className={`font-display font-extrabold text-lg tracking-wider ${config.headerColor} uppercase opacity-40`}>
+                ---
+              </span>
+              <span className="text-xl mt-1 leading-none opacity-40">🌐</span>
+            </div>
+
+            <div className="flex flex-col items-end gap-1">
+              <div className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border backdrop-blur-md shadow-sm ${config.badgeBg} flex items-center gap-1`}>
+                <Sparkles className="w-3 h-3 animate-pulse" />
+                {config.label}
+              </div>
+            </div>
+          </div>
+
+          {/* EMPTY SILHOUETTE AVATAR PLACEHOLDER */}
+          <div className="relative z-10 flex flex-col items-center my-1">
+            <div className="relative">
+              <div
+                className="absolute -inset-2 rounded-full blur-md opacity-50 animate-pulse"
+                style={{ backgroundColor: config.glowColor }}
+              />
+              <div className="relative w-32 h-32 rounded-full border-4 border-dashed border-white/40 flex items-center justify-center bg-black/40 shadow-2xl">
+                <User className="w-16 h-16 text-white/30" />
+              </div>
+            </div>
+
+            <div className="mt-3 w-40 h-6 rounded-lg bg-white/10 border border-white/20 animate-pulse flex items-center justify-center text-xs font-mono text-white/40">
+              SEARCH USERNAME
+            </div>
+            <p className="font-mono text-xs text-white/30 mt-1">@github</p>
+          </div>
+
+          <div className="relative z-10 my-1 h-[2px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+
+          {/* EMPTY STAT GRID */}
+          <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-1.5 px-3 py-2 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10">
+            {['PAS', 'DRI', 'SHO', 'PHY', 'PAC', 'DEF', 'STA', 'SKL'].map((s) => (
+              <div key={s} className="flex justify-between items-center font-display text-sm font-bold">
+                <span className="opacity-40 text-xs font-mono uppercase text-slate-300">{s}</span>
+                <span className={`text-base font-extrabold ${config.headerColor} opacity-40`}>--</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="relative z-10 flex items-center justify-between pt-1 opacity-50">
+            <span className="text-[10px] font-mono text-slate-300">EA FC 26 ULTIMATE CARD</span>
+            <span className="text-[10px] font-mono text-amber-300 font-bold">★ BUILDER</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // POPULATED CARD
   return (
     <div className="card-perspective inline-block select-none" style={{ transform: `scale(${scale})` }}>
       <div
@@ -117,7 +275,7 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
           className="absolute inset-0 holographic-overlay transition-opacity duration-300 pointer-events-none"
           style={{
             opacity: shineStyle.opacity,
-            background: `radial-gradient(circle at ${shineStyle.x} ${shineStyle.y}, rgba(255, 255, 255, 0.45) 0%, transparent 60%)`
+            background: `radial-gradient(circle at ${shineStyle.x} ${shineStyle.y}, rgba(255, 255, 255, 0.45) 0%, transparent 60%)`,
           }}
         />
 

@@ -51,13 +51,58 @@
 }
 
 .bg-eafc-toty {
-  background: linear-gradient(135deg, #0c1938 0%, #1e3a8a 25%, #1d4ed8 50%, #030712 75%, #3b82f6 100%);
-  border-color: #60a5fa;
+  background: radial-gradient(circle at 50% 15%, #3b82f6 0%, #1e3a8a 30%, #0f172a 65%, #030712 100%);
+  border-color: #facc15;
+}
+
+.bg-eafc-toty_icon {
+  background: radial-gradient(circle at 50% 15%, #60a5fa 0%, #ffffff 30%, #f8fafc 65%, #cbd5e1 100%);
+  border-color: #eab308;
 }
 
 .bg-eafc-icon {
-  background: linear-gradient(135deg, #111827 0%, #fef08a 20%, #1f2937 45%, #eab308 75%, #ffffff 100%);
-  border-color: #fbbf24;
+  background: linear-gradient(135deg, #ffffff 0%, #fef9c3 30%, #fef08a 65%, #e2e8f0 100%);
+  border-color: #eab308;
+}
+
+.bg-eafc-scream {
+  background: radial-gradient(circle at 50% 10%, #38bdf8 0%, #0c4a6e 35%, #0284c7 65%, #082f49 100%);
+  border-color: #0284c7;
+}
+
+.bg-eafc-world_tour {
+  background: linear-gradient(135deg, #f43f5e 0%, #fb923c 25%, #facc15 50%, #4ade80 75%, #06b6d4 100%);
+  border-color: #fb923c;
+}
+
+.bg-eafc-totw {
+  background: linear-gradient(135deg, #09090b 0%, #18181b 40%, #09090b 70%, #27272a 100%);
+  border-color: #facc15;
+}
+
+.bg-eafc-heroes {
+  background: linear-gradient(135deg, #2e1065 0%, #7e22ce 35%, #3b0764 70%, #c084fc 100%);
+  border-color: #c084fc;
+}
+
+.bg-eafc-tots {
+  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 30%, #1e3a8a 65%, #facc15 100%);
+  border-color: #38bdf8;
+}
+
+.bg-eafc-flashback {
+  background: linear-gradient(135deg, #450a0a 0%, #991b1b 35%, #18181b 65%, #f43f5e 100%);
+  border-color: #f43f5e;
+}
+
+.bg-eafc-evos {
+  background: linear-gradient(135deg, #052e16 0%, #16a34a 35%, #091e11 65%, #4ade80 100%);
+  border-color: #4ade80;
+}
+
+.bg-eafc-centurions {
+  background: linear-gradient(135deg, #450a0a 0%, #b91c1c 35%, #78350f 65%, #f59e0b 100%);
+  border-color: #f59e0b;
 }
 
 /* Holographic Metallic Overlay */
@@ -103,3 +148,33 @@
     linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 100% 100%, 40px 40px, 40px 40px;
 }
+
+/* Floating Card Keyframes */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-14px) rotate(1.2deg);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.08);
+  }
+}
+
+.animate-glow-pulse {
+  animation: glow-pulse 3.5s ease-in-out infinite;
+}
+

@@ -15,7 +15,7 @@ import { DressingRoomView } from './components/dressingroom/DressingRoomView';
 import { SelectPositionModal } from './components/position/SelectPositionModal';
 import { CreateTeamModal } from './components/team/CreateTeamModal';
 
-import { Search, Sparkles, Download, Loader2 } from 'lucide-react';
+import { Sparkles, Download, Loader2 } from 'lucide-react';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('generator');
@@ -23,6 +23,9 @@ export function App() {
   const [currentCard, setCurrentCard] = useState<EAFCDevCard>(PRESET_DEVS[0]);
   const [leaderboardCards, setLeaderboardCards] = useState<EAFCDevCard[]>(PRESET_DEVS);
   const [userTeam, setUserTeam] = useState<Team | null>(() => createDefaultTeam(PRESET_DEVS[0]));
+
+  const [selectedShellRarity, setSelectedShellRarity] = useState<CardRarity>('toty');
+  const [isCardSearched, setIsCardSearched] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -48,6 +51,7 @@ export function App() {
     try {
       const card = await fetchGitHubUserStats(username);
       setCurrentCard(card);
+      setIsCardSearched(true);
 
       setLeaderboardCards((prev) => {
         if (prev.some((c) => c.username.toLowerCase() === card.username.toLowerCase())) {
@@ -82,76 +86,136 @@ export function App() {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-8">
         {activeTab === 'generator' && (
-          <div className="space-y-10">
-            <div className="relative bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/40 p-8 md:p-12 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden text-center md:text-left flex flex-col md:flex-row items-center justify-between gap-8">
-              <div className="max-w-2xl">
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-4">
-                  <Sparkles className="w-4 h-4" /> EA FC 25 ULTIMATE TEAM GITHUB EDITION
+          <div className="space-y-12">
+            {/* HERO SECTION: FLOATING CARD + SIDE-BY-SIDE SEARCH */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center min-h-[500px]">
+              {/* LEFT COLUMN: HERO TEXT & SEARCH FORM */}
+              <div className="lg:col-span-7 space-y-6 text-left">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30 uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5" /> YOUR GITHUB. YOUR SQUAD.
                 </div>
-                <h1 className="font-display font-black text-4xl md:text-6xl text-white tracking-tight leading-none">
-                  TRANSFORM YOUR <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500">GITHUB STATS</span> INTO ULTIMATE UT CARDS
+
+                <h1 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.1]">
+                  Turn your GitHub Profile into an <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-300 to-amber-500">EA FC Player Card</span>
                 </h1>
-                <p className="mt-4 text-slate-300 text-sm md:text-base leading-relaxed">
-                  Enter any GitHub username to generate an authentic EA FC Ultimate Team player card with dynamic 0-99 ratings, metallic rarity skins, position shields, and 1-click PNG/README exports.
+
+                <p className="text-slate-300 text-sm md:text-base leading-relaxed max-w-xl">
+                  GitCards maps your developer activity—commits, issues, pull requests, streaks, and languages—into custom, premium EA FC Ultimate Team player cards with custom ratings and themes.
                 </p>
 
-                <form onSubmit={handleSearchSubmit} className="mt-8 flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+                {/* SEARCH INPUT CONTAINER */}
+                <form onSubmit={handleSearchSubmit} className="relative max-w-lg">
+                  <div className="relative flex items-center bg-slate-950/90 border border-slate-700/80 rounded-2xl p-1.5 shadow-2xl focus-within:border-amber-400/80 transition-colors">
+                    <span className="pl-4 text-slate-500 font-mono text-sm font-bold">@</span>
                     <input
                       type="text"
-                      placeholder="Enter GitHub username (e.g. torvalds, gaearon, shadcn)..."
+                      placeholder="enter github username (e.g. torvalds)"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="w-full pl-12 pr-4 py-3.5 rounded-2xl bg-slate-950 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:border-amber-400 font-medium shadow-inner"
+                      className="w-full pl-2 pr-4 py-3 bg-transparent text-white placeholder-slate-500 text-sm font-medium focus:outline-none"
                     />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="px-8 py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-base hover:brightness-110 shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 transition"
-                  >
-                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'GENERATE CARD'}
-                  </button>
-                </form>
-                {error && <p className="mt-3 text-xs font-mono text-rose-400">{error}</p>}
-
-                <div className="mt-4 flex flex-wrap items-center gap-2 text-xs font-mono text-slate-400">
-                  <span className="font-bold text-slate-300">TRY ICONIC DEVS:</span>
-                  {['torvalds', 'gaearon', 'shadcn', 'mitchellh', 'rauchg', 'sindresorhus'].map((user) => (
                     <button
-                      key={user}
-                      onClick={() => handleLookupUser(user)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700 transition"
+                      type="submit"
+                      disabled={loading}
+                      className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 font-display font-black text-sm hover:brightness-110 shadow-lg shrink-0 flex items-center gap-1.5 transition"
                     >
-                      @{user}
+                      {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate'}
+                    </button>
+                  </div>
+                  {error && <p className="mt-2 text-xs font-mono text-rose-400">{error}</p>}
+                </form>
+
+                {/* SUB-BADGES & QUICK DEVS */}
+                <div className="space-y-3 pt-1">
+                  <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-slate-400">
+                    <span className="flex items-center gap-1.5 text-emerald-400">
+                      <span>✨</span> Join 1,200+ developers who generated cards
+                    </span>
+                    <span className="flex items-center gap-1.5 text-slate-400">
+                      <span>⚡</span> 100% SECURE, READ-ONLY PUBLIC API
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-400">
+                    <span className="font-bold text-slate-400">TRY ICONIC DEVS:</span>
+                    {['torvalds', 'gaearon', 'shadcn', 'mitchellh', 'rauchg', 'sindresorhus'].map((user) => (
+                      <button
+                        key={user}
+                        onClick={() => handleLookupUser(user)}
+                        className="px-2.5 py-1 rounded-lg bg-slate-900 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-800 transition"
+                      >
+                        @{user}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* RIGHT COLUMN: FLOATING SHOWCASE CARD WITH AMBIENT GLOW & FC 26 SHELL SELECTOR */}
+              <div className="lg:col-span-5 flex flex-col items-center justify-center relative py-6">
+                {/* FC 26 CARD SHELL TYPE SELECTOR PILLS */}
+                <div className="z-10 mb-4 flex flex-wrap items-center justify-center gap-1.5 max-w-[360px]">
+                  {[
+                    { id: 'toty', label: '💎 TOTY' },
+                    { id: 'toty_icon', label: '🔵 TOTY ICON' },
+                    { id: 'icon', label: '👑 ICON' },
+                    { id: 'scream', label: '🌙 SCREAM' },
+                    { id: 'world_tour', label: '🌈 WORLD TOUR' },
+                    { id: 'totw', label: '⚡ TOTW' },
+                    { id: 'heroes', label: '🦸 HEROES' },
+                    { id: 'tots', label: '🌟 TOTS' },
+                    { id: 'evos', label: '🧪 EVOS' },
+                    { id: 'centurions', label: '🔴 CENTURIONS' },
+                    { id: 'gold', label: '🥇 GOLD' },
+                  ].map((shell) => (
+                    <button
+                      key={shell.id}
+                      onClick={() => setSelectedShellRarity(shell.id as any)}
+                      className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold border transition ${
+                        selectedShellRarity === shell.id
+                          ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow'
+                          : 'bg-slate-950/80 text-slate-300 border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      {shell.label}
                     </button>
                   ))}
                 </div>
-              </div>
-            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              <div className="lg:col-span-5 flex flex-col items-center">
-                <div className="relative group">
+                {/* Ambient Radial Glow Aura */}
+                <div className="absolute w-[340px] h-[480px] bg-gradient-to-tr from-amber-500/25 via-emerald-500/20 to-amber-400/30 rounded-full blur-3xl pointer-events-none animate-glow-pulse" />
+
+                {/* Floating Animated Empty/Populated EA FC Card Shell */}
+                <div className="relative z-10 animate-float drop-shadow-[0_25px_40px_rgba(0,0,0,0.85)]">
                   <EAFCCard
-                    card={currentCard}
+                    card={isCardSearched ? currentCard : null}
+                    isEmpty={!isCardSearched}
+                    rarityOverride={selectedShellRarity}
                     elementId="ea-fc-export-card"
                     interactive={true}
                   />
                 </div>
 
-                <div className="flex items-center gap-3 mt-6 w-full max-w-[340px]">
-                  <button
-                    onClick={() => setIsExportModalOpen(true)}
-                    className="w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-display font-extrabold text-sm hover:bg-amber-400 shadow-xl flex items-center justify-center gap-2 transition"
-                  >
-                    <Download className="w-4 h-4" /> EXPORT CARD
-                  </button>
-                </div>
+                {/* Export / Action Button */}
+                <button
+                  onClick={() => {
+                    if (!isCardSearched) {
+                      handleLookupUser(searchQuery || 'torvalds');
+                    } else {
+                      setIsExportModalOpen(true);
+                    }
+                  }}
+                  className="mt-6 z-10 w-full max-w-[320px] py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-sm hover:brightness-110 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 transition"
+                >
+                  <Download className="w-4 h-4" /> {isCardSearched ? 'EXPORT CARD' : 'GENERATE CARD PROFILE'}
+                </button>
               </div>
+            </div>
 
-              <div className="lg:col-span-7 space-y-6">
+            {/* BELOW HERO: STAT RATINGS & CUSTOMIZER STUDIO */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-8 border-t border-slate-800/80">
+              <div className="lg:col-span-12 space-y-6">
+                {/* DEV SUMMARY BAR */}
                 <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="flex items-center gap-4">
                     <img
@@ -172,15 +236,16 @@ export function App() {
                     </div>
                   </div>
 
-                  <div className="text-right bg-slate-950 px-4 py-2.5 rounded-2xl border border-slate-800">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase">POWER SCORE</div>
-                    <div className="font-display font-black text-2xl text-amber-400">
+                  <div className="text-right bg-slate-950 px-5 py-3 rounded-2xl border border-slate-800">
+                    <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">POWER SCORE</div>
+                    <div className="font-display font-black text-3xl text-amber-400">
                       {currentCard.powerScore.toLocaleString()}
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl">
+                {/* STAT BREAKDOWN GRID */}
+                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
                   <h3 className="font-display font-extrabold text-lg text-white mb-4 flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-amber-400" /> EA FC STAT RATING BREAKDOWN
                   </h3>
@@ -212,6 +277,7 @@ export function App() {
                   </div>
                 </div>
 
+                {/* CARD CUSTOMIZER STUDIO */}
                 <CardCustomizer
                   card={currentCard}
                   onUpdateCard={setCurrentCard}

@@ -1,4 +1,4 @@
-export type CardRarity = 'bronze' | 'silver' | 'gold' | 'hero' | 'toty' | 'icon';
+export type CardRarity = 'bronze' | 'silver' | 'gold' | 'hero' | 'toty' | 'toty_icon' | 'icon' | 'scream' | 'world_tour' | 'totw' | 'heroes' | 'tots' | 'evos' | 'centurions';
 
 export type CardPosition = 'GEN' | 'INF' | 'COL' | 'HUS' | 'DEV' | 'ARC';
 
