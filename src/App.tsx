@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import type { EAFCDevCard, ActiveTab, Team } from './types';
+import type { EAFCDevCard, ActiveTab, Team, TeamInvite } from './types';
 import { fetchGitHubUserStats } from './services/githubApi';
 import { PRESET_DEVS } from './services/presets';
-import { createDefaultTeam } from './services/teamService';
+import { createDefaultTeam, addPlayerToRoster } from './services/teamService';
+import { getAuthState, loginWithGitHubUser } from './services/authService';
+import { incrementCounterStats } from './services/statsService';
 
 import { Navbar } from './components/layout/Navbar';
 import { EAFCCard } from './components/card/EAFCCard';
@@ -14,6 +16,8 @@ import { DressingRoomView } from './components/dressingroom/DressingRoomView';
 import { CreateTeamModal } from './components/team/CreateTeamModal';
 import { LandingDetails } from './components/landing/LandingDetails';
 import { GeneratedProfileView } from './components/profile/GeneratedProfileView';
+import { UsageCounter } from './components/common/UsageCounter';
+import { TeamInviteBanner } from './components/team/TeamInviteBanner';
 
 import { Sparkles, Loader2 } from 'lucide-react';
 
@@ -26,6 +30,10 @@ export function App() {
 
   const [isCardSearched, setIsCardSearched] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [userFollowers, setUserFollowers] = useState<string[]>([]);
+  const [userFollowing, setUserFollowing] = useState<string[]>([]);
+
+  const [pendingInvite, setPendingInvite] = useState<TeamInvite | null>(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +43,31 @@ export function App() {
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
 
   useEffect(() => {
+    // Check saved session auth
+    const savedAuth = getAuthState();
+    if (savedAuth.isConnected && savedAuth.userCard) {
+      setIsConnected(true);
+      setCurrentCard(savedAuth.userCard);
+      setUserFollowers(savedAuth.followers);
+      setUserFollowing(savedAuth.following);
+      setUserTeam(createDefaultTeam(savedAuth.userCard));
+
+      // Mock pending invitation if user is connected
+      setPendingInvite({
+        id: 'inv-demo-1',
+        teamId: 'team-manchester-devs',
+        teamName: 'Manchester Devs',
+        teamBadge: '⚽',
+        invitedBy: 'torvalds',
+        invitedUser: savedAuth.userCard.username,
+        suggestedPosition: 'Midfielder',
+        createdAt: new Date().toISOString(),
+        expiresAt: new Date(Date.now() + 6 * 86400000).toISOString(),
+        status: 'pending',
+        inviteCode: 'MCR2026',
+      });
+    }
+
     const params = new URLSearchParams(window.location.search);
     const cardUser = params.get('card');
     if (cardUser) {
@@ -52,6 +85,9 @@ export function App() {
       setCurrentCard(card);
       setIsCardSearched(true);
 
+      // Increment stats counter
+      incrementCounterStats();
+
       setLeaderboardCards((prev) => {
         if (prev.some((c) => c.username.toLowerCase() === card.username.toLowerCase())) {
           return prev;
@@ -67,6 +103,31 @@ export function App() {
     }
   };
 
+  const handleConnectGitHubUser = async (username: string) => {
+    setLoading(true);
+    try {
+      const authState = await loginWithGitHubUser(username);
+      if (authState.userCard) {
+        setIsConnected(true);
+        setCurrentCard(authState.userCard);
+        setUserFollowers(authState.followers);
+        setUserFollowing(authState.following);
+        setUserTeam(createDefaultTeam(authState.userCard));
+
+        setLeaderboardCards((prev) => {
+          if (prev.some((c) => c.username.toLowerCase() === authState.userCard!.username.toLowerCase())) {
+            return prev;
+          }
+          return [authState.userCard!, ...prev];
+        });
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to authenticate user');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleLookupUser(searchQuery);
@@ -76,8 +137,21 @@ export function App() {
     setIsConnectModalOpen(true);
   };
 
+  const handleAcceptInvite = async (invite: TeamInvite) => {
+    if (userTeam && currentCard) {
+      const updated = addPlayerToRoster(userTeam, currentCard, invite.suggestedPosition || 'MID');
+      setUserTeam(updated);
+    }
+    setPendingInvite(null);
+    setActiveTab('dressing-room');
+  };
+
+  const handleDeclineInvite = (invite: TeamInvite) => {
+    setPendingInvite(null);
+  };
+
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black">
+    <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black transition-colors duration-200">
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -85,7 +159,16 @@ export function App() {
         onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-8 space-y-6">
+        {/* IN-APP TEAM INVITATION NOTIFICATION BANNER */}
+        {pendingInvite && (
+          <TeamInviteBanner
+            invite={pendingInvite}
+            onAccept={handleAcceptInvite}
+            onDecline={handleDeclineInvite}
+          />
+        )}
+
         {activeTab === 'generator' && (
           isCardSearched ? (
             <GeneratedProfileView
@@ -140,9 +223,7 @@ export function App() {
                   {/* SUB-BADGES & QUICK DEVS */}
                   <div className="space-y-3 pt-1">
                     <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-slate-400">
-                      <span className="flex items-center gap-1.5 text-emerald-400">
-                        <span>✨</span> Join 1,200+ developers who generated cards
-                      </span>
+                      <UsageCounter prefixEmoji="⚡" />
                       <span className="flex items-center gap-1.5 text-slate-400">
                         <span>⚡</span> 100% SECURE, READ-ONLY PUBLIC API
                       </span>
@@ -216,6 +297,12 @@ export function App() {
         {activeTab === 'leaderboard' && (
           <LeaderboardTable
             cards={leaderboardCards}
+            isConnected={isConnected}
+            currentUserCard={isConnected ? currentCard : null}
+            following={userFollowing}
+            followers={userFollowers}
+            userTeam={userTeam}
+            onConnectGitHub={handleConnectGitHub}
             onSelectCard={(card) => {
               setCurrentCard(card);
               setActiveTab('generator');
@@ -246,15 +333,10 @@ export function App() {
         isOpen={isConnectModalOpen}
         onClose={() => setIsConnectModalOpen(false)}
         onConnect={async (username) => {
-          setIsConnected(true);
-          const fetchedCard = await handleLookupUser(username);
-          if (fetchedCard) {
-            setUserTeam(createDefaultTeam(fetchedCard));
-          }
+          await handleConnectGitHubUser(username);
           setActiveTab('generator');
         }}
       />
-
 
       <CreateTeamModal
         isOpen={isCreateTeamOpen}
