@@ -6,14 +6,13 @@ import { createDefaultTeam } from './services/teamService';
 
 import { Navbar } from './components/layout/Navbar';
 import { EAFCCard } from './components/card/EAFCCard';
-import { CardCustomizer } from './components/card/CardCustomizer';
 import { LeaderboardTable } from './components/leaderboard/LeaderboardTable';
 import { ExportModal } from './components/share/ExportModal';
 import { ConnectModal } from './components/layout/ConnectModal';
 import { LeaguesView } from './components/leagues/LeaguesView';
 import { DressingRoomView } from './components/dressingroom/DressingRoomView';
-import { SelectPositionModal } from './components/position/SelectPositionModal';
 import { CreateTeamModal } from './components/team/CreateTeamModal';
+import { LandingDetails } from './components/landing/LandingDetails';
 
 import { Sparkles, Download, Loader2 } from 'lucide-react';
 
@@ -24,7 +23,6 @@ export function App() {
   const [leaderboardCards, setLeaderboardCards] = useState<EAFCDevCard[]>(PRESET_DEVS);
   const [userTeam, setUserTeam] = useState<Team | null>(() => createDefaultTeam(PRESET_DEVS[0]));
 
-  const [selectedShellRarity, setSelectedShellRarity] = useState<CardRarity>('toty');
   const [isCardSearched, setIsCardSearched] = useState(false);
 
   const [loading, setLoading] = useState(false);
@@ -32,7 +30,6 @@ export function App() {
 
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
-  const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
 
   useEffect(() => {
@@ -151,37 +148,8 @@ export function App() {
                 </div>
               </div>
 
-              {/* RIGHT COLUMN: FLOATING SHOWCASE CARD WITH AMBIENT GLOW & FC 26 SHELL SELECTOR */}
+              {/* RIGHT COLUMN: FLOATING SHOWCASE CARD WITH AMBIENT GLOW */}
               <div className="lg:col-span-5 flex flex-col items-center justify-center relative py-6">
-                {/* FC 26 CARD SHELL TYPE SELECTOR PILLS */}
-                <div className="z-10 mb-4 flex flex-wrap items-center justify-center gap-1.5 max-w-[360px]">
-                  {[
-                    { id: 'toty', label: '💎 TOTY' },
-                    { id: 'toty_icon', label: '🔵 TOTY ICON' },
-                    { id: 'icon', label: '👑 ICON' },
-                    { id: 'scream', label: '🌙 SCREAM' },
-                    { id: 'world_tour', label: '🌈 WORLD TOUR' },
-                    { id: 'totw', label: '⚡ TOTW' },
-                    { id: 'heroes', label: '🦸 HEROES' },
-                    { id: 'tots', label: '🌟 TOTS' },
-                    { id: 'evos', label: '🧪 EVOS' },
-                    { id: 'centurions', label: '🔴 CENTURIONS' },
-                    { id: 'gold', label: '🥇 GOLD' },
-                  ].map((shell) => (
-                    <button
-                      key={shell.id}
-                      onClick={() => setSelectedShellRarity(shell.id as any)}
-                      className={`px-2.5 py-1 rounded-lg font-mono text-[10px] font-bold border transition ${
-                        selectedShellRarity === shell.id
-                          ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow'
-                          : 'bg-slate-950/80 text-slate-300 border-slate-800 hover:border-slate-700'
-                      }`}
-                    >
-                      {shell.label}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Ambient Radial Glow Aura */}
                 <div className="absolute w-[340px] h-[480px] bg-gradient-to-tr from-amber-500/25 via-emerald-500/20 to-amber-400/30 rounded-full blur-3xl pointer-events-none animate-glow-pulse" />
 
@@ -190,7 +158,6 @@ export function App() {
                   <EAFCCard
                     card={isCardSearched ? currentCard : null}
                     isEmpty={!isCardSearched}
-                    rarityOverride={selectedShellRarity}
                     elementId="ea-fc-export-card"
                     interactive={true}
                   />
@@ -212,79 +179,8 @@ export function App() {
               </div>
             </div>
 
-            {/* BELOW HERO: STAT RATINGS & CUSTOMIZER STUDIO */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start pt-8 border-t border-slate-800/80">
-              <div className="lg:col-span-12 space-y-6">
-                {/* DEV SUMMARY BAR */}
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src={currentCard.avatarUrl}
-                      alt={currentCard.name}
-                      className="w-14 h-14 rounded-2xl object-cover border-2 border-amber-400 shadow-lg"
-                    />
-                    <div>
-                      <h2 className="font-display font-black text-2xl text-white">
-                        {currentCard.name}
-                      </h2>
-                      <p className="font-mono text-xs text-amber-400 font-semibold">
-                        @{currentCard.username} • {currentCard.positionTitle}
-                      </p>
-                      <p className="text-xs text-slate-400 mt-1 line-clamp-1">
-                        {currentCard.bio}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="text-right bg-slate-950 px-5 py-3 rounded-2xl border border-slate-800">
-                    <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">POWER SCORE</div>
-                    <div className="font-display font-black text-3xl text-amber-400">
-                      {currentCard.powerScore.toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-
-                {/* STAT BREAKDOWN GRID */}
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
-                  <h3 className="font-display font-extrabold text-lg text-white mb-4 flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400" /> EA FC STAT RATING BREAKDOWN
-                  </h3>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
-                    {[
-                      { label: 'PASSING (Commits)', value: currentCard.ratings.pas, raw: `${currentCard.stats.commits.toLocaleString()} Commits` },
-                      { label: 'DRIBBLING (Stars)', value: currentCard.ratings.dri, raw: `${currentCard.stats.stars.toLocaleString()} Stars` },
-                      { label: 'SHOOTING (PRs)', value: currentCard.ratings.sho, raw: `${currentCard.stats.prsMerged.toLocaleString()} PRs` },
-                      { label: 'PHYSICAL (Followers)', value: currentCard.ratings.phy, raw: `${currentCard.stats.followers.toLocaleString()} Followers` },
-                      { label: 'PACE (Streak)', value: currentCard.ratings.pac, raw: `${currentCard.stats.streakDays} Days` },
-                      { label: 'DEFENSE (Issues)', value: currentCard.ratings.def, raw: `${currentCard.stats.issuesClosed.toLocaleString()} Closed` },
-                      { label: 'STAMINA (Forks)', value: currentCard.ratings.sta, raw: `${currentCard.stats.forks.toLocaleString()} Forks` },
-                      { label: 'SKILL (Languages)', value: currentCard.ratings.skl, raw: `${currentCard.stats.languages.length} Tech Stack` },
-                    ].map((stat) => (
-                      <div key={stat.label} className="space-y-1">
-                        <div className="flex justify-between items-center text-xs font-mono">
-                          <span className="text-slate-300 font-bold">{stat.label}</span>
-                          <span className="text-amber-400 font-extrabold">{stat.value}/99 <span className="text-slate-500 font-normal">({stat.raw})</span></span>
-                        </div>
-                        <div className="w-full h-2.5 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
-                          <div
-                            className="h-full bg-gradient-to-r from-amber-500 to-yellow-300 transition-all duration-500"
-                            style={{ width: `${stat.value}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* CARD CUSTOMIZER STUDIO */}
-                <CardCustomizer
-                  card={currentCard}
-                  onUpdateCard={setCurrentCard}
-                  onOpenPositionModal={() => setIsPositionModalOpen(true)}
-                />
-              </div>
-            </div>
+            {/* LANDING DETAILS: HOW IT WORKS, GITHUB TO EA FC TRANSLATION, THE RULE BOOK */}
+            <LandingDetails />
           </div>
         )}
 
@@ -343,18 +239,6 @@ export function App() {
         }}
       />
 
-      <SelectPositionModal
-        isOpen={isPositionModalOpen}
-        onClose={() => setIsPositionModalOpen(false)}
-        card={currentCard}
-        onSelectPosition={(position) => {
-          const updated = {
-            ...currentCard,
-            footballPosition: position,
-          };
-          setCurrentCard(updated);
-        }}
-      />
 
       <CreateTeamModal
         isOpen={isCreateTeamOpen}

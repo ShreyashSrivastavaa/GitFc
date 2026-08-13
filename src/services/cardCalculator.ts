@@ -30,12 +30,19 @@ export function calculatePowerScore(stats: GitHubRawStats, ratings: EAFCRatings)
   );
 }
 
-export function determineRarity(overall: number, powerScore: number): CardRarity {
-  if (overall >= 94 || powerScore >= 20000) return 'icon';
-  if (overall >= 89 || powerScore >= 12000) return 'toty';
-  if (overall >= 83 || powerScore >= 6000) return 'hero';
-  if (overall >= 75 || powerScore >= 2500) return 'gold';
-  if (overall >= 65 || powerScore >= 1000) return 'silver';
+export function determineRarity(overall: number, powerScore: number, stats?: GitHubRawStats): CardRarity {
+  if (overall >= 95 || powerScore >= 50000) return 'toty';
+  if (overall >= 92 || powerScore >= 25000) return 'toty_icon';
+  if (overall >= 88 || (stats && stats.stars >= 10000)) return 'icon';
+  if (stats && stats.streakDays >= 180) return 'scream';
+  if (stats && stats.languages.length >= 6) return 'world_tour';
+  if (stats && stats.commits >= 2000) return 'totw';
+  if (overall >= 85 || powerScore >= 10000) return 'tots';
+  if (overall >= 82 || powerScore >= 6000) return 'heroes';
+  if (stats && stats.issuesClosed >= 200) return 'centurions';
+  if (overall >= 78) return 'evos';
+  if (overall >= 70 || powerScore >= 2500) return 'gold';
+  if (overall >= 58 || powerScore >= 1000) return 'silver';
   return 'bronze';
 }
 
@@ -90,7 +97,7 @@ export function generateDevBadges(stats: GitHubRawStats): DevBadge[] {
 export function buildEAFCCard(stats: GitHubRawStats): EAFCDevCard {
   const ratings = calculateEAFCRatings(stats);
   const powerScore = calculatePowerScore(stats, ratings);
-  const rarity = determineRarity(ratings.overall, powerScore);
+  const rarity = determineRarity(ratings.overall, powerScore, stats);
   const { position, title } = determinePosition(stats, ratings);
   const badges = generateDevBadges(stats);
 
