@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import type { EAFCDevCard, Team, TeamPlayer } from '../../types';
-import { createDefaultTeam, createEmptyTeam, calculateTeamChemistry } from '../../services/teamService';
+import { createDefaultTeam, createEmptyTeam, calculateTeamChemistry, removePlayerFromTeam } from '../../services/teamService';
 import { simulateMatch, type MatchResult } from '../../services/matchEngine';
-import { InviteTeammatesModal } from '../team/InviteTeammatesModal';
-import { RotateCw, Trophy, Sparkles, Swords, UserPlus, Play, Lock } from 'lucide-react';
+import { InviteModal } from '../team/InviteModal';
+import { RotateCw, Trophy, Sparkles, Swords, UserPlus, Play, Lock, Trash2, AlertTriangle, X } from 'lucide-react';
 
 interface DressingRoomViewProps {
   card: EAFCDevCard;
@@ -31,6 +31,9 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
   const [lastMatchResult, setLastMatchResult] = useState<MatchResult | null>(null);
   const [isSimulating, setIsSimulating] = useState(false);
 
+  // Player removal modal state
+  const [removingPlayer, setRemovingPlayer] = useState<TeamPlayer | null>(null);
+
   const handleInviteClick = () => {
     if (!isConnected) {
       onOpenConnectModal();
@@ -42,6 +45,13 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
   const handleUpdate = (updated: Team) => {
     setTeamState(updated);
     onUpdateTeam(updated);
+  };
+
+  const handleConfirmRemovePlayer = () => {
+    if (!removingPlayer) return;
+    const updated = removePlayerFromTeam(teamState, removingPlayer.userId);
+    handleUpdate(updated);
+    setRemovingPlayer(null);
   };
 
   const handleFormationChange = (formation: string) => {
@@ -103,6 +113,8 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
     teamState.players.midfielders.length +
     teamState.players.forwards.length +
     teamState.players.substitutes.length;
+
+  const managerUsername = teamState.manager ? teamState.manager.username.toLowerCase() : '';
 
   return (
     <div className="space-y-10 animate-fade-in">
@@ -204,7 +216,7 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-1">
-              <Sparkles className="w-3.5 h-3.5" /> 15-PLAYER ROSTER
+              <Sparkles className="w-3.5 h-3.5" /> INVITE-ONLY SQUAD ({totalRosterCount}/15)
             </div>
             <h2 className="font-display font-black text-2xl text-white">
               ⚽ STARTING XI & SQUAD LINEUP ({activeFormation})
@@ -241,7 +253,13 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {teamState.players.goalkeeper.map((p) => (
-                <PlayerCardTile key={p.userId} player={p} posColor="bg-blue-500/20 text-blue-300 border-blue-400/40" />
+                <PlayerCardTile
+                  key={p.userId}
+                  player={p}
+                  posColor="bg-blue-500/20 text-blue-300 border-blue-400/40"
+                  isManager={p.username.toLowerCase() === managerUsername}
+                  onRemove={() => setRemovingPlayer(p)}
+                />
               ))}
               {Array.from({ length: Math.max(0, 1 - teamState.players.goalkeeper.length) }).map((_, idx) => (
                 <EmptySlotTile key={`empty-gk-${idx}`} positionName="GK" onInvite={handleInviteClick} />
@@ -259,7 +277,13 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {teamState.players.defenders.map((p) => (
-                <PlayerCardTile key={p.userId} player={p} posColor="bg-emerald-500/20 text-emerald-300 border-emerald-400/40" />
+                <PlayerCardTile
+                  key={p.userId}
+                  player={p}
+                  posColor="bg-emerald-500/20 text-emerald-300 border-emerald-400/40"
+                  isManager={p.username.toLowerCase() === managerUsername}
+                  onRemove={() => setRemovingPlayer(p)}
+                />
               ))}
               {Array.from({ length: Math.max(0, 4 - teamState.players.defenders.length) }).map((_, idx) => (
                 <EmptySlotTile key={`empty-def-${idx}`} positionName="DEF" onInvite={handleInviteClick} />
@@ -277,7 +301,13 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {teamState.players.midfielders.map((p) => (
-                <PlayerCardTile key={p.userId} player={p} posColor="bg-yellow-500/20 text-yellow-300 border-yellow-400/40" />
+                <PlayerCardTile
+                  key={p.userId}
+                  player={p}
+                  posColor="bg-yellow-500/20 text-yellow-300 border-yellow-400/40"
+                  isManager={p.username.toLowerCase() === managerUsername}
+                  onRemove={() => setRemovingPlayer(p)}
+                />
               ))}
               {Array.from({ length: Math.max(0, 4 - teamState.players.midfielders.length) }).map((_, idx) => (
                 <EmptySlotTile key={`empty-mid-${idx}`} positionName="MID" onInvite={handleInviteClick} />
@@ -295,7 +325,13 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {teamState.players.forwards.map((p) => (
-                <PlayerCardTile key={p.userId} player={p} posColor="bg-rose-500/20 text-rose-300 border-rose-400/40" />
+                <PlayerCardTile
+                  key={p.userId}
+                  player={p}
+                  posColor="bg-rose-500/20 text-rose-300 border-rose-400/40"
+                  isManager={p.username.toLowerCase() === managerUsername}
+                  onRemove={() => setRemovingPlayer(p)}
+                />
               ))}
               {Array.from({ length: Math.max(0, 3 - teamState.players.forwards.length) }).map((_, idx) => (
                 <EmptySlotTile key={`empty-fwd-${idx}`} positionName="FWD" onInvite={handleInviteClick} />
@@ -313,7 +349,13 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {teamState.players.substitutes.map((p) => (
-                <PlayerCardTile key={p.userId} player={p} posColor="bg-amber-500/20 text-amber-300 border-amber-400/40" />
+                <PlayerCardTile
+                  key={p.userId}
+                  player={p}
+                  posColor="bg-amber-500/20 text-amber-300 border-amber-400/40"
+                  isManager={p.username.toLowerCase() === managerUsername}
+                  onRemove={() => setRemovingPlayer(p)}
+                />
               ))}
               {Array.from({ length: Math.max(0, 3 - teamState.players.substitutes.length) }).map((_, idx) => (
                 <EmptySlotTile key={`empty-sub-${idx}`} positionName="SUB" onInvite={handleInviteClick} />
@@ -375,12 +417,48 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
       </div>
 
       {/* Invite Teammates Modal */}
-      <InviteTeammatesModal
+      <InviteModal
         isOpen={isInviteModalOpen}
         onClose={() => setIsInviteModalOpen(false)}
         team={teamState}
         onUpdateTeam={handleUpdate}
       />
+
+      {/* REMOVE PLAYER CONFIRMATION MODAL */}
+      {removingPlayer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-400">
+              <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <h3 className="font-display font-black text-xl text-white">
+                REMOVE PLAYER FROM SQUAD
+              </h3>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed font-mono">
+              Are you sure you want to remove <strong className="text-amber-400">@{removingPlayer.username}</strong> from the team? They will be notified and can be re-invited later.
+            </p>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+              <button
+                onClick={() => setRemovingPlayer(null)}
+                className="px-5 py-2.5 rounded-2xl bg-slate-800 text-slate-300 font-bold text-xs hover:bg-slate-700 transition"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleConfirmRemovePlayer}
+                className="px-5 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-display font-black text-xs shadow-lg shadow-rose-600/30 flex items-center gap-1.5 transition"
+              >
+                <Trash2 className="w-4 h-4" /> Remove Player
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
@@ -388,10 +466,12 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
 interface PlayerCardTileProps {
   player: TeamPlayer;
   posColor: string;
+  isManager: boolean;
+  onRemove: () => void;
 }
 
-const PlayerCardTile: React.FC<PlayerCardTileProps> = ({ player, posColor }) => (
-  <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition">
+const PlayerCardTile: React.FC<PlayerCardTileProps> = ({ player, posColor, isManager, onRemove }) => (
+  <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition group relative">
     <div className="flex items-center gap-2.5 min-w-0">
       <img
         src={player.avatarUrl}
@@ -399,8 +479,9 @@ const PlayerCardTile: React.FC<PlayerCardTileProps> = ({ player, posColor }) => 
         className="w-8 h-8 rounded-xl object-cover border border-amber-400/40 shrink-0"
       />
       <div className="min-w-0">
-        <div className="font-display font-bold text-xs text-white truncate">
-          {player.name}
+        <div className="font-display font-bold text-xs text-white truncate flex items-center gap-1">
+          <span>{player.name}</span>
+          {isManager && <span className="text-[9px] px-1 py-0.2 bg-amber-500/20 text-amber-300 rounded font-mono">MGR</span>}
         </div>
         <div className="text-[10px] font-mono text-slate-400 truncate">
           @{player.username}
@@ -408,13 +489,25 @@ const PlayerCardTile: React.FC<PlayerCardTileProps> = ({ player, posColor }) => 
       </div>
     </div>
 
-    <div className="text-right shrink-0">
-      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${posColor}`}>
-        {player.position}
-      </span>
-      <div className="font-display font-black text-xs text-amber-400 mt-0.5">
-        {player.overall}
+    <div className="flex items-center gap-2 shrink-0">
+      <div className="text-right">
+        <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${posColor}`}>
+          {player.position}
+        </span>
+        <div className="font-display font-black text-xs text-amber-400 mt-0.5">
+          {player.overall}
+        </div>
       </div>
+
+      {!isManager && (
+        <button
+          onClick={onRemove}
+          title={`Remove @${player.username} from squad`}
+          className="p-1.5 rounded-lg bg-slate-900 hover:bg-rose-500/20 text-slate-500 hover:text-rose-400 border border-slate-800 transition"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
+      )}
     </div>
   </div>
 );

@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ActiveTab } from '../../types';
 import { Sparkles, Trophy } from 'lucide-react';
+import { ThemeToggle } from './ThemeToggle';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -80,6 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </nav>
 
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <button
             onClick={onOpenCreateTeamModal}
             className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-xs hover:brightness-110 shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition"
@@ -98,3 +100,4 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+

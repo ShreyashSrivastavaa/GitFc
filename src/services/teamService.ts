@@ -10,14 +10,9 @@ export function calculateTeamChemistry(roster: TeamRoster, formation: string): n
 
   if (allPlayers.length === 0) return 50;
 
-  // Base chemistry from roster count
   const countFactor = Math.min(40, (allPlayers.length / 12) * 40);
-
-  // Position fit factor
   const avgRating = allPlayers.reduce((acc, p) => acc + p.overall, 0) / allPlayers.length;
   const ratingFactor = (avgRating / 99) * 35;
-
-  // Formation alignment bonus
   const formationBonus = formation === '4-4-3' || formation === '4-3-3' ? 20 : 15;
 
   return Math.min(100, Math.round(countFactor + ratingFactor + formationBonus));
@@ -186,23 +181,162 @@ export function createManagerOnlyRoster(managerCard: EAFCDevCard): TeamRoster {
   };
 }
 
-export function invitePlayerToTeam(team: Team, invitedUsername: string, invitedBy: string): Team {
+export function getAllPlayersInTeam(team: Team): TeamPlayer[] {
+  return [
+    ...team.players.goalkeeper,
+    ...team.players.defenders,
+    ...team.players.midfielders,
+    ...team.players.forwards,
+    ...team.players.substitutes,
+  ];
+}
+
+export function validateInviteUsername(
+  username: string,
+  team: Team
+): { valid: boolean; reason?: string } {
+  const cleanUsername = username.replace(/^@/, '').trim().toLowerCase();
+  if (!cleanUsername) {
+    return { valid: false, reason: 'Please enter a GitHub username' };
+  }
+
+  const existingPlayers = getAllPlayersInTeam(team);
+  const isAlreadyInTeam = existingPlayers.some(
+    (p) => p.username.toLowerCase() === cleanUsername
+  );
+  if (isAlreadyInTeam) {
+    return { valid: false, reason: 'User already in a team' };
+  }
+
+  const hasPendingInvite = team.invites.some(
+    (i) => i.invitedUser.toLowerCase() === cleanUsername && i.status === 'pending'
+  );
+  if (hasPendingInvite) {
+    return { valid: false, reason: 'User already has a pending invite' };
+  }
+
+  return { valid: true };
+}
+
+export function sendTeamInvite(
+  team: Team,
+  invitedUsername: string,
+  position: string,
+  message: string,
+  managerUsername: string
+): { updatedTeam: Team; invite: TeamInvite } {
+  const cleanUsername = invitedUsername.replace(/^@/, '').trim();
+  const inviteId = `inv-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  
   const newInvite: TeamInvite = {
-    id: `inv-${Date.now()}`,
+    id: inviteId,
     teamId: team.id,
     teamName: team.name,
     teamBadge: team.badge,
-    invitedBy,
-    invitedUser: invitedUsername,
-    suggestedPosition: 'MIDFIELDER',
-    createdAt: new Date().toISOString().split('T')[0],
-    expiresAt: new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0],
+    invitedBy: managerUsername,
+    invitedUser: cleanUsername,
+    suggestedPosition: position,
+    createdAt: new Date().toISOString(),
+    expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
     status: 'pending',
     inviteCode: team.inviteCode,
   };
 
-  return {
+  const updatedTeam: Team = {
     ...team,
     invites: [...team.invites, newInvite],
+  };
+
+  return { updatedTeam, invite: newInvite };
+}
+
+export function addPlayerToRoster(
+  team: Team,
+  playerCard: EAFCDevCard,
+  positionName: string
+): Team {
+  const posUpper = positionName.toUpperCase();
+  let posCode: TeamPlayerPosition = 'CM';
+
+  if (posUpper.includes('GOALKEEPER') || posUpper === 'GK') posCode = 'GK';
+  else if (posUpper.includes('DEFENDER') || posUpper === 'DEF' || posUpper === 'CB') posCode = 'CB';
+  else if (posUpper.includes('FORWARD') || posUpper.includes('STRIKER') || posUpper === 'FWD' || posUpper === 'ST') posCode = 'ST';
+  else if (posUpper.includes('SUB') || posUpper === 'BENCH') posCode = 'CM';
+
+  const newPlayer: TeamPlayer = {
+    userId: playerCard.id,
+    username: playerCard.username,
+    name: playerCard.name,
+    avatarUrl: playerCard.avatarUrl,
+    position: posCode,
+    role: posUpper.includes('SUB') ? 'Substitute' : 'Starting',
+    overall: playerCard.ratings.overall,
+    joinedTeam: new Date().toISOString().split('T')[0],
+    stats: playerCard.stats,
+  };
+
+  const newRoster = { ...team.players };
+
+  if (posCode === 'GK') {
+    newRoster.goalkeeper = [...newRoster.goalkeeper, newPlayer];
+  } else if (posCode === 'CB') {
+    newRoster.defenders = [...newRoster.defenders, newPlayer];
+  } else if (posCode === 'ST') {
+    newRoster.forwards = [...newRoster.forwards, newPlayer];
+  } else if (posUpper.includes('SUB')) {
+    newRoster.substitutes = [...newRoster.substitutes, newPlayer];
+  } else {
+    newRoster.midfielders = [...newRoster.midfielders, newPlayer];
+  }
+
+  const allPlayers = [
+    ...newRoster.goalkeeper,
+    ...newRoster.defenders,
+    ...newRoster.midfielders,
+    ...newRoster.forwards,
+    ...newRoster.substitutes,
+  ];
+
+  const chemistry = calculateTeamChemistry(newRoster, team.formation);
+  const averageRating = Math.round(allPlayers.reduce((acc, p) => acc + p.overall, 0) / allPlayers.length);
+
+  return {
+    ...team,
+    players: newRoster,
+    totalPlayers: allPlayers.length,
+    squadChemistry: chemistry,
+    averageRating,
+  };
+}
+
+export function removePlayerFromTeam(team: Team, userId: string): Team {
+  const newRoster: TeamRoster = {
+    goalkeeper: team.players.goalkeeper.filter((p) => p.userId !== userId),
+    defenders: team.players.defenders.filter((p) => p.userId !== userId),
+    midfielders: team.players.midfielders.filter((p) => p.userId !== userId),
+    forwards: team.players.forwards.filter((p) => p.userId !== userId),
+    substitutes: team.players.substitutes.filter((p) => p.userId !== userId),
+  };
+
+  const allPlayers = [
+    ...newRoster.goalkeeper,
+    ...newRoster.defenders,
+    ...newRoster.midfielders,
+    ...newRoster.forwards,
+    ...newRoster.substitutes,
+  ];
+
+  const chemistry = calculateTeamChemistry(newRoster, team.formation);
+  const averageRating =
+    allPlayers.length > 0
+      ? Math.round(allPlayers.reduce((acc, p) => acc + p.overall, 0) / allPlayers.length)
+      : team.manager ? team.manager.ratings.overall : 80;
+
+  return {
+    ...team,
+    players: newRoster,
+    totalPlayers: allPlayers.length,
+    squadChemistry: chemistry,
+    averageRating,
   };
 }
