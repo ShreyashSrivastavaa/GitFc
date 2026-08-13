@@ -201,59 +201,50 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
 
           <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#fff_1px,transparent_1px)] [background-size:12px_12px] pointer-events-none" />
 
-          {/* EMPTY CARD TOP HEADER */}
+          {/* PURE EMPTY CARD TOP HEADER */}
           <div className="relative z-10 flex items-start justify-between">
             <div className="flex flex-col items-center">
-              <span className={`font-display font-black text-5xl tracking-tighter leading-none ${config.headerColor} opacity-40`}>
-                --
-              </span>
-              <span className={`font-display font-extrabold text-lg tracking-wider ${config.headerColor} uppercase opacity-40`}>
-                ---
-              </span>
-              <span className="text-xl mt-1 leading-none opacity-40">🌐</span>
+              <div className="w-8 h-8 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-xs opacity-60">
+                ⭐
+              </div>
             </div>
 
             <div className="flex flex-col items-end gap-1">
-              <div className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border backdrop-blur-md shadow-sm ${config.badgeBg} flex items-center gap-1`}>
+              <div className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase border backdrop-blur-md shadow-sm ${config.badgeBg} flex items-center gap-1 opacity-70`}>
                 <Sparkles className="w-3 h-3 animate-pulse" />
-                {config.label}
+                FC 26 SHELL
               </div>
             </div>
           </div>
 
-          {/* EMPTY SILHOUETTE AVATAR PLACEHOLDER */}
-          <div className="relative z-10 flex flex-col items-center my-1">
+          {/* PURE EMPTY SILHOUETTE AVATAR PLACEHOLDER (NO TEXT) */}
+          <div className="relative z-10 flex flex-col items-center my-4">
             <div className="relative">
               <div
-                className="absolute -inset-2 rounded-full blur-md opacity-50 animate-pulse"
+                className="absolute -inset-3 rounded-full blur-md opacity-40 animate-pulse"
                 style={{ backgroundColor: config.glowColor }}
               />
-              <div className="relative w-32 h-32 rounded-full border-4 border-dashed border-white/40 flex items-center justify-center bg-black/40 shadow-2xl">
-                <User className="w-16 h-16 text-white/30" />
+              <div className="relative w-36 h-36 rounded-full border-2 border-white/20 flex items-center justify-center bg-black/30 backdrop-blur-sm shadow-2xl">
+                <User className="w-20 h-20 text-white/20" />
               </div>
             </div>
-
-            <div className="mt-3 w-40 h-6 rounded-lg bg-white/10 border border-white/20 animate-pulse flex items-center justify-center text-xs font-mono text-white/40">
-              SEARCH USERNAME
-            </div>
-            <p className="font-mono text-xs text-white/30 mt-1">@github</p>
           </div>
 
-          <div className="relative z-10 my-1 h-[2px] bg-gradient-to-r from-transparent via-white/30 to-transparent" />
+          <div className="relative z-10 my-2 h-[2px] bg-gradient-to-r from-transparent via-white/20 to-transparent" />
 
-          {/* EMPTY STAT GRID */}
-          <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-1.5 px-3 py-2 bg-black/30 backdrop-blur-md rounded-2xl border border-white/10">
-            {['PAS', 'DRI', 'SHO', 'PHY', 'PAC', 'DEF', 'STA', 'SKL'].map((s) => (
-              <div key={s} className="flex justify-between items-center font-display text-sm font-bold">
-                <span className="opacity-40 text-xs font-mono uppercase text-slate-300">{s}</span>
-                <span className={`text-base font-extrabold ${config.headerColor} opacity-40`}>--</span>
+          {/* PURE EMPTY STAT PLACEHOLDERS (NO NUMBERS OR TEXT OVERLAYS) */}
+          <div className="relative z-10 grid grid-cols-2 gap-x-4 gap-y-2 px-4 py-3 bg-black/20 backdrop-blur-md rounded-2xl border border-white/10">
+            {['PAS', 'DRI', 'SHO', 'PHY', 'PAC', 'DEF'].map((s) => (
+              <div key={s} className="flex justify-between items-center">
+                <span className="opacity-30 text-[10px] font-mono font-bold uppercase text-slate-300">{s}</span>
+                <div className="w-6 h-2 rounded bg-white/10 animate-pulse" />
               </div>
             ))}
           </div>
 
-          <div className="relative z-10 flex items-center justify-between pt-1 opacity-50">
-            <span className="text-[10px] font-mono text-slate-300">EA FC 26 ULTIMATE CARD</span>
-            <span className="text-[10px] font-mono text-amber-300 font-bold">★ BUILDER</span>
+          <div className="relative z-10 flex items-center justify-between pt-1 opacity-40">
+            <span className="text-[9px] font-mono text-slate-300">EA FC 26 ULTIMATE SHELL</span>
+            <span className="text-[9px] font-mono text-amber-300 font-bold">GITCARDS</span>
           </div>
         </div>
       </div>
