@@ -11,6 +11,7 @@ import { UltimateXISquad } from './components/leaderboard/UltimateXISquad';
 import { CardCompareModal } from './components/compare/CardCompareModal';
 import { PackOpenerModal } from './components/pack/PackOpenerModal';
 import { ExportModal } from './components/share/ExportModal';
+import { ConnectModal } from './components/layout/ConnectModal';
 
 import { Search, Sparkles, Download, Swords, Loader2 } from 'lucide-react';
 
@@ -26,6 +27,7 @@ export function App() {
   const [isPackModalOpen, setIsPackModalOpen] = useState(false);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -63,11 +65,7 @@ export function App() {
   };
 
   const handleConnectGitHub = () => {
-    const username = prompt('Enter your GitHub Username to connect and auto-generate your EA FC Card:');
-    if (username) {
-      handleLookupUser(username);
-      setActiveTab('generator');
-    }
+    setIsConnectModalOpen(true);
   };
 
   return (
@@ -292,6 +290,15 @@ export function App() {
         onClose={() => setIsExportModalOpen(false)}
         card={currentCard}
         cardElementId="ea-fc-export-card"
+      />
+
+      <ConnectModal
+        isOpen={isConnectModalOpen}
+        onClose={() => setIsConnectModalOpen(false)}
+        onConnect={(username) => {
+          handleLookupUser(username);
+          setActiveTab('generator');
+        }}
       />
     </div>
   );
