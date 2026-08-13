@@ -5,9 +5,10 @@ import { Sliders } from 'lucide-react';
 interface CardCustomizerProps {
   card: EAFCDevCard;
   onUpdateCard: (updated: EAFCDevCard) => void;
+  onOpenPositionModal?: () => void;
 }
 
-export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCard }) => {
+export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCard, onOpenPositionModal }) => {
   const handleRarityChange = (rarity: CardRarity) => {
     onUpdateCard({ ...card, rarity });
   };
@@ -73,8 +74,46 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
         </div>
 
         <div>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-xs font-mono text-slate-400 uppercase font-bold">
+              FOOTBALL TACTICAL POSITION
+            </label>
+            {onOpenPositionModal && (
+              <button
+                onClick={onOpenPositionModal}
+                className="text-[11px] font-mono text-amber-400 font-bold hover:underline"
+              >
+                CHANGE ROLE WIZARD →
+              </button>
+            )}
+          </div>
+          <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="text-xl">{card.footballPositionBadge || '⚽'}</span>
+              <div>
+                <div className="font-display font-extrabold text-sm text-white">
+                  {card.footballPositionTitle || 'Striker (CF/ST)'}
+                </div>
+                <div className="text-[10px] font-mono text-amber-400 font-bold">
+                  {card.footballPosition || 'STRIKER'}
+                </div>
+              </div>
+            </div>
+
+            {onOpenPositionModal && (
+              <button
+                onClick={onOpenPositionModal}
+                className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 text-xs font-bold transition"
+              >
+                SELECT ROLE
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div>
           <label className="block text-xs font-mono text-slate-400 mb-2 uppercase font-bold">
-            DEVELOPER POSITION
+            STAT POSITION CATEGORY
           </label>
           <div className="grid grid-cols-3 gap-2">
             {(['GEN', 'INF', 'COL', 'HUS', 'DEV', 'ARC'] as CardPosition[]).map((pos) => (

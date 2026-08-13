@@ -137,9 +137,18 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
             </div>
           </div>
 
-          <div className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border backdrop-blur-md shadow-sm ${config.badgeBg} flex items-center gap-1`}>
-            {card.rarity === 'toty' || card.rarity === 'icon' ? <Sparkles className="w-3 h-3 animate-pulse" /> : <ShieldCheck className="w-3 h-3" />}
-            {config.label}
+          <div className="flex flex-col items-end gap-1">
+            <div className={`px-3 py-1 rounded-full text-xs font-black tracking-widest uppercase border backdrop-blur-md shadow-sm ${config.badgeBg} flex items-center gap-1`}>
+              {card.rarity === 'toty' || card.rarity === 'icon' ? <Sparkles className="w-3 h-3 animate-pulse" /> : <ShieldCheck className="w-3 h-3" />}
+              {config.label}
+            </div>
+
+            {card.footballPosition && (
+              <div className="px-2 py-0.5 rounded-full bg-black/60 text-amber-300 border border-amber-400/30 text-[10px] font-mono font-bold flex items-center gap-1 shadow">
+                <span>{card.footballPositionBadge || '⚽'}</span>
+                <span>{card.footballPosition}</span>
+              </div>
+            )}
           </div>
         </div>
 

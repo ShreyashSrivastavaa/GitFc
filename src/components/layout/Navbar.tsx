@@ -46,19 +46,41 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <button
+            onClick={() => setActiveTab('leagues')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
+              activeTab === 'leagues'
+                ? 'bg-amber-500 text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Trophy className="w-3.5 h-3.5" /> LEAGUES
+          </button>
+
+          <button
+            onClick={() => setActiveTab('dressing-room')}
+            className={`px-3.5 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
+              activeTab === 'dressing-room'
+                ? 'bg-amber-500 text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            🏟️ DRESSING ROOM
+          </button>
+
+          <button
             onClick={() => setActiveTab('leaderboard')}
-            className={`px-4 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
               activeTab === 'leaderboard'
                 ? 'bg-amber-500 text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            <Trophy className="w-3.5 h-3.5" /> LEADERBOARD
+            LEADERBOARD
           </button>
 
           <button
             onClick={() => setActiveTab('squad-xi')}
-            className={`px-4 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
               activeTab === 'squad-xi'
                 ? 'bg-amber-500 text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
@@ -69,13 +91,13 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <button
             onClick={() => setActiveTab('compare')}
-            className={`px-4 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
+            className={`px-3.5 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
               activeTab === 'compare'
                 ? 'bg-amber-500 text-slate-950 shadow-md'
                 : 'text-slate-400 hover:text-white hover:bg-slate-800'
             }`}
           >
-            <Swords className="w-3.5 h-3.5" /> STAT SHOWDOWN
+            <Swords className="w-3.5 h-3.5" /> SHOWDOWN
           </button>
         </nav>
 

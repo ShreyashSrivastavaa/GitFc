@@ -12,6 +12,9 @@ import { CardCompareModal } from './components/compare/CardCompareModal';
 import { PackOpenerModal } from './components/pack/PackOpenerModal';
 import { ExportModal } from './components/share/ExportModal';
 import { ConnectModal } from './components/layout/ConnectModal';
+import { LeaguesView } from './components/leagues/LeaguesView';
+import { DressingRoomView } from './components/dressingroom/DressingRoomView';
+import { SelectPositionModal } from './components/position/SelectPositionModal';
 
 import { Search, Sparkles, Download, Swords, Loader2 } from 'lucide-react';
 
@@ -28,6 +31,7 @@ export function App() {
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
+  const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -217,10 +221,33 @@ export function App() {
                   </div>
                 </div>
 
-                <CardCustomizer card={currentCard} onUpdateCard={setCurrentCard} />
+                <CardCustomizer
+                  card={currentCard}
+                  onUpdateCard={setCurrentCard}
+                  onOpenPositionModal={() => setIsPositionModalOpen(true)}
+                />
               </div>
             </div>
           </div>
+        )}
+
+        {activeTab === 'leagues' && (
+          <LeaguesView
+            currentCard={currentCard}
+            customCards={leaderboardCards}
+            onUpdateCard={setCurrentCard}
+            onSelectCard={(card) => {
+              setCurrentCard(card);
+              setActiveTab('generator');
+            }}
+          />
+        )}
+
+        {activeTab === 'dressing-room' && (
+          <DressingRoomView
+            card={currentCard}
+            onUpdateCard={setCurrentCard}
+          />
         )}
 
         {activeTab === 'leaderboard' && (
@@ -298,6 +325,19 @@ export function App() {
         onConnect={(username) => {
           handleLookupUser(username);
           setActiveTab('generator');
+        }}
+      />
+
+      <SelectPositionModal
+        isOpen={isPositionModalOpen}
+        onClose={() => setIsPositionModalOpen(false)}
+        card={currentCard}
+        onSelectPosition={(position) => {
+          const updated = {
+            ...currentCard,
+            footballPosition: position,
+          };
+          setCurrentCard(updated);
         }}
       />
     </div>

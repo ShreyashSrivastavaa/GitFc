@@ -1,4 +1,5 @@
 import type { EAFCDevCard } from '../types';
+import { createLeagueMembership } from './leaguesService';
 
 export const PRESET_DEVS: EAFCDevCard[] = [
   {
@@ -13,6 +14,10 @@ export const PRESET_DEVS: EAFCDevCard[] = [
     positionTitle: 'Grand Architect GOAT',
     countryFlag: '🇫🇮',
     clubName: 'LINUX FOUNDATION',
+    footballPosition: 'STRIKER',
+    footballPositionTitle: 'Striker (CF/ST)',
+    footballPositionBadge: '⚽',
+    leagues: [createLeagueMembership('premier', 1), createLeagueMembership('lightning', 1)],
     powerScore: 99500,
     ratings: {
       overall: 99,
@@ -65,6 +70,10 @@ export const PRESET_DEVS: EAFCDevCard[] = [
     positionTitle: 'React Mastermind',
     countryFlag: '🇬🇧',
     clubName: 'REACT FC',
+    footballPosition: 'MIDFIELDER',
+    footballPositionTitle: 'Midfielder (CM/CAM)',
+    footballPositionBadge: '🎯',
+    leagues: [createLeagueMembership('premier', 2), createLeagueMembership('lightning', 2)],
     powerScore: 28500,
     ratings: {
       overall: 95,
@@ -116,6 +125,10 @@ export const PRESET_DEVS: EAFCDevCard[] = [
     positionTitle: 'UI Perfectionist',
     countryFlag: '🇺🇸',
     clubName: 'SHADCN UI',
+    footballPosition: 'STRIKER',
+    footballPositionTitle: 'Striker (CF/ST)',
+    footballPositionBadge: '⚽',
+    leagues: [createLeagueMembership('premier', 3), createLeagueMembership('opensource', 1)],
     powerScore: 24200,
     ratings: {
       overall: 94,
@@ -167,6 +180,10 @@ export const PRESET_DEVS: EAFCDevCard[] = [
     positionTitle: 'DevOps Titan',
     countryFlag: '🇺🇸',
     clubName: 'HASHICORP',
+    footballPosition: 'GOALKEEPER',
+    footballPositionTitle: 'Goalkeeper (GK)',
+    footballPositionBadge: '🔒',
+    leagues: [createLeagueMembership('premier', 4)],
     powerScore: 18400,
     ratings: {
       overall: 92,
@@ -217,6 +234,10 @@ export const PRESET_DEVS: EAFCDevCard[] = [
     positionTitle: 'Next.js Visionary',
     countryFlag: '🇦🇷',
     clubName: 'VERCEL',
+    footballPosition: 'MANAGER',
+    footballPositionTitle: 'Manager (Coach)',
+    footballPositionBadge: '👑',
+    leagues: [createLeagueMembership('premier', 5), createLeagueMembership('startup', 1)],
     powerScore: 16900,
     ratings: {
       overall: 91,
@@ -267,6 +288,10 @@ export const PRESET_DEVS: EAFCDevCard[] = [
     positionTitle: 'NPM Polymath',
     countryFlag: '🇳🇴',
     clubName: 'OPEN SOURCE FC',
+    footballPosition: 'DEFENDER',
+    footballPositionTitle: 'Defender (CB/RB/LB)',
+    footballPositionBadge: '🛡️',
+    leagues: [createLeagueMembership('premier', 6), createLeagueMembership('opensource', 2)],
     powerScore: 9800,
     ratings: {
       overall: 88,

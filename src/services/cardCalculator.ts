@@ -1,4 +1,7 @@
 import type { GitHubRawStats, EAFCRatings, CardRarity, CardPosition, DevBadge, EAFCDevCard } from '../types';
+import { assignPosition, getPositionInfo } from './positionService';
+import { createLeagueMembership } from './leaguesService';
+import { generateDressingRoomData } from './dressingRoomService';
 
 export function calculateEAFCRatings(stats: GitHubRawStats): EAFCRatings {
   const pac = Math.min(99, Math.max(40, Math.round((stats.streakDays / 365) * 45 + 50)));
@@ -91,9 +94,12 @@ export function buildEAFCCard(stats: GitHubRawStats): EAFCDevCard {
   const { position, title } = determinePosition(stats, ratings);
   const badges = generateDevBadges(stats);
 
+  const footballPos = assignPosition(stats);
+  const posInfo = getPositionInfo(footballPos);
+
   const clubName = stats.company ? stats.company.replace(/^@/, '').toUpperCase() : 'OPEN SOURCE FC';
 
-  return {
+  const baseCard: EAFCDevCard = {
     id: stats.username.toLowerCase(),
     username: stats.username,
     name: stats.name || stats.username,
@@ -105,12 +111,20 @@ export function buildEAFCCard(stats: GitHubRawStats): EAFCDevCard {
     positionTitle: title,
     countryFlag: '🌐',
     clubName,
+    footballPosition: footballPos,
+    footballPositionTitle: posInfo.name,
+    footballPositionBadge: posInfo.badge,
+    leagues: [createLeagueMembership('premier', 1), createLeagueMembership('lightning', 3)],
     ratings,
     powerScore,
     stats,
     badges,
     skinStyle: 'shiny',
     chemistryStyle: 'SNIPER',
-    createdAt: new Date().toISOString().split('T')[0]
+    createdAt: new Date().toISOString().split('T')[0],
   };
+
+  baseCard.dressingRoom = generateDressingRoomData(baseCard);
+
+  return baseCard;
 }
