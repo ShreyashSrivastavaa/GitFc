@@ -1,19 +1,19 @@
 import React from 'react';
 import type { ActiveTab } from '../../types';
-import { Sparkles, Trophy, Gift, Swords, Zap } from 'lucide-react';
+import { Sparkles, Trophy } from 'lucide-react';
 
 interface NavbarProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
-  onOpenPackStore: () => void;
   onConnectGitHub: () => void;
+  onOpenCreateTeamModal: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
-  onOpenPackStore,
-  onConnectGitHub
+  onConnectGitHub,
+  onOpenCreateTeamModal,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-4 lg:px-8 py-3">
@@ -77,36 +77,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             LEADERBOARD
           </button>
-
-          <button
-            onClick={() => setActiveTab('squad-xi')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
-              activeTab === 'squad-xi'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Zap className="w-3.5 h-3.5" /> ULTIMATE XI
-          </button>
-
-          <button
-            onClick={() => setActiveTab('compare')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 ${
-              activeTab === 'compare'
-                ? 'bg-amber-500 text-slate-950 shadow-md'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800'
-            }`}
-          >
-            <Swords className="w-3.5 h-3.5" /> SHOWDOWN
-          </button>
         </nav>
 
         <div className="flex items-center gap-3">
           <button
-            onClick={onOpenPackStore}
+            onClick={onOpenCreateTeamModal}
             className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-xs hover:brightness-110 shadow-lg shadow-amber-500/20 flex items-center gap-1.5 transition"
           >
-            <Gift className="w-4 h-4" /> PACK STORE
+            + CREATE TEAM
           </button>
 
           <button

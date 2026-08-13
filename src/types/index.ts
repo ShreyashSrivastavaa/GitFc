@@ -16,6 +16,77 @@ export interface PositionInfo {
   colorClass: string;
 }
 
+export type TeamPlayerPosition = 'GK' | 'CB' | 'RB' | 'LB' | 'CM' | 'CAM' | 'ST' | 'LW' | 'RW';
+export type TeamPlayerRole = 'Starting' | 'Substitute' | 'Reserve';
+
+export interface TeamPlayer {
+  userId: string;
+  username: string;
+  name: string;
+  avatarUrl: string;
+  position: TeamPlayerPosition;
+  role: TeamPlayerRole;
+  overall: number;
+  joinedTeam: string;
+  stats: GitHubRawStats;
+}
+
+export interface TeamInvite {
+  id: string;
+  teamId: string;
+  teamName: string;
+  teamBadge: string;
+  invitedBy: string;
+  invitedUser: string;
+  suggestedPosition?: string;
+  createdAt: string;
+  expiresAt: string;
+  status: 'pending' | 'accepted' | 'declined' | 'expired';
+  inviteCode: string;
+}
+
+export interface TeamRoster {
+  goalkeeper: TeamPlayer[];
+  defenders: TeamPlayer[];
+  midfielders: TeamPlayer[];
+  forwards: TeamPlayer[];
+  substitutes: TeamPlayer[];
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  description: string;
+  badge: string; // Emoji e.g. 🔴
+  manager: EAFCDevCard; // Manager details
+  founded: string;
+  
+  players: TeamRoster;
+  totalPlayers: number; // Max 15
+  formation: string; // e.g. "4-4-3", "4-3-3", "3-5-2"
+  
+  squadValue: number; // Combined power score
+  squadChemistry: number; // 0-100%
+  averageRating: number; // Avg OVR
+  
+  // Exclusive League Membership (Only 1 active league allowed)
+  leagueId: string | null;
+  leagueName: string | null;
+  leaguePosition: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  
+  inviteCode: string;
+  invites: TeamInvite[];
+  isPrivate: boolean;
+  createdAt: string;
+}
+
+export type LeagueTier = 'tier1' | 'tier2' | 'tier3';
 export type LeagueFormat = 'full' | 't20' | 'test' | 'sprint' | 'community';
 export type LeagueStatus = 'live' | 'upcoming' | 'completed' | 'off-season';
 
@@ -23,6 +94,7 @@ export interface LeagueRequirements {
   minStars?: number;
   minCommits?: number;
   minFollowers?: number;
+  minRating?: number;
   minExperience?: string;
 }
 
@@ -37,17 +109,19 @@ export interface League {
   name: string;
   description: string;
   icon: string;
+  tier: LeagueTier;
   format: LeagueFormat;
   season: number;
   status: LeagueStatus;
   startDate: string;
   endDate: string;
-  members: number;
-  maxMembers?: number;
+  members: number; // Team count
+  maxTeams?: number;
+  minRating: number;
   requirements: LeagueRequirements;
   prizes?: LeaguePrizes;
   rules: string[];
-  category: 'featured' | 'tournament';
+  category: 'featured' | 'tournament' | 'regional' | 'community';
   joinButtonStatus?: 'Join League' | 'Registered' | 'Coming Soon' | 'Full';
 }
 
@@ -155,8 +229,10 @@ export interface EAFCDevCard {
   footballPositionTitle: string;
   footballPositionBadge: string;
 
-  // Competitive Leagues extensions
+  // Competitive Leagues & Team extensions
   leagues: UserLeagueMembership[];
+  teamId?: string;
+  teamName?: string;
 
   // Dressing Room Extensions
   dressingRoom?: DressingRoomData;
@@ -181,4 +257,4 @@ export interface LeaderboardEntry {
   views: number;
 }
 
-export type ActiveTab = 'generator' | 'pack-opener' | 'leaderboard' | 'squad-xi' | 'compare' | 'customizer' | 'leagues' | 'dressing-room';
+export type ActiveTab = 'generator' | 'leagues' | 'dressing-room' | 'leaderboard' | 'customizer' | 'team-hub';

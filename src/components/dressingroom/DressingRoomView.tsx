@@ -1,307 +1,353 @@
 import React, { useState } from 'react';
-import type { EAFCDevCard, ProjectItem } from '../../types';
-import { generateDressingRoomData } from '../../services/dressingRoomService';
-import { Pin, RotateCw, Users, TrendingUp, Star, GitFork, Sparkles, Trophy, CheckCircle } from 'lucide-react';
+import type { EAFCDevCard, Team, TeamPlayer } from '../../types';
+import { createDefaultTeam, calculateTeamChemistry } from '../../services/teamService';
+import { simulateMatch, type MatchResult } from '../../services/matchEngine';
+import { InviteTeammatesModal } from '../team/InviteTeammatesModal';
+import { RotateCw, Trophy, Sparkles, Swords, UserPlus, Play } from 'lucide-react';
 
 interface DressingRoomViewProps {
   card: EAFCDevCard;
-  onUpdateCard: (updatedCard: EAFCDevCard) => void;
+  team: Team | null;
+  onUpdateTeam: (updatedTeam: Team) => void;
+  onOpenCreateTeamModal: () => void;
 }
 
-export const DressingRoomView: React.FC<DressingRoomViewProps> = ({ card, onUpdateCard }) => {
-  const dressingRoom = card.dressingRoom || generateDressingRoomData(card);
+export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
+  card,
+  team: propTeam,
+  onUpdateTeam,
+  onOpenCreateTeamModal,
+}) => {
+  const activeTeam = propTeam || createDefaultTeam(card);
+  const [teamState, setTeamState] = useState<Team>(activeTeam);
+  const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
+  const [activeFormation, setActiveFormation] = useState(activeTeam.formation || '4-4-3');
+  const [lastMatchResult, setLastMatchResult] = useState<MatchResult | null>(null);
+  const [isSimulating, setIsSimulating] = useState(false);
 
-  const [startingXI, setStartingXI] = useState<ProjectItem[]>(dressingRoom.startingXI);
-  const [activeModal, setActiveModal] = useState<'teammates' | 'growth' | 'rotate' | null>(null);
+  const handleUpdate = (updated: Team) => {
+    setTeamState(updated);
+    onUpdateTeam(updated);
+  };
 
-  const handleTogglePin = (projectId: string) => {
-    const updated = startingXI.map((p) => {
-      if (p.id === projectId) return { ...p, isPinned: !p.isPinned };
-      return p;
-    });
-    setStartingXI(updated);
-
-    const updatedCard: EAFCDevCard = {
-      ...card,
-      dressingRoom: {
-        ...dressingRoom,
-        startingXI: updated,
-      },
+  const handleFormationChange = (formation: string) => {
+    setActiveFormation(formation);
+    const newChem = calculateTeamChemistry(teamState.players, formation);
+    const updated = {
+      ...teamState,
+      formation,
+      squadChemistry: newChem,
     };
-    onUpdateCard(updatedCard);
+    handleUpdate(updated);
   };
 
   const handleRotateSquad = () => {
-    const rotated = [...startingXI];
-    const first = rotated.shift();
-    if (first) rotated.push(first);
-    setStartingXI(rotated);
-
-    const updatedCard: EAFCDevCard = {
-      ...card,
-      dressingRoom: {
-        ...dressingRoom,
-        startingXI: rotated,
-      },
-    };
-    onUpdateCard(updatedCard);
+    const updatedRoster = { ...teamState.players };
+    if (updatedRoster.substitutes.length > 0 && updatedRoster.midfielders.length > 0) {
+      const sub = updatedRoster.substitutes.pop();
+      const mid = updatedRoster.midfielders.pop();
+      if (sub && mid) {
+        updatedRoster.midfielders.push({ ...sub, role: 'Starting' });
+        updatedRoster.substitutes.push({ ...mid, role: 'Substitute' });
+      }
+    }
+    const updated = { ...teamState, players: updatedRoster };
+    handleUpdate(updated);
   };
+
+  const handleSimulateMatch = () => {
+    setIsSimulating(true);
+    const rivalTeam: Team = {
+      ...activeTeam,
+      name: 'Silicon Valley FC',
+      badge: '🔵',
+      averageRating: 86,
+      squadChemistry: 88,
+    };
+
+    setTimeout(() => {
+      const res = simulateMatch(teamState, rivalTeam);
+      setLastMatchResult(res);
+      setIsSimulating(false);
+
+      const updated = {
+        ...teamState,
+        wins: teamState.wins + (res.homePoints === 3 ? 1 : 0),
+        draws: teamState.draws + (res.homePoints === 1 ? 1 : 0),
+        losses: teamState.losses + (res.homePoints === 0 ? 1 : 0),
+        goalsFor: teamState.goalsFor + res.homeGoals,
+        goalsAgainst: teamState.goalsAgainst + res.awayGoals,
+        points: teamState.points + res.homePoints,
+      };
+      handleUpdate(updated);
+    }, 800);
+  };
+
+  const totalRosterCount =
+    teamState.players.goalkeeper.length +
+    teamState.players.defenders.length +
+    teamState.players.midfielders.length +
+    teamState.players.forwards.length +
+    teamState.players.substitutes.length;
 
   return (
     <div className="space-y-10 animate-fade-in">
-      {/* Header Banner */}
+      {/* Header Banner & Team Overview */}
       <div className="relative bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/40 p-8 md:p-12 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-4">
-            <Trophy className="w-4 h-4" /> TEAM MANAGEMENT & PROFILE HUB
+            <Trophy className="w-4 h-4" /> TEAM HUB & DRESSING ROOM
           </div>
-          <h1 className="font-display font-black text-4xl md:text-5xl text-white tracking-tight leading-tight">
-            🏟️ MY <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500">DRESSING ROOM</span>
+          <h1 className="font-display font-black text-4xl md:text-5xl text-white tracking-tight leading-tight flex items-center gap-3">
+            <span>{teamState.badge}</span>
+            <span>{teamState.name.toUpperCase()}</span>
           </h1>
-          <p className="mt-3 text-slate-300 text-sm md:text-base leading-relaxed">
-            Manage your developer squad lineup, monitor project health, track unlocked achievements, and optimize team chemistry.
+          <p className="mt-2 text-slate-300 text-sm leading-relaxed">
+            Managed by <strong className="text-amber-400">@{teamState.manager.username}</strong> • {teamState.description}
           </p>
-        </div>
 
-        <div className="bg-slate-950/80 border border-slate-800 p-6 rounded-3xl text-center min-w-[240px] shadow-xl">
-          <div className="text-[11px] font-mono text-slate-400 uppercase font-bold">TOTAL SQUAD VALUE</div>
-          <div className="font-display font-black text-4xl text-amber-400 mt-1">
-            {dressingRoom.teamValue.toLocaleString()} ⚡
-          </div>
-          <div className="text-[11px] font-mono text-emerald-400 mt-1 font-semibold">
-            Chemistry: {dressingRoom.teamChemistry}% • Avg OVR: {dressingRoom.avgRating}
-          </div>
-        </div>
-      </div>
-
-      {/* SQUAD STATS BAR */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl text-center">
-          <div className="text-xs font-mono text-slate-400 uppercase font-bold">TOTAL SQUAD VALUE</div>
-          <div className="font-display font-black text-2xl text-amber-400 mt-2">
-            {dressingRoom.teamValue.toLocaleString()} ⚡
+          <div className="mt-4 flex flex-wrap items-center gap-3 text-xs font-mono text-slate-400">
+            <span className="px-2.5 py-1 rounded-lg bg-slate-800 text-slate-200 border border-slate-700">
+              {totalRosterCount}/15 Players
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              League: {teamState.leagueName || 'Premier DevLeague'}
+            </span>
+            <span className="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              Formation: {activeFormation}
+            </span>
           </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl text-center">
-          <div className="text-xs font-mono text-slate-400 uppercase font-bold">TEAM CHEMISTRY</div>
-          <div className="font-display font-black text-2xl text-emerald-400 mt-2">
-            {dressingRoom.teamChemistry}%
-          </div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl text-center">
-          <div className="text-xs font-mono text-slate-400 uppercase font-bold">SQUAD DEPTH</div>
-          <div className="font-display font-black text-2xl text-sky-400 mt-2">
-            {dressingRoom.squadDepth} Projects
-          </div>
-        </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 shadow-xl text-center">
-          <div className="text-xs font-mono text-slate-400 uppercase font-bold">AVG PLAYER RATING</div>
-          <div className="font-display font-black text-2xl text-yellow-400 mt-2">
-            {dressingRoom.avgRating} / 99
-          </div>
-        </div>
-      </div>
-
-      {/* STARTING XI (TOP PROJECTS) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-1">
-              <Sparkles className="w-3.5 h-3.5" /> REPOSITORY LINEUP
+        <div className="flex flex-col items-center md:items-end gap-3 w-full md:w-auto">
+          <div className="bg-slate-950/90 border border-slate-800 p-6 rounded-3xl text-center min-w-[240px] shadow-xl">
+            <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">SQUAD VALUE</div>
+            <div className="font-display font-black text-4xl text-amber-400 mt-1">
+              {(teamState.squadValue / 1000000).toFixed(1)}M ⚡
             </div>
-            <h2 className="font-display font-black text-2xl text-white">
-              🎯 STARTING XI (YOUR TOP PROJECTS)
-            </h2>
+            <div className="text-[11px] font-mono text-emerald-400 mt-1 font-semibold">
+              Chemistry: {teamState.squadChemistry}% • Avg OVR: {teamState.averageRating}
+            </div>
           </div>
 
-          <button
-            onClick={handleRotateSquad}
-            className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 flex items-center gap-2 transition"
-          >
-            <RotateCw className="w-4 h-4 text-amber-400" /> Rotate Lineup
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {startingXI.map((proj, idx) => (
-            <div
-              key={proj.id}
-              className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
-                proj.isPinned
-                  ? 'bg-slate-950 border-amber-500/50 shadow-lg shadow-amber-500/5'
-                  : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
-              }`}
-            >
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 text-xs font-mono font-bold flex items-center justify-center border border-amber-500/30">
-                      #{idx + 1}
-                    </span>
-                    <span className="font-display font-black text-sm text-white truncate max-w-[180px]">
-                      {proj.name}
-                    </span>
-                  </div>
-
-                  <button
-                    onClick={() => handleTogglePin(proj.id)}
-                    className={`p-1.5 rounded-lg transition ${
-                      proj.isPinned ? 'text-amber-400 bg-amber-500/10' : 'text-slate-600 hover:text-slate-300'
-                    }`}
-                    title={proj.isPinned ? 'Unpin project' : 'Pin to top repos'}
-                  >
-                    <Pin className="w-4 h-4 fill-current" />
-                  </button>
-                </div>
-
-                <p className="text-xs text-slate-400 mt-2 line-clamp-2 min-h-[32px]">
-                  {proj.description}
-                </p>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-mono">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center gap-1 text-amber-400 font-bold">
-                    <Star className="w-3.5 h-3.5 fill-current" /> {proj.stars}
-                  </span>
-                  <span className="flex items-center gap-1 text-slate-400">
-                    <GitFork className="w-3.5 h-3.5" /> {proj.forks}
-                  </span>
-                </div>
-
-                <span className="px-2 py-0.5 rounded bg-slate-800 text-slate-300 text-[10px] font-bold">
-                  {proj.language}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ACHIEVEMENTS SHOWCASE */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
-        <h2 className="font-display font-black text-2xl text-white mb-6 flex items-center gap-2">
-          <Trophy className="w-6 h-6 text-amber-400" /> 🏆 YOUR DEVELOPER ACHIEVEMENTS
-        </h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {dressingRoom.achievements.map((badge) => (
-            <div
-              key={badge.id}
-              className={`p-4 rounded-2xl border transition-all ${
-                badge.unlocked
-                  ? 'bg-slate-950 border-emerald-500/40'
-                  : 'bg-slate-950/40 border-slate-800/60 opacity-60'
-              }`}
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-2xl shrink-0">
-                  {badge.icon}
-                </div>
-
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="font-display font-black text-sm text-white truncate">
-                      {badge.name}
-                    </h3>
-                    {badge.unlocked ? (
-                      <span className="text-xs font-mono text-emerald-400 font-bold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" /> UNLOCKED
-                      </span>
-                    ) : (
-                      <span className="text-[10px] font-mono text-slate-500 uppercase">LOCKED</span>
-                    )}
-                  </div>
-
-                  <p className="text-xs text-slate-400 mt-1">
-                    {badge.requirement}
-                  </p>
-
-                  <div className="mt-3 w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
-                    <div
-                      className={`h-full transition-all ${
-                        badge.unlocked ? 'bg-emerald-400' : 'bg-amber-500/60'
-                      }`}
-                      style={{ width: `${badge.progressPercent}%` }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* SQUAD MANAGEMENT TOOLS */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
-        <h2 className="font-display font-black text-2xl text-white mb-6">
-          🎪 SQUAD MANAGEMENT TOOLS
-        </h2>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <button
-            onClick={() => setActiveModal('rotate')}
-            className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-400/50 hover:bg-slate-800/40 text-left transition group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-3 group-hover:scale-105 transition-transform">
-              <RotateCw className="w-5 h-5" />
-            </div>
-            <h3 className="font-display font-extrabold text-base text-white">🔄 Rotate Lineup</h3>
-            <p className="text-xs text-slate-400 mt-1">Re-order project positions strategic for max chemistry.</p>
-          </button>
-
-          <button
-            onClick={() => setActiveModal('teammates')}
-            className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-400/50 hover:bg-slate-800/40 text-left transition group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-3 group-hover:scale-105 transition-transform">
-              <Users className="w-5 h-5" />
-            </div>
-            <h3 className="font-display font-extrabold text-base text-white">🤝 Find Teammates</h3>
-            <p className="text-xs text-slate-400 mt-1">Connect with developers having matching tech stacks.</p>
-          </button>
-
-          <button
-            onClick={() => setActiveModal('growth')}
-            className="p-5 rounded-2xl bg-slate-950 border border-slate-800 hover:border-amber-400/50 hover:bg-slate-800/40 text-left transition group"
-          >
-            <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-3 group-hover:scale-105 transition-transform">
-              <TrendingUp className="w-5 h-5" />
-            </div>
-            <h3 className="font-display font-extrabold text-base text-white">📈 Squad Growth Plan</h3>
-            <p className="text-xs text-slate-400 mt-1">Actionable stats target to boost your 0-99 OVR rating.</p>
-          </button>
-        </div>
-      </div>
-
-      {/* Action Dialog Modals */}
-      {activeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-            <h3 className="font-display font-black text-xl text-white mb-2">
-              {activeModal === 'teammates' && '🤝 FIND TEAMMATES'}
-              {activeModal === 'growth' && '📈 SQUAD GROWTH PLAN'}
-              {activeModal === 'rotate' && '🔄 SQUAD ROTATION CONFIRMED'}
-            </h3>
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              {activeModal === 'teammates' && 'Looking for contributors with complementary tech stacks in TypeScript & React. Recommendations will be updated live.'}
-              {activeModal === 'growth' && 'To reach 90+ OVR: Gain 30+ GitHub stars across top repos and maintain a 30-day streak to increase Pace & Dribbling.'}
-              {activeModal === 'rotate' && 'Starting XI projects have been rotated successfully!'}
-            </p>
-
+          <div className="flex items-center gap-2 w-full">
             <button
-              onClick={() => setActiveModal(null)}
-              className="mt-5 w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-display font-black text-xs hover:bg-amber-400 transition"
+              onClick={() => setIsInviteModalOpen(true)}
+              className="flex-1 py-2.5 px-4 rounded-2xl bg-amber-500 text-slate-950 font-display font-black text-xs hover:bg-amber-400 shadow-lg flex items-center justify-center gap-1.5 transition"
             >
-              CLOSE MANAGEMENT WINDOW
+              <UserPlus className="w-4 h-4" /> INVITE (14/15)
+            </button>
+            <button
+              onClick={onOpenCreateTeamModal}
+              className="py-2.5 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition"
+            >
+              NEW TEAM
             </button>
           </div>
         </div>
+      </div>
+
+      {/* MATCH SIMULATION SCORE BANNER */}
+      {lastMatchResult && (
+        <div className="bg-slate-900 border border-amber-500/40 p-4 rounded-2xl shadow-xl flex items-center justify-between font-mono text-xs">
+          <div className="flex items-center gap-2 text-amber-400 font-bold">
+            <Swords className="w-4 h-4" /> MATCHDAY SIMULATION RESULT:
+          </div>
+          <div className="font-display font-black text-base text-white">
+            {lastMatchResult.homeTeamBadge} {lastMatchResult.homeTeamName} <span className="text-amber-400">{lastMatchResult.homeGoals} - {lastMatchResult.awayGoals}</span> {lastMatchResult.awayTeamBadge} {lastMatchResult.awayTeamName}
+          </div>
+          <div className="text-emerald-400 font-bold">
+            +{lastMatchResult.homePoints} Pts Added to League Standings
+          </div>
+        </div>
       )}
+
+      {/* STARTING XI TACTICAL PITCH BY POSITION */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-1">
+              <Sparkles className="w-3.5 h-3.5" /> 15-PLAYER ROSTER
+            </div>
+            <h2 className="font-display font-black text-2xl text-white">
+              ⚽ STARTING XI & SQUAD LINEUP ({activeFormation})
+            </h2>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              onClick={handleSimulateMatch}
+              disabled={isSimulating}
+              className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-xs hover:brightness-110 shadow-lg flex items-center gap-1.5 transition"
+            >
+              <Play className="w-4 h-4 fill-current" /> {isSimulating ? 'SIMULATING...' : 'SIMULATE MATCH'}
+            </button>
+
+            <button
+              onClick={handleRotateSquad}
+              className="px-4 py-2.5 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 flex items-center gap-1.5 transition"
+            >
+              <RotateCw className="w-4 h-4 text-amber-400" /> Rotate Squad
+            </button>
+          </div>
+        </div>
+
+        {/* POSITION SECTIONS */}
+        <div className="space-y-4">
+          {/* GOALKEEPER */}
+          <div>
+            <div className="text-xs font-mono font-bold text-blue-400 uppercase mb-2 flex items-center gap-1.5">
+              <span>🔵</span> GOALKEEPER (1)
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {teamState.players.goalkeeper.map((p) => (
+                <PlayerCardTile key={p.userId} player={p} posColor="bg-blue-500/20 text-blue-300 border-blue-400/40" />
+              ))}
+            </div>
+          </div>
+
+          {/* DEFENDERS */}
+          <div>
+            <div className="text-xs font-mono font-bold text-emerald-400 uppercase mb-2 flex items-center gap-1.5">
+              <span>🟢</span> DEFENDERS (4)
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {teamState.players.defenders.map((p) => (
+                <PlayerCardTile key={p.userId} player={p} posColor="bg-emerald-500/20 text-emerald-300 border-emerald-400/40" />
+              ))}
+            </div>
+          </div>
+
+          {/* MIDFIELDERS */}
+          <div>
+            <div className="text-xs font-mono font-bold text-yellow-400 uppercase mb-2 flex items-center gap-1.5">
+              <span>🟡</span> MIDFIELDERS (4)
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {teamState.players.midfielders.map((p) => (
+                <PlayerCardTile key={p.userId} player={p} posColor="bg-yellow-500/20 text-yellow-300 border-yellow-400/40" />
+              ))}
+            </div>
+          </div>
+
+          {/* FORWARDS / STRIKERS */}
+          <div>
+            <div className="text-xs font-mono font-bold text-rose-400 uppercase mb-2 flex items-center gap-1.5">
+              <span>🔴</span> FORWARDS & STRIKERS (3)
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              {teamState.players.forwards.map((p) => (
+                <PlayerCardTile key={p.userId} player={p} posColor="bg-rose-500/20 text-rose-300 border-rose-400/40" />
+              ))}
+            </div>
+          </div>
+
+          {/* SUBSTITUTES */}
+          <div>
+            <div className="text-xs font-mono font-bold text-amber-400 uppercase mb-2 flex items-center gap-1.5">
+              <span>🟠</span> SUBSTITUTES & BENCH (4)
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              {teamState.players.substitutes.map((p) => (
+                <PlayerCardTile key={p.userId} player={p} posColor="bg-amber-500/20 text-amber-300 border-amber-400/40" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SQUAD ANALYTICS PANEL */}
+      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-xl">
+        <h2 className="font-display font-black text-2xl text-white mb-6">
+          📊 SQUAD ANALYTICS & FORMATION
+        </h2>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
+            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Formation</span>
+            <div className="font-display font-black text-xl text-amber-400 mt-1">{activeFormation}</div>
+          </div>
+
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
+            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Defense Rating</span>
+            <div className="font-display font-black text-xl text-emerald-400 mt-1">88</div>
+          </div>
+
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
+            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Midfield Rating</span>
+            <div className="font-display font-black text-xl text-yellow-400 mt-1">89</div>
+          </div>
+
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 text-center">
+            <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Attack Rating</span>
+            <div className="font-display font-black text-xl text-rose-400 mt-1">91</div>
+          </div>
+        </div>
+
+        {/* FORMATION SELECTOR BUTTONS */}
+        <div>
+          <label className="block text-xs font-mono text-slate-400 mb-2 uppercase font-bold">
+            Select Tactical Formation
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {['4-4-3', '4-3-3', '3-5-2', '5-3-2'].map((form) => (
+              <button
+                key={form}
+                onClick={() => handleFormationChange(form)}
+                className={`px-4 py-2 rounded-xl text-xs font-mono font-bold transition border ${
+                  activeFormation === form
+                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow'
+                    : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800'
+                }`}
+              >
+                {form}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Invite Teammates Modal */}
+      <InviteTeammatesModal
+        isOpen={isInviteModalOpen}
+        onClose={() => setIsInviteModalOpen(false)}
+        team={teamState}
+        onUpdateTeam={handleUpdate}
+      />
     </div>
   );
 };
+
+interface PlayerCardTileProps {
+  player: TeamPlayer;
+  posColor: string;
+}
+
+const PlayerCardTile: React.FC<PlayerCardTileProps> = ({ player, posColor }) => (
+  <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center justify-between gap-3 hover:border-slate-700 transition">
+    <div className="flex items-center gap-2.5 min-w-0">
+      <img
+        src={player.avatarUrl}
+        alt={player.name}
+        className="w-8 h-8 rounded-xl object-cover border border-amber-400/40 shrink-0"
+      />
+      <div className="min-w-0">
+        <div className="font-display font-bold text-xs text-white truncate">
+          {player.name}
+        </div>
+        <div className="text-[10px] font-mono text-slate-400 truncate">
+          @{player.username}
+        </div>
+      </div>
+    </div>
+
+    <div className="text-right shrink-0">
+      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold border ${posColor}`}>
+        {player.position}
+      </span>
+      <div className="font-display font-black text-xs text-amber-400 mt-0.5">
+        {player.overall}
+      </div>
+    </div>
+  </div>
+);

@@ -1,37 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import type { EAFCDevCard, ActiveTab } from './types';
+import type { EAFCDevCard, ActiveTab, Team } from './types';
 import { fetchGitHubUserStats } from './services/githubApi';
 import { PRESET_DEVS } from './services/presets';
+import { createDefaultTeam } from './services/teamService';
 
 import { Navbar } from './components/layout/Navbar';
 import { EAFCCard } from './components/card/EAFCCard';
 import { CardCustomizer } from './components/card/CardCustomizer';
 import { LeaderboardTable } from './components/leaderboard/LeaderboardTable';
-import { UltimateXISquad } from './components/leaderboard/UltimateXISquad';
-import { CardCompareModal } from './components/compare/CardCompareModal';
-import { PackOpenerModal } from './components/pack/PackOpenerModal';
 import { ExportModal } from './components/share/ExportModal';
 import { ConnectModal } from './components/layout/ConnectModal';
 import { LeaguesView } from './components/leagues/LeaguesView';
 import { DressingRoomView } from './components/dressingroom/DressingRoomView';
 import { SelectPositionModal } from './components/position/SelectPositionModal';
+import { CreateTeamModal } from './components/team/CreateTeamModal';
 
-import { Search, Sparkles, Download, Swords, Loader2 } from 'lucide-react';
+import { Search, Sparkles, Download, Loader2 } from 'lucide-react';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('generator');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentCard, setCurrentCard] = useState<EAFCDevCard>(PRESET_DEVS[0]);
   const [leaderboardCards, setLeaderboardCards] = useState<EAFCDevCard[]>(PRESET_DEVS);
+  const [userTeam, setUserTeam] = useState<Team | null>(() => createDefaultTeam(PRESET_DEVS[0]));
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const [isPackModalOpen, setIsPackModalOpen] = useState(false);
-  const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
   const [isPositionModalOpen, setIsPositionModalOpen] = useState(false);
+  const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -77,8 +76,8 @@ export function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenPackStore={() => setIsPackModalOpen(true)}
         onConnectGitHub={handleConnectGitHub}
+        onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-8">
@@ -145,17 +144,9 @@ export function App() {
                 <div className="flex items-center gap-3 mt-6 w-full max-w-[340px]">
                   <button
                     onClick={() => setIsExportModalOpen(true)}
-                    className="flex-1 py-3 rounded-2xl bg-amber-500 text-slate-950 font-display font-extrabold text-sm hover:bg-amber-400 shadow-xl flex items-center justify-center gap-2 transition"
+                    className="w-full py-3 rounded-2xl bg-amber-500 text-slate-950 font-display font-extrabold text-sm hover:bg-amber-400 shadow-xl flex items-center justify-center gap-2 transition"
                   >
                     <Download className="w-4 h-4" /> EXPORT CARD
-                  </button>
-
-                  <button
-                    onClick={() => setIsCompareModalOpen(true)}
-                    className="py-3 px-4 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 flex items-center justify-center gap-1.5 transition"
-                    title="Compare stats head-to-head"
-                  >
-                    <Swords className="w-4 h-4 text-amber-400" /> COMPARE
                   </button>
                 </div>
               </div>
@@ -233,20 +224,18 @@ export function App() {
 
         {activeTab === 'leagues' && (
           <LeaguesView
-            currentCard={currentCard}
             customCards={leaderboardCards}
-            onUpdateCard={setCurrentCard}
-            onSelectCard={(card) => {
-              setCurrentCard(card);
-              setActiveTab('generator');
-            }}
+            userTeam={userTeam}
+            onUpdateTeam={setUserTeam}
           />
         )}
 
         {activeTab === 'dressing-room' && (
           <DressingRoomView
             card={currentCard}
-            onUpdateCard={setCurrentCard}
+            team={userTeam}
+            onUpdateTeam={setUserTeam}
+            onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
           />
         )}
 
@@ -258,31 +247,6 @@ export function App() {
               setActiveTab('generator');
             }}
           />
-        )}
-
-        {activeTab === 'squad-xi' && (
-          <UltimateXISquad
-            cards={leaderboardCards}
-            onSelectCard={(card) => {
-              setCurrentCard(card);
-              setActiveTab('generator');
-            }}
-          />
-        )}
-
-        {activeTab === 'compare' && (
-          <div className="space-y-6">
-            <div className="text-center py-6">
-              <h2 className="font-display font-black text-3xl text-white">DEVELOPER STAT COMPARISON</h2>
-              <p className="text-slate-400 text-sm mt-1">Compare any two GitHub profiles head-to-head in EA FC Ultimate Team format.</p>
-            </div>
-            <button
-              onClick={() => setIsCompareModalOpen(true)}
-              className="mx-auto px-8 py-4 rounded-2xl bg-amber-500 text-slate-950 font-display font-extrabold text-base hover:bg-amber-400 shadow-2xl flex items-center justify-center gap-2"
-            >
-              <Swords className="w-5 h-5" /> OPEN HEAD-TO-HEAD STAT SHOWDOWN
-            </button>
-          </div>
         )}
       </main>
 
@@ -296,21 +260,6 @@ export function App() {
           </div>
         </div>
       </footer>
-
-      <PackOpenerModal
-        isOpen={isPackModalOpen}
-        onClose={() => setIsPackModalOpen(false)}
-        onSelectCard={(card) => {
-          setCurrentCard(card);
-          setActiveTab('generator');
-        }}
-      />
-
-      <CardCompareModal
-        isOpen={isCompareModalOpen}
-        onClose={() => setIsCompareModalOpen(false)}
-        primaryCard={currentCard}
-      />
 
       <ExportModal
         isOpen={isExportModalOpen}
@@ -338,6 +287,17 @@ export function App() {
             footballPosition: position,
           };
           setCurrentCard(updated);
+        }}
+      />
+
+      <CreateTeamModal
+        isOpen={isCreateTeamOpen}
+        onClose={() => setIsCreateTeamOpen(false)}
+        userCard={currentCard}
+        onOpenConnectModal={() => setIsConnectModalOpen(true)}
+        onCreateTeam={(newTeam) => {
+          setUserTeam(newTeam);
+          setActiveTab('dressing-room');
         }}
       />
     </div>
