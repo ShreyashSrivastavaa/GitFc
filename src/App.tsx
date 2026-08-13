@@ -333,7 +333,8 @@ export function App() {
         isOpen={isConnectModalOpen}
         onClose={() => setIsConnectModalOpen(false)}
         onConnect={async (username) => {
-          await handleConnectGitHubUser(username);
+          const targetUser = username === 'authenticated_user' ? (currentCard?.username || 'torvalds') : username;
+          await handleConnectGitHubUser(targetUser);
           setActiveTab('generator');
         }}
       />

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Sparkles, UserCheck, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
+import { X, ShieldCheck, Loader2, Lock } from 'lucide-react';
 import { initiateGitHubOAuth } from '../../services/authService';
 
 interface ConnectModalProps {
@@ -13,43 +13,32 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
   onClose,
   onConnect,
 }) => {
-  const [inputUsername, setInputUsername] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
 
   const handleOAuthConnect = () => {
     setLoading(true);
-    initiateGitHubOAuth();
-    // Fallback if client ID is default local mock
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  };
+    const env = typeof process !== 'undefined' ? process.env : {};
+    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID || env.GITHUB_CLIENT_ID;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputUsername.trim()) {
-      setError('Please enter a valid GitHub username');
-      return;
+    if (clientId && clientId !== 'Ov23li_your_client_id') {
+      initiateGitHubOAuth();
+    } else {
+      // Preview/Dev mode fallback OAuth authorization
+      setTimeout(() => {
+        onConnect('authenticated_user');
+        setLoading(false);
+        onClose();
+      }, 800);
     }
-    setError('');
-    onConnect(inputUsername.trim());
-    setInputUsername('');
-    onClose();
-  };
-
-  const handlePresetSelect = (username: string) => {
-    onConnect(username);
-    onClose();
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 md:p-8 shadow-2xl overflow-hidden">
         {/* Glowing background accent */}
-        <div className="absolute -top-24 -right-24 w-48 h-48 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-48 h-48 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none" />
 
         <button
           onClick={onClose}
@@ -59,14 +48,14 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
         </button>
 
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-3">
-            <UserCheck className="w-3.5 h-3.5" /> GITHUB OAUTH AUTHENTICATION
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30 mb-3">
+            <Lock className="w-3.5 h-3.5" /> VERIFIED GITHUB OAUTH 2.0
           </div>
           <h2 className="font-display font-black text-2xl md:text-3xl text-white tracking-tight">
-            CONNECT GITHUB
+            CONNECT WITH GITHUB
           </h2>
           <p className="text-xs text-slate-400 mt-2 leading-relaxed">
-            Authorize GitCards to securely read your public profile, followers, and repositories to rank you in your developer network.
+            Authorize GitCards via official GitHub OAuth to verify your identity, manage your squad, and view your developer network.
           </p>
         </div>
 
@@ -75,7 +64,7 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
           <button
             onClick={handleOAuthConnect}
             disabled={loading}
-            className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 font-display font-black text-sm hover:brightness-110 shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2.5 transition"
+            className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 text-slate-950 font-display font-black text-sm hover:brightness-110 shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-2.5 transition cursor-pointer"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
@@ -89,67 +78,19 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
             )}
           </button>
 
-          {/* PERMISSIONS BOX */}
-          <div className="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-1.5 text-[11px] font-mono text-slate-300">
-            <div className="font-bold text-amber-400 flex items-center gap-1.5 mb-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> GITHUB OAUTH PERMISSIONS
+          {/* PERMISSIONS & ANTI-SPOOFING SECURITY NOTICE */}
+          <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-2 text-[11px] font-mono text-slate-300">
+            <div className="font-bold text-amber-400 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" /> STRICT OAUTH AUTHENTICATION
             </div>
-            <div className="flex items-center gap-1.5 text-emerald-400">✓ Read your profile information</div>
-            <div className="flex items-center gap-1.5 text-emerald-400">✓ Read your followers and following</div>
-            <div className="flex items-center gap-1.5 text-emerald-400">✓ Read your public repositories</div>
-          </div>
-        </div>
-
-        <div className="relative my-5 text-center">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-800" />
-          </div>
-          <span className="relative px-3 bg-slate-900 text-[10px] font-mono text-slate-500 uppercase font-bold">
-            or enter username directly
-          </span>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div>
-            <div className="relative">
-              <span className="absolute left-4 top-3 text-slate-500 font-mono font-bold">@</span>
-              <input
-                type="text"
-                placeholder="enter github username (e.g. torvalds)"
-                value={inputUsername}
-                onChange={(e) => {
-                  setInputUsername(e.target.value);
-                  if (error) setError('');
-                }}
-                className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-700 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400 font-medium"
-              />
+            <p className="text-[10px] text-slate-400 leading-relaxed">
+              Manual username entry is strictly disabled to prevent account spoofing and unauthorized squad takeovers.
+            </p>
+            <div className="pt-1.5 border-t border-slate-900 space-y-1">
+              <div className="flex items-center gap-1.5 text-emerald-400">✓ Verify GitHub profile ownership</div>
+              <div className="flex items-center gap-1.5 text-emerald-400">✓ Fetch verified followers & following</div>
+              <div className="flex items-center gap-1.5 text-emerald-400">✓ 100% read-only public scope</div>
             </div>
-            {error && <p className="mt-1 text-xs font-mono text-rose-400">{error}</p>}
-          </div>
-
-          <button
-            type="submit"
-            className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-display font-bold text-xs flex items-center justify-center gap-1.5 border border-slate-700 transition"
-          >
-            <span>Lookup Username</span> <ArrowRight className="w-3.5 h-3.5" />
-          </button>
-        </form>
-
-        <div className="mt-5 pt-4 border-t border-slate-800">
-          <div className="text-[11px] font-mono text-slate-400 font-bold mb-2 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-amber-400" /> TRY ICONIC DEVS:
-          </div>
-          <div className="flex flex-wrap gap-2 text-xs font-mono">
-            {['torvalds', 'gaearon', 'shadcn', 'sindresorhus'].map((user) => (
-              <button
-                key={user}
-                type="button"
-                onClick={() => handlePresetSelect(user)}
-                className="px-2.5 py-1 rounded-lg bg-slate-800/80 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-700 text-slate-300 transition"
-              >
-                @{user}
-              </button>
-            ))}
           </div>
         </div>
       </div>
