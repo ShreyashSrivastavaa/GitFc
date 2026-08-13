@@ -5,13 +5,13 @@ import { initiateGitHubOAuth } from '../../services/authService';
 interface ConnectModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConnect: (username: string) => void;
+  onConnect?: (username: string) => void;
 }
 
 export const ConnectModal: React.FC<ConnectModalProps> = ({
   isOpen,
   onClose,
-  onConnect,
+  onConnect: _onConnect,
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -19,19 +19,7 @@ export const ConnectModal: React.FC<ConnectModalProps> = ({
 
   const handleOAuthConnect = () => {
     setLoading(true);
-    const env = typeof process !== 'undefined' ? process.env : {};
-    const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID || env.GITHUB_CLIENT_ID;
-
-    if (clientId && clientId !== 'Ov23li_your_client_id') {
-      initiateGitHubOAuth();
-    } else {
-      // Preview/Dev mode fallback OAuth authorization
-      setTimeout(() => {
-        onConnect('authenticated_user');
-        setLoading(false);
-        onClose();
-      }, 800);
-    }
+    initiateGitHubOAuth();
   };
 
   return (
