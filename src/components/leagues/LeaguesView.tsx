@@ -9,12 +9,16 @@ interface LeaguesViewProps {
   customCards: EAFCDevCard[];
   userTeam: Team | null;
   onUpdateTeam: (updatedTeam: Team) => void;
+  isConnected: boolean;
+  onOpenConnectModal: () => void;
 }
 
 export const LeaguesView: React.FC<LeaguesViewProps> = ({
   customCards,
   userTeam,
   onUpdateTeam,
+  isConnected,
+  onOpenConnectModal,
 }) => {
   const leagues = getLeagues();
   const tier1Leagues = leagues.filter((l) => l.tier === 'tier1');
@@ -25,6 +29,11 @@ export const LeaguesView: React.FC<LeaguesViewProps> = ({
   const [pendingExitLeague, setPendingExitLeague] = useState<League | null>(null);
 
   const handleJoinLeagueClick = (targetLeague: League) => {
+    if (!isConnected) {
+      onOpenConnectModal();
+      return;
+    }
+
     if (userTeam && userTeam.leagueId && userTeam.leagueId !== targetLeague.id) {
       // Trigger Exit League Confirmation Dialog
       setPendingExitLeague(targetLeague);
@@ -155,7 +164,7 @@ export const LeaguesView: React.FC<LeaguesViewProps> = ({
                   ) : (
                     <button
                       onClick={() => handleJoinLeagueClick(league)}
-                      className="py-2.5 px-5 rounded-xl bg-amber-500 text-slate-950 font-display font-extrabold text-xs hover:bg-amber-400 shadow-md transition"
+                      className="py-2.5 px-5 rounded-xl bg-amber-500 text-slate-950 font-display font-extrabold text-xs hover:bg-amber-400 shadow-md transition cursor-pointer"
                     >
                       Join League
                     </button>
@@ -211,9 +220,9 @@ export const LeaguesView: React.FC<LeaguesViewProps> = ({
                   ) : (
                     <button
                       onClick={() => handleJoinLeagueClick(league)}
-                      className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition"
+                      className="px-3.5 py-2 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition cursor-pointer"
                     >
-                      Join
+                      Join League
                     </button>
                   )}
                 </div>
@@ -270,7 +279,7 @@ export const LeaguesView: React.FC<LeaguesViewProps> = ({
                   ) : (
                     <button
                       onClick={() => handleJoinLeagueClick(league)}
-                      className="px-4 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition"
+                      className="px-4 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition cursor-pointer"
                     >
                       Join League
                     </button>

@@ -280,6 +280,8 @@ export function App() {
             customCards={leaderboardCards}
             userTeam={userTeam}
             onUpdateTeam={setUserTeam}
+            isConnected={isConnected}
+            onOpenConnectModal={() => setIsConnectModalOpen(true)}
           />
         )}
 
