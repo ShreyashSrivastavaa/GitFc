@@ -236,6 +236,7 @@ export function sendTeamInvite(
     invitedBy: managerUsername,
     invitedUser: cleanUsername,
     suggestedPosition: position,
+    message,
     createdAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
     status: 'pending',

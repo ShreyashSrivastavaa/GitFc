@@ -146,7 +146,7 @@ export function App() {
     setActiveTab('dressing-room');
   };
 
-  const handleDeclineInvite = (invite: TeamInvite) => {
+  const handleDeclineInvite = () => {
     setPendingInvite(null);
   };
 

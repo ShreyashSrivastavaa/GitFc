@@ -55,7 +55,7 @@ export const InviteModal: React.FC<InviteModalProps> = ({
         setSuccessMsg('');
         onClose();
       }, 1200);
-    } catch (err: any) {
+    } catch (_err) {
       setError('GitHub user not found');
     } finally {
       setLoading(false);

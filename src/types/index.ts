@@ -39,6 +39,7 @@ export interface TeamInvite {
   invitedBy: string;
   invitedUser: string;
   suggestedPosition?: string;
+  message?: string;
   createdAt: string;
   expiresAt: string;
   status: 'pending' | 'accepted' | 'declined' | 'expired';

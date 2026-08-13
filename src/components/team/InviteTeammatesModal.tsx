@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { Team } from '../../types';
-import { invitePlayerToTeam } from '../../services/teamService';
+import { sendTeamInvite } from '../../services/teamService';
 import { X, Copy, Check, Users, QrCode, UserPlus, Clock } from 'lucide-react';
 
 interface InviteTeammatesModalProps {
@@ -34,7 +34,8 @@ export const InviteTeammatesModal: React.FC<InviteTeammatesModalProps> = ({
     e.preventDefault();
     if (!directUsername.trim()) return;
 
-    const updatedTeam = invitePlayerToTeam(team, directUsername.trim().replace(/^@/, ''), team.manager.username);
+    const managerName = team.manager ? team.manager.username : 'manager';
+    const { updatedTeam } = sendTeamInvite(team, directUsername.trim().replace(/^@/, ''), 'MIDFIELDER', 'Join my team', managerName);
     onUpdateTeam(updatedTeam);
     setInvitedSuccess(`Invite sent to @${directUsername.trim().replace(/^@/, '')}!`);
     setDirectUsername('');

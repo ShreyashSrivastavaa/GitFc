@@ -3,10 +3,12 @@
  * Target Framework: Next.js App Router (app/api/auth/...) or Express
  */
 
+const env = typeof process !== 'undefined' ? process.env : {};
+
 export const GITHUB_OAUTH_CONFIG = {
-  clientId: process.env.GITHUB_CLIENT_ID || 'Ov23liXXXXXXXXXXXXXX',
-  clientSecret: process.env.GITHUB_CLIENT_SECRET || 'your_40_char_secret_here',
-  callbackUrl: process.env.GITHUB_CALLBACK_URL || 'https://gitcards.me/api/auth/callback',
+  clientId: env.GITHUB_CLIENT_ID || 'Ov23liXXXXXXXXXXXXXX',
+  clientSecret: env.GITHUB_CLIENT_SECRET || 'your_40_char_secret_here',
+  callbackUrl: env.GITHUB_CALLBACK_URL || 'https://gitcards.me/api/auth/callback',
 };
 
 // GET /api/auth/login
@@ -97,6 +99,10 @@ export interface SendInviteBody {
 export async function handleSendInvite(body: SendInviteBody) {
   return {
     inviteId: `inv_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    teamId: body.teamId,
+    target: body.githubUsername,
+    position: body.position,
+    message: body.message,
     status: 'sent' as const,
     createdAt: new Date().toISOString(),
     expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),

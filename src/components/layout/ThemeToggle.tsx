@@ -1,10 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>('dark');
 
   useEffect(() => {
-    // Check saved preference or system theme
     const saved = localStorage.getItem('theme');
     const system = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initial = (saved as 'light' | 'dark') || system;

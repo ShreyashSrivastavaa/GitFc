@@ -68,7 +68,6 @@ export async function loginWithGitHubUser(username: string): Promise<AuthState> 
   const userCard = await fetchGitHubUserStats(username);
   const socialGraph = await fetchUserSocialGraph(username);
 
-  // Default default fallback follow graph if user has few followers in demo
   const following = socialGraph.following.length > 0 ? socialGraph.following : ['torvalds', 'gaearon', 'shadcn', 'sindresorhus'];
   const followers = socialGraph.followers.length > 0 ? socialGraph.followers : ['gaearon', 'mitchellh', 'rauchg'];
 
@@ -99,8 +98,9 @@ export function logoutUser(): void {
 }
 
 export function initiateGitHubOAuth(): void {
-  const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID || process.env.GITHUB_CLIENT_ID;
-  const redirectUri = import.meta.env.VITE_GITHUB_CALLBACK_URL || process.env.GITHUB_CALLBACK_URL || `${window.location.origin}/api/auth/callback`;
+  const env = typeof process !== 'undefined' ? process.env : {};
+  const clientId = import.meta.env.VITE_GITHUB_CLIENT_ID || env.GITHUB_CLIENT_ID;
+  const redirectUri = import.meta.env.VITE_GITHUB_CALLBACK_URL || env.GITHUB_CALLBACK_URL || `${window.location.origin}/api/auth/callback`;
   const state = Math.random().toString(36).substring(2);
 
   if (clientId && clientId !== 'Ov23li_your_client_id') {
