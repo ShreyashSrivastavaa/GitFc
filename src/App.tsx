@@ -22,9 +22,10 @@ export function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentCard, setCurrentCard] = useState<EAFCDevCard>(PRESET_DEVS[0]);
   const [leaderboardCards, setLeaderboardCards] = useState<EAFCDevCard[]>(PRESET_DEVS);
-  const [userTeam, setUserTeam] = useState<Team | null>(() => createDefaultTeam(PRESET_DEVS[0]));
+  const [userTeam, setUserTeam] = useState<Team | null>(null);
 
   const [isCardSearched, setIsCardSearched] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -42,7 +43,7 @@ export function App() {
   }, []);
 
   const handleLookupUser = async (username: string) => {
-    if (!username.trim()) return;
+    if (!username.trim()) return null;
     setLoading(true);
     setError('');
 
@@ -57,8 +58,10 @@ export function App() {
         }
         return [card, ...prev];
       });
+      return card;
     } catch (err: any) {
       setError(err.message || 'Error fetching GitHub stats');
+      return null;
     } finally {
       setLoading(false);
     }
@@ -205,6 +208,8 @@ export function App() {
             team={userTeam}
             onUpdateTeam={setUserTeam}
             onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
+            onOpenConnectModal={() => setIsConnectModalOpen(true)}
+            isConnected={isConnected}
           />
         )}
 
@@ -240,8 +245,12 @@ export function App() {
       <ConnectModal
         isOpen={isConnectModalOpen}
         onClose={() => setIsConnectModalOpen(false)}
-        onConnect={(username) => {
-          handleLookupUser(username);
+        onConnect={async (username) => {
+          setIsConnected(true);
+          const fetchedCard = await handleLookupUser(username);
+          if (fetchedCard) {
+            setUserTeam(createDefaultTeam(fetchedCard));
+          }
           setActiveTab('generator');
         }}
       />

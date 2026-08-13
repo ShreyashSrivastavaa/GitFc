@@ -2,10 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
+:root,
+:root[data-theme="dark"] {
+  --bg-primary: #0d1117;
+  --bg-secondary: #161b22;
+  --bg-card: #1c2128;
+  --text-primary: #e6edf3;
+  --text-secondary: #8b949e;
+  --text-muted: #484f58;
+  --border: #30363d;
+  --border-strong: #484f58;
+  --accent: #f5c400;         /* EA FC Gold */
+  --accent-hover: #e6b800;
+  --green: #00ff87;
+  --blue: #58a6ff;
+  --red: #f85149;
+  --card-bg: linear-gradient(135deg, #1c2128 0%, #0d1117 100%);
+}
+
+:root[data-theme="light"] {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f6f8fa;
+  --bg-card: #ffffff;
+  --text-primary: #1c2128;
+  --text-secondary: #57606a;
+  --text-muted: #8c959f;
+  --border: #d0d7de;
+  --border-strong: #afb8c1;
+  --accent: #d4a017;         /* EA FC Gold (darker for light) */
+  --accent-hover: #b8870f;
+  --green: #1a7f37;
+  --blue: #0969da;
+  --red: #cf222e;
+  --card-bg: linear-gradient(135deg, #f6f8fa 0%, #ffffff 100%);
+}
+
 @layer base {
   body {
-    @apply bg-[#0a0c10] text-slate-100 font-sans overflow-x-hidden;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    @apply font-sans overflow-x-hidden transition-colors duration-200;
   }
+}
+
+/* Light mode overrides for high-level container backgrounds */
+html.theme-light body {
+  background-color: #f6f8fa !important;
+  color: #1c2128 !important;
+}
+
+html.theme-light .bg-slate-950,
+html.theme-light .bg-\[\#0a0c10\] {
+  background-color: #f6f8fa !important;
+}
+
+html.theme-light .bg-slate-900 {
+  background-color: #ffffff !important;
+}
+
+html.theme-light .border-slate-800,
+html.theme-light .border-slate-700 {
+  border-color: #d0d7de !important;
+}
+
+html.theme-light .text-white,
+html.theme-light .text-slate-100 {
+  color: #1c2128 !important;
+}
+
+html.theme-light .text-slate-300,
+html.theme-light .text-slate-400 {
+  color: #57606a !important;
 }
 
 /* Custom EA FC Card Shape Clip-Path */
@@ -139,16 +206,6 @@
   transform-style: preserve-3d;
 }
 
-/* Subtle Pitch Line Background */
-.pitch-bg {
-  background-color: #0c1810;
-  background-image: 
-    radial-gradient(circle at 50% 50%, rgba(34, 197, 94, 0.15) 0%, transparent 60%),
-    linear-gradient(to right, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
-}
-
 /* Floating Card Keyframes */
 @keyframes float {
   0%, 100% {
@@ -177,4 +234,3 @@
 .animate-glow-pulse {
   animation: glow-pulse 3.5s ease-in-out infinite;
 }
-
