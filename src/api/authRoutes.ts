@@ -3,12 +3,9 @@
  * Target Framework: Next.js App Router (app/api/auth/...) or Express
  */
 
-const env = typeof process !== 'undefined' ? process.env : {};
-
 export const GITHUB_OAUTH_CONFIG = {
-  clientId: env.GITHUB_CLIENT_ID || 'Ov23liXXXXXXXXXXXXXX',
-  clientSecret: env.GITHUB_CLIENT_SECRET || 'your_40_char_secret_here',
-  callbackUrl: env.GITHUB_CALLBACK_URL || 'https://gitcards.me/api/auth/callback',
+  clientId: import.meta.env.VITE_GITHUB_CLIENT_ID || 'Ov23ligv4h9bq6Y6Gl3a',
+  callbackUrl: import.meta.env.VITE_GITHUB_CALLBACK_URL || '/api/auth/callback',
 };
 
 // GET /api/auth/login
@@ -18,65 +15,13 @@ export async function handleAuthLogin() {
     `https://github.com/login/oauth/authorize?` +
     `client_id=${GITHUB_OAUTH_CONFIG.clientId}&` +
     `redirect_uri=${encodeURIComponent(GITHUB_OAUTH_CONFIG.callbackUrl)}&` +
-    `scope=read:user,user:follow,public_repo&` +
+    `scope=read:user,public_repo&` +
     `state=${state}`;
 
   return { redirectUrl: authorizeUrl, state };
 }
 
-// GET /api/auth/callback
-export async function handleAuthCallback(code: string, state: string, storedState: string) {
-  if (state !== storedState) {
-    throw new Error('CSRF State mismatch');
-  }
-
-  const tokenRes = await fetch('https://github.com/login/oauth/access_token', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-    },
-    body: JSON.stringify({
-      client_id: GITHUB_OAUTH_CONFIG.clientId,
-      client_secret: GITHUB_OAUTH_CONFIG.clientSecret,
-      code,
-    }),
-  });
-
-  const { access_token, error } = await tokenRes.json();
-  if (error || !access_token) {
-    throw new Error(`OAuth failed: ${error || 'No token returned'}`);
-  }
-
-  // Fetch user profile from GitHub
-  const userRes = await fetch('https://api.github.com/user', {
-    headers: { Authorization: `Bearer ${access_token}` },
-  });
-  const githubUser = await userRes.json();
-
-  // Fetch following & followers
-  const [following, followers] = await Promise.all([
-    fetch('https://api.github.com/user/following?per_page=100', {
-      headers: { Authorization: `Bearer ${access_token}` },
-    }).then((r) => r.json()),
-    fetch('https://api.github.com/user/followers?per_page=100', {
-      headers: { Authorization: `Bearer ${access_token}` },
-    }).then((r) => r.json()),
-  ]);
-
-  return {
-    user: {
-      githubId: githubUser.id,
-      username: githubUser.login,
-      name: githubUser.name,
-      avatar: githubUser.avatar_url,
-      email: githubUser.email,
-      following: following.map((f: any) => f.login),
-      followers: followers.map((f: any) => f.login),
-    },
-    accessToken: access_token,
-  };
-}
+// Serverless OAuth endpoints are handled securely by /api/auth/login.ts and /api/auth/callback.ts
 
 // GET /api/stats/counter
 export async function handleGetCounterStats(currentStats: { totalGenerations: number }) {

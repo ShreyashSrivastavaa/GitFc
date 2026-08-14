@@ -70,9 +70,17 @@ export function App() {
     }
 
     const params = new URLSearchParams(window.location.search);
-    const cardUser = params.get('card');
-    if (cardUser) {
-      handleLookupUser(cardUser);
+    const authStatus = params.get('auth');
+    const authUser = params.get('username');
+
+    if (authStatus === 'success' && authUser) {
+      handleConnectGitHubUser(authUser);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else {
+      const cardUser = params.get('card');
+      if (cardUser) {
+        handleLookupUser(cardUser);
+      }
     }
   }, []);
 
