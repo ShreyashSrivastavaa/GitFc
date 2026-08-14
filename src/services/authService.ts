@@ -98,10 +98,5 @@ export function logoutUser(): void {
 }
 
 export function initiateGitHubOAuth(): void {
-  const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isLocal) {
-    window.location.href = 'https://gitfc.vercel.app/api/auth/login';
-  } else {
-    window.location.href = '/api/auth/login';
-  }
+  window.location.href = '/api/auth/login';
 }
