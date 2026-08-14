@@ -98,5 +98,5 @@ export function logoutUser(): void {
 }
 
 export function initiateGitHubOAuth(): void {
-  window.location.href = '/api/auth/login';
+  window.location.href = 'https://gitfc.vercel.app/api/auth/login';
 }
