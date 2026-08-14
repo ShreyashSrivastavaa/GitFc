@@ -7,6 +7,7 @@ import { getAuthState, loginWithGitHubUser } from './services/authService';
 import { incrementCounterStats } from './services/statsService';
 
 import { Navbar } from './components/layout/Navbar';
+import { Footer } from './components/layout/Footer';
 import { EAFCCard } from './components/card/EAFCCard';
 import { LeaderboardTable } from './components/leaderboard/LeaderboardTable';
 import { ExportModal } from './components/share/ExportModal';
@@ -311,25 +312,7 @@ export function App() {
         )}
       </main>
 
-      <footer className="bg-[#0d1117] dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800 py-8 px-4 lg:px-8 text-center text-xs text-slate-500 font-mono mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div>
-            <span className="font-bold text-slate-700 dark:text-slate-300">EA FC Ultimate Team - GitHub Stats Card Generator</span>
-          </div>
-          <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/ShreyashSrivastavaa/GitFc"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-amber-500 font-bold hover:underline flex items-center gap-1"
-            >
-              ⭐ Star on GitHub (ShreyashSrivastavaa/GitFc)
-            </a>
-            <span>•</span>
-            <span>Created with React 18, Vite & Tailwind CSS</span>
-          </div>
-        </div>
-      </footer>
+      <Footer />
 
       <ExportModal
         isOpen={isExportModalOpen}
