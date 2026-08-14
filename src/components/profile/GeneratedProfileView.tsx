@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { EAFCDevCard, Team } from '../../types';
 import { EAFCCard } from '../card/EAFCCard';
-import { Download, Star, MessageCircle, Copy, Check, ArrowLeft, Trophy, Sparkles, Award } from 'lucide-react';
+import { toPng } from 'html-to-image';
+import { Download, Star, MessageCircle, Copy, Check, ArrowLeft, Trophy, Sparkles, Award, Share2, Loader2 } from 'lucide-react';
 
 interface GeneratedProfileViewProps {
   card: EAFCDevCard;
@@ -84,25 +85,84 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
     }
   };
 
+  const [sharingImage, setSharingImage] = useState(false);
+  const [shareNotice, setShareNotice] = useState('');
+
+  const getCardShareUrl = () => {
+    const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://gitfc.vercel.app';
+    const baseUrl = origin.includes('localhost') ? 'https://gitfc.vercel.app' : origin;
+    return `${baseUrl}/?card=${encodeURIComponent(card.username)}`;
+  };
+
+  const handleShareImageAndLink = async () => {
+    setSharingImage(true);
+    setShareNotice('');
+    const shareUrl = getCardShareUrl();
+    const text = `Check out my EA FC GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽ ${shareUrl}`;
+
+    try {
+      const cardElement = document.getElementById('ea-fc-export-card');
+      if (cardElement) {
+        const dataUrl = await toPng(cardElement, { pixelRatio: 2, quality: 0.95 });
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], `gitfc-card-${card.username}.png`, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `GitFC Card - ${card.name}`,
+            text,
+            url: shareUrl,
+            files: [file],
+          });
+          setSharingImage(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Native image share fallback:', err);
+    }
+
+    // Fallback: Download Card Image + Copy Link Text to Clipboard
+    try {
+      const cardElement = document.getElementById('ea-fc-export-card');
+      if (cardElement) {
+        const dataUrl = await toPng(cardElement, { pixelRatio: 2, quality: 0.95 });
+        const link = document.createElement('a');
+        link.download = `gitfc-card-${card.username}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+      await navigator.clipboard.writeText(text);
+      setShareNotice('📸 Card image downloaded & share link copied to clipboard! Paste into WhatsApp or chat.');
+      setTimeout(() => setShareNotice(''), 6000);
+    } catch {
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
+      window.open(url, '_blank');
+    } finally {
+      setSharingImage(false);
+    }
+  };
+
   const handleShareTwitter = () => {
-    const text = `Check out my EA FC GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitCards! ⚽🔥`;
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+    const shareUrl = getCardShareUrl();
+    const text = `Check out my EA FC GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽🔥`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
   };
 
   const handleShareWhatsApp = () => {
-    const text = `Check out my EA FC GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitCards! ⚽ https://gitcards.dev`;
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
+    handleShareImageAndLink();
   };
 
   const handleShareLinkedIn = () => {
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(window.location.href)}`;
+    const shareUrl = getCardShareUrl();
+    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
   };
 
   const handleCopyGitHubBadge = () => {
-    const badgeMarkdown = `[![GitCards Player Card](https://img.shields.io/badge/EA_FC_Card-${card.ratings.overall}_OVR-gold?style=for-the-badge&logo=github)](${window.location.href})`;
+    const shareUrl = getCardShareUrl();
+    const badgeMarkdown = `[![GitFC Player Card](https://img.shields.io/badge/EA_FC_Card-${card.ratings.overall}_OVR-gold?style=for-the-badge&logo=github)](${shareUrl})`;
     navigator.clipboard.writeText(badgeMarkdown);
     setCopiedBadge(true);
     setTimeout(() => setCopiedBadge(false), 2000);
@@ -170,9 +230,32 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
             {/* SHARE SCORECARD BUTTONS */}
             <div className="pt-3 border-t border-slate-800 space-y-2">
               <span className="block text-center text-[10px] font-mono text-slate-500 uppercase font-bold tracking-widest">
-                SHARE CARD PROFILE
+                SHARE CARD & PROFILE LINK
               </span>
-              <div className="grid grid-cols-2 gap-2">
+
+              <button
+                onClick={handleShareImageAndLink}
+                disabled={sharingImage}
+                className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:brightness-110 text-slate-950 font-display font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 transition"
+              >
+                {sharingImage ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> PREPARING CARD IMAGE...
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-4 h-4 text-slate-950" /> SHARE IMAGE + LINK
+                  </>
+                )}
+              </button>
+
+              {shareNotice && (
+                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono text-center animate-fadeIn">
+                  {shareNotice}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
                 <button
                   onClick={handleShareTwitter}
                   className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-sky-500/20 hover:text-sky-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"

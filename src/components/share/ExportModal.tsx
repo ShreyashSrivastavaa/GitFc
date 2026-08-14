@@ -19,6 +19,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [downloading, setDownloading] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedMarkdown, setCopiedMarkdown] = useState(false);
+  const [sharingImage, setSharingImage] = useState(false);
+  const [shareNotice, setShareNotice] = useState('');
 
   if (!isOpen) return null;
 
@@ -43,7 +45,59 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
   };
 
-  const shareUrl = `${window.location.origin}/?card=${card.username}`;
+
+
+  const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://gitfc.vercel.app';
+  const baseUrl = origin.includes('localhost') ? 'https://gitfc.vercel.app' : origin;
+  const shareUrl = `${baseUrl}/?card=${encodeURIComponent(card.username)}`;
+  const shareText = `Check out my official EA FC Ultimate Team GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽ ${shareUrl}`;
+
+  const handleNativeShare = async () => {
+    setSharingImage(true);
+    setShareNotice('');
+
+    try {
+      const node = document.getElementById(cardElementId);
+      if (node) {
+        const dataUrl = await toPng(node, { pixelRatio: 2, quality: 0.95 });
+        const blob = await (await fetch(dataUrl)).blob();
+        const file = new File([blob], `gitfc-card-${card.username}.png`, { type: 'image/png' });
+
+        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+          await navigator.share({
+            title: `GitFC Card - ${card.name}`,
+            text: shareText,
+            url: shareUrl,
+            files: [file],
+          });
+          setSharingImage(false);
+          return;
+        }
+      }
+    } catch (err) {
+      console.warn('Native image share fallback:', err);
+    }
+
+    // Fallback: Download image + Copy link text
+    try {
+      const node = document.getElementById(cardElementId);
+      if (node) {
+        const dataUrl = await toPng(node, { pixelRatio: 2, quality: 0.95 });
+        const link = document.createElement('a');
+        link.download = `gitfc-card-${card.username}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+      await navigator.clipboard.writeText(shareText);
+      setShareNotice('📸 Card image downloaded & share link copied to clipboard! Paste into WhatsApp or chat.');
+      setTimeout(() => setShareNotice(''), 6000);
+    } catch {
+      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+      window.open(url, '_blank');
+    } finally {
+      setSharingImage(false);
+    }
+  };
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -58,8 +112,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     setCopiedMarkdown(true);
     setTimeout(() => setCopiedMarkdown(false), 2000);
   };
-
-  const shareText = `Check out my official EA FC Ultimate Team GitHub Player Card! I'm a ${card.ratings.overall} OVR ${card.positionTitle} 🔥`;
 
   const handleTwitterShare = () => {
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
@@ -89,26 +141,50 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             SHARE YOUR EA FC CARD
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Download your card as a PNG image or embed it in your GitHub profile README.
+            Download your card as a PNG image or share image + link to WhatsApp and social platforms.
           </p>
         </div>
 
         <div className="space-y-4">
-          <button
-            onClick={handleDownloadPng}
-            disabled={downloading}
-            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-extrabold text-base hover:brightness-110 shadow-xl flex items-center justify-center gap-2 transition"
-          >
-            {downloading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" /> GENERATING HIGH-RES PNG...
-              </>
-            ) : (
-              <>
-                <Download className="w-5 h-5" /> DOWNLOAD PNG CARD
-              </>
-            )}
-          </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              onClick={handleNativeShare}
+              disabled={sharingImage}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:brightness-110 text-slate-950 font-display font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 transition"
+            >
+              {sharingImage ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> PREPARING SHARE...
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-4 h-4" /> SHARE IMAGE + LINK
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={handleDownloadPng}
+              disabled={downloading}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-extrabold text-sm hover:brightness-110 shadow-xl flex items-center justify-center gap-2 transition"
+            >
+              {downloading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" /> EXPORTING...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" /> DOWNLOAD PNG
+                </>
+              )}
+            </button>
+          </div>
+
+          {shareNotice && (
+            <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono text-center animate-fadeIn">
+              {shareNotice}
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <button
