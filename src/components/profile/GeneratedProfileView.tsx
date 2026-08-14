@@ -157,9 +157,30 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
     }
   };
 
-  const handleShareTwitter = () => {
+  const downloadCardPng = async () => {
+    try {
+      const cardElement = document.getElementById('ea-fc-export-card');
+      if (cardElement) {
+        const dataUrl = await toPng(cardElement, { pixelRatio: 2, quality: 0.95 });
+        const link = document.createElement('a');
+        link.download = `gitfc-card-${card.username}.png`;
+        link.href = dataUrl;
+        link.click();
+      }
+    } catch (err) {
+      console.warn('Failed to download card PNG:', err);
+    }
+  };
+
+  const handleShareTwitter = async () => {
     const shareUrl = getCardShareUrl();
     const text = `Check out my EA FC GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽🔥`;
+    await downloadCardPng();
+    try {
+      await navigator.clipboard.writeText(`${text} ${shareUrl}`);
+    } catch {}
+    setShareNotice('📸 Card image downloaded & text copied! Attach your image on X.');
+    setTimeout(() => setShareNotice(''), 6000);
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
   };
@@ -168,8 +189,15 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
     handleShareImageAndLink();
   };
 
-  const handleShareLinkedIn = () => {
+  const handleShareLinkedIn = async () => {
     const shareUrl = getCardShareUrl();
+    const text = `Check out my official EA FC Ultimate Team GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽ ${shareUrl}`;
+    await downloadCardPng();
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {}
+    setShareNotice('📸 Card image downloaded & post text copied! Paste text & attach image on LinkedIn.');
+    setTimeout(() => setShareNotice(''), 6000);
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
   };

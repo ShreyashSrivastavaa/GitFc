@@ -113,12 +113,24 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     setTimeout(() => setCopiedMarkdown(false), 2000);
   };
 
-  const handleTwitterShare = () => {
+  const handleTwitterShare = async () => {
+    await handleDownloadPng();
+    try {
+      await navigator.clipboard.writeText(shareText);
+    } catch {}
+    setShareNotice('📸 Card image downloaded & tweet text copied! Attach your image on X.');
+    setTimeout(() => setShareNotice(''), 6000);
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(tweetUrl, '_blank');
   };
 
-  const handleLinkedinShare = () => {
+  const handleLinkedinShare = async () => {
+    await handleDownloadPng();
+    try {
+      await navigator.clipboard.writeText(shareText);
+    } catch {}
+    setShareNotice('📸 Card image downloaded & post text copied! Paste text & attach image on LinkedIn.');
+    setTimeout(() => setShareNotice(''), 6000);
     const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(linkedinUrl, '_blank');
   };
