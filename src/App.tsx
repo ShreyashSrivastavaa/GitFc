@@ -72,9 +72,13 @@ export function App() {
     const params = new URLSearchParams(window.location.search);
     const authStatus = params.get('auth');
     const authUser = params.get('username');
+    const authMessage = params.get('message');
 
     if (authStatus === 'success' && authUser) {
       handleConnectGitHubUser(authUser);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (authStatus === 'error') {
+      setError(authMessage || 'GitHub sign-in could not be completed. Please try again.');
       window.history.replaceState({}, document.title, window.location.pathname);
     } else {
       const cardUser = params.get('card');
