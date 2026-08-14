@@ -178,6 +178,7 @@ export function App() {
               onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
               onResetSearch={() => setIsCardSearched(false)}
               onLookupUser={handleLookupUser}
+              onNavigateToLeagues={() => setActiveTab('leagues')}
             />
           ) : (
             <div className="space-y-12">

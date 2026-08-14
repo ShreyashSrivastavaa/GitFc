@@ -12,6 +12,7 @@ interface GeneratedProfileViewProps {
   onOpenCreateTeamModal: () => void;
   onResetSearch: () => void;
   onLookupUser: (username: string) => void;
+  onNavigateToLeagues?: () => void;
 }
 
 export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
@@ -22,6 +23,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
   onOpenCreateTeamModal,
   onResetSearch,
   onLookupUser,
+  onNavigateToLeagues,
 }) => {
   const [matchFormat, setMatchFormat] = useState<'premier' | 'champions' | 'worldcup'>('premier');
   const [lockNotice, setLockNotice] = useState('');
@@ -311,38 +313,58 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
           </div>
 
           {/* LEAGUE MEMBERSHIP BANNER */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl flex items-center justify-between gap-4">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
                 <Trophy className="w-5 h-5" />
               </div>
               <div>
                 <div className="font-display font-extrabold text-sm text-white">
-                  {userTeam ? `Squad: ${userTeam.name}` : `Enrolled in ${activeLeagueName}`}
+                  {userTeam ? `Squad: ${userTeam.name} • Active in ${activeLeagueName}` : `Active League: ${activeLeagueName}`}
                 </div>
                 <div className="text-xs text-slate-400">
-                  {userTeam ? `${userTeam.totalPlayers}/15 Teammates Registered` : 'Official EA FC Developer League Membership'}
+                  {userTeam ? `${userTeam.totalPlayers}/15 Teammates Registered • Rank #${userTeam.leaguePosition || 1}` : 'Official EA FC Developer League Membership'}
                 </div>
               </div>
             </div>
 
-            <button
-              onClick={userTeam ? onOpenCreateTeamModal : onOpenConnectModal}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 text-xs font-mono font-bold transition shrink-0"
-            >
-              {userTeam ? 'MANAGE SQUAD' : 'JOIN LEAGUE'}
-            </button>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                onClick={onNavigateToLeagues || onOpenConnectModal}
+                className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-display font-extrabold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                <Trophy className="w-3.5 h-3.5" />
+                {userTeam ? 'SWITCH LEAGUE' : 'JOIN LEAGUE'}
+              </button>
+
+              {userTeam && (
+                <button
+                  onClick={onOpenCreateTeamModal}
+                  className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-mono font-bold transition shrink-0"
+                >
+                  MANAGE SQUAD
+                </button>
+              )}
+            </div>
           </div>
 
           {/* MATCH FORMAT COMPETITION SELECTOR WITH PROGRESSIVE LOCKS */}
           <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <label className="block text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">
                 SELECT MATCH COMPETITION MODE ({activeLeagueName.toUpperCase()} &lt; CHAMPIONS LEAGUE &lt; WORLD CUP)
               </label>
-              <span className="text-[10px] font-mono font-bold text-amber-400">
-                {currentMultiplier.label}
-              </span>
+              <div className="flex items-center gap-3">
+                <span className="text-[10px] font-mono font-bold text-amber-400">
+                  {currentMultiplier.label}
+                </span>
+                <button
+                  onClick={onNavigateToLeagues || onOpenConnectModal}
+                  className="px-3 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-mono font-bold transition flex items-center gap-1 shrink-0"
+                >
+                  <Trophy className="w-3 h-3" /> JOIN / SWITCH LEAGUE
+                </button>
+              </div>
             </div>
 
             {lockNotice && (
