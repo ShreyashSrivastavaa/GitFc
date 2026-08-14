@@ -98,7 +98,7 @@ export function buildEAFCCard(stats: GitHubRawStats): EAFCDevCard {
   const ratings = calculateEAFCRatings(stats);
   const powerScore = calculatePowerScore(stats, ratings);
   const rarity = determineRarity(ratings.overall, powerScore, stats);
-  const { position, title } = determinePosition(stats, ratings);
+  const { title } = determinePosition(stats, ratings);
   const badges = generateDevBadges(stats);
 
   const footballPos = assignPosition(stats);
@@ -114,7 +114,7 @@ export function buildEAFCCard(stats: GitHubRawStats): EAFCDevCard {
     bio: stats.bio || 'Open Source Contributor & Developer',
     location: stats.location || 'Global Developer',
     rarity,
-    position,
+    position: posInfo.shortCode || 'CAM',
     positionTitle: title,
     countryFlag: '🌐',
     clubName,

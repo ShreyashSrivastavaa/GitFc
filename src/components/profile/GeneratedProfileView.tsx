@@ -217,13 +217,21 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
                     OVR {card.ratings.overall}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex flex-wrap items-center gap-2 mt-2">
                   <span className="font-mono text-xs font-bold text-amber-400">
                     🏆 RANK #{card.powerScore > 20000 ? '1' : '46'} GLOBAL
                   </span>
                   <span className="text-slate-600">•</span>
                   <span className="font-mono text-xs text-slate-400 font-semibold">
                     @{card.username}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-2 mt-3">
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono text-xs font-bold flex items-center gap-1.5">
+                    <span>⚡</span> Developer Archetype: <strong className="text-white">{card.positionTitle}</strong>
+                  </span>
+                  <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono text-xs font-bold flex items-center gap-1.5">
+                    <span>{card.footballPositionBadge || '⚽'}</span> Position: <strong className="text-white">{card.position}</strong> ({card.footballPositionTitle})
                   </span>
                 </div>
                 <p className="text-xs sm:text-sm text-slate-300 mt-3 leading-relaxed">

@@ -1,6 +1,6 @@
 export type CardRarity = 'bronze' | 'silver' | 'gold' | 'hero' | 'toty' | 'toty_icon' | 'icon' | 'scream' | 'world_tour' | 'totw' | 'heroes' | 'tots' | 'evos' | 'centurions';
 
-export type CardPosition = 'GEN' | 'INF' | 'COL' | 'HUS' | 'DEV' | 'ARC';
+export type CardPosition = 'ST' | 'CAM' | 'CB' | 'GK' | 'MGR' | 'SUB' | 'CM' | 'GEN' | 'INF' | 'COL' | 'HUS' | 'DEV' | 'ARC' | string;
 
 export type FootballPosition = 'STRIKER' | 'MIDFIELDER' | 'DEFENDER' | 'GOALKEEPER' | 'MANAGER' | 'SUBSTITUTE';
 

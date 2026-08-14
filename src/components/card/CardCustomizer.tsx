@@ -14,7 +14,14 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
   };
 
   const handlePositionChange = (position: CardPosition) => {
-    const positionTitles: Record<CardPosition, string> = {
+    const positionTitles: Partial<Record<CardPosition, string>> = {
+      ST: 'Striker',
+      CAM: 'Midfielder',
+      CB: 'Defender',
+      GK: 'Goalkeeper',
+      MGR: 'Manager',
+      SUB: 'Substitute',
+      CM: 'Central Midfielder',
       GEN: 'Full Stack Generalist',
       INF: 'Open Source Influencer',
       COL: 'Master Collaborator',
@@ -22,7 +29,7 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
       DEV: 'Core Developer',
       ARC: 'System Architect'
     };
-    onUpdateCard({ ...card, position, positionTitle: positionTitles[position] });
+    onUpdateCard({ ...card, position, positionTitle: positionTitles[position] || 'Core Developer' });
   };
 
   const handleChemChange = (chemistryStyle: any) => {
