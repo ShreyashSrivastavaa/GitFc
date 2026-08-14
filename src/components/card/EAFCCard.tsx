@@ -253,14 +253,16 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
 
   // POPULATED CARD
   return (
-    <div className="card-perspective inline-block select-none" style={{ transform: `scale(${scale})` }}>
+    <div className="card-perspective inline-block select-none max-w-full" style={{ transform: `scale(${scale})` }}>
       <div
         id={elementId}
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ transform: transformStyle }}
-        className={`card-tilt-inner relative w-[340px] h-[520px] rounded-3xl p-4 shadow-2xl border-4 ${config.bgClass} flex flex-col justify-between overflow-hidden cursor-pointer transition-shadow duration-300`}
+        role="article"
+        aria-label={`EA FC Player Card for ${card.name} (@${card.username}), ${card.ratings.overall} OVR`}
+        className={`card-tilt-inner relative w-[320px] sm:w-[340px] h-[520px] rounded-3xl p-4 shadow-2xl border-4 ${config.bgClass} flex flex-col justify-between overflow-hidden cursor-pointer transition-shadow duration-300`}
       >
         <div
           className="absolute inset-0 holographic-overlay transition-opacity duration-300 pointer-events-none"
