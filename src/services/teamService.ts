@@ -276,7 +276,16 @@ export function addPlayerToRoster(
     stats: playerCard.stats,
   };
 
-  const newRoster = { ...team.players };
+  // Remove existing instances of this player to prevent duplicates
+  const isMatch = (p: TeamPlayer) => p.userId === playerCard.id || p.username.toLowerCase() === playerCard.username.toLowerCase();
+
+  const newRoster = {
+    goalkeeper: team.players.goalkeeper.filter(p => !isMatch(p)),
+    defenders: team.players.defenders.filter(p => !isMatch(p)),
+    midfielders: team.players.midfielders.filter(p => !isMatch(p)),
+    forwards: team.players.forwards.filter(p => !isMatch(p)),
+    substitutes: team.players.substitutes.filter(p => !isMatch(p)),
+  };
 
   if (posCode === 'GK') {
     newRoster.goalkeeper = [...newRoster.goalkeeper, newPlayer];

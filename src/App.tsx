@@ -52,21 +52,6 @@ export function App() {
       setUserFollowers(savedAuth.followers);
       setUserFollowing(savedAuth.following);
       setUserTeam(createDefaultTeam(savedAuth.userCard));
-
-      // Mock pending invitation if user is connected
-      setPendingInvite({
-        id: 'inv-demo-1',
-        teamId: 'team-manchester-devs',
-        teamName: 'Manchester Devs',
-        teamBadge: '⚽',
-        invitedBy: 'torvalds',
-        invitedUser: savedAuth.userCard.username,
-        suggestedPosition: 'Midfielder',
-        createdAt: new Date().toISOString(),
-        expiresAt: new Date(Date.now() + 6 * 86400000).toISOString(),
-        status: 'pending',
-        inviteCode: 'MCR2026',
-      });
     }
 
     const params = new URLSearchParams(window.location.search);
