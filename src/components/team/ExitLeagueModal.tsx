@@ -21,7 +21,7 @@ export const ExitLeagueModal: React.FC<ExitLeagueModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fade-in">
-      <div className="relative w-full max-w-md bg-slate-900 border border-rose-500/40 rounded-3xl p-6 shadow-2xl overflow-hidden">
+      <div className="relative w-full max-w-md bg-slate-900 border border-amber-500/40 rounded-3xl p-6 shadow-2xl overflow-hidden">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
@@ -30,14 +30,14 @@ export const ExitLeagueModal: React.FC<ExitLeagueModalProps> = ({
         </button>
 
         <div className="text-center mb-5">
-          <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto mb-3">
-            <AlertTriangle className="w-8 h-8 text-rose-400" />
+          <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto mb-3">
+            <AlertTriangle className="w-8 h-8 text-amber-400" />
           </div>
           <h2 className="font-display font-black text-2xl text-white">
-            ⚠️ EXIT CURRENT LEAGUE?
+            🔄 SWITCH ACTIVE LEAGUE?
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Teams can belong to only <strong>ONE</strong> competitive league at a time.
+            Teams can belong to <strong>ONE</strong> active league at a time.
           </p>
         </div>
 
@@ -50,22 +50,22 @@ export const ExitLeagueModal: React.FC<ExitLeagueModalProps> = ({
           <div className="grid grid-cols-2 gap-2 text-[11px]">
             <div>
               <span className="text-slate-500 block">Current Rank</span>
-              <span className="text-white font-bold">#{team.leaguePosition || 5}</span>
+              <span className="text-white font-bold">#{team.leaguePosition || 1}</span>
             </div>
             <div>
               <span className="text-slate-500 block">Season Points</span>
-              <span className="text-emerald-400 font-bold">{team.points || 34} Pts</span>
+              <span className="text-emerald-400 font-bold">{team.points || 0} Pts</span>
             </div>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-[11px] leading-relaxed">
-            <ShieldAlert className="w-3.5 h-3.5 inline mr-1 text-rose-400" />
-            <strong>Penalty Warning:</strong> Exiting will forfeit all accumulated season points and standings in {team.leagueName}.
+          <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[11px] leading-relaxed">
+            <ShieldAlert className="w-3.5 h-3.5 inline mr-1 text-emerald-400" />
+            <strong>Points Carried Forward:</strong> All your accumulated season points (<strong>{team.points || 0} Pts</strong>) and match history will be carried over to {targetLeague.name}!
           </div>
         </div>
 
         <div className="text-xs font-mono text-center text-slate-300 mb-5">
-          Join target league: <strong className="text-amber-400">{targetLeague.name}</strong>?
+          Switch to target league: <strong className="text-amber-400">{targetLeague.name}</strong>?
         </div>
 
         <div className="flex items-center gap-3">
@@ -81,9 +81,9 @@ export const ExitLeagueModal: React.FC<ExitLeagueModalProps> = ({
               onConfirmExitAndJoin();
               onClose();
             }}
-            className="flex-1 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-display font-black text-xs shadow-lg shadow-rose-600/20 transition"
+            className="flex-1 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-display font-black text-xs shadow-lg shadow-amber-500/20 transition"
           >
-            Exit & Join New League
+            Switch League
           </button>
         </div>
       </div>

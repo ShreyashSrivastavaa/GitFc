@@ -46,17 +46,11 @@ export const LeaguesView: React.FC<LeaguesViewProps> = ({
   const confirmJoinLeague = (targetLeague: League) => {
     if (!userTeam) return;
 
+    // Carry forward all accumulated points, stats, and match history
     const updatedTeam: Team = {
       ...userTeam,
       leagueId: targetLeague.id,
       leagueName: targetLeague.name,
-      points: 0,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      leaguePosition: 1,
     };
 
     onUpdateTeam(updatedTeam);

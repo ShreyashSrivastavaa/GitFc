@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import type { EAFCDevCard, Team } from '../../types';
 import { EAFCCard } from '../card/EAFCCard';
 import { toPng } from 'html-to-image';
-import { Download, Star, MessageCircle, Copy, Check, ArrowLeft, Trophy, Sparkles, Award, Share2, Loader2 } from 'lucide-react';
+import { Download, Star, MessageCircle, ArrowLeft, Trophy, Sparkles, Award, Share2, Loader2 } from 'lucide-react';
 
 interface GeneratedProfileViewProps {
   card: EAFCDevCard;
@@ -43,7 +43,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
 
   const handleSelectMode = (mode: 'premier' | 'champions' | 'worldcup') => {
     if (mode === 'champions' && !isChampionsUnlocked) {
-      setLockNotice('🔒 Champions League Locked! Win Premier League or reach 82+ OVR to unlock.');
+      setLockNotice(`🔒 Champions League Locked! Win ${activeLeagueName} or reach 82+ OVR to unlock.`);
       setTimeout(() => setLockNotice(''), 4000);
       return;
     }
@@ -56,6 +56,8 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
     setLockNotice('');
   };
 
+  const activeLeagueName = userTeam?.leagueName || 'Premier DevLeague';
+
   // DIFFICULTY ATTRIBUTE MULTIPLIER MATRIX
   const getFormatMultiplier = () => {
     switch (matchFormat) {
@@ -64,7 +66,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
       case 'worldcup':
         return { pas: 1.08, sho: 1.10, dri: 1.06, phy: 1.08, pac: 1.10, def: 1.08, label: 'WORLD CUP (PINNACLE TIER - EXTREME)' };
       default:
-        return { pas: 1.0, sho: 1.0, dri: 1.0, phy: 1.0, pac: 1.0, def: 1.0, label: 'PREMIER LEAGUE (BASE TIER - REGULAR)' };
+        return { pas: 1.0, sho: 1.0, dri: 1.0, phy: 1.0, pac: 1.0, def: 1.0, label: `${activeLeagueName.toUpperCase()} (BASE TIER - REGULAR)` };
     }
   };
 
@@ -74,7 +76,6 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
     return Math.min(99, Math.round(val * mult));
   };
   const [isFavorite, setIsFavorite] = useState(false);
-  const [copiedBadge, setCopiedBadge] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -158,14 +159,6 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
     const shareUrl = getCardShareUrl();
     const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(url, '_blank');
-  };
-
-  const handleCopyGitHubBadge = () => {
-    const shareUrl = getCardShareUrl();
-    const badgeMarkdown = `[![GitFC Player Card](https://img.shields.io/badge/EA_FC_Card-${card.ratings.overall}_OVR-gold?style=for-the-badge&logo=github)](${shareUrl})`;
-    navigator.clipboard.writeText(badgeMarkdown);
-    setCopiedBadge(true);
-    setTimeout(() => setCopiedBadge(false), 2000);
   };
 
   return (
@@ -255,31 +248,24 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="grid grid-cols-3 gap-2 pt-1">
                 <button
                   onClick={handleShareTwitter}
-                  className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-sky-500/20 hover:text-sky-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
+                  className="py-2.5 px-2.5 rounded-xl bg-slate-900 hover:bg-sky-500/20 hover:text-sky-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
                 >
                   <span className="text-sky-400 font-bold">𝕏</span> Twitter / X
                 </button>
                 <button
                   onClick={handleShareWhatsApp}
-                  className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-emerald-500/20 hover:text-emerald-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
+                  className="py-2.5 px-2.5 rounded-xl bg-slate-900 hover:bg-emerald-500/20 hover:text-emerald-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
                 >
                   <MessageCircle className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp
                 </button>
                 <button
                   onClick={handleShareLinkedIn}
-                  className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-blue-500/20 hover:text-blue-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
+                  className="py-2.5 px-2.5 rounded-xl bg-slate-900 hover:bg-blue-500/20 hover:text-blue-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
                 >
                   <span className="text-blue-400 font-bold">in</span> LinkedIn
-                </button>
-                <button
-                  onClick={handleCopyGitHubBadge}
-                  className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
-                >
-                  {copiedBadge ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
-                  {copiedBadge ? 'Copied!' : 'GitHub Badge'}
                 </button>
               </div>
             </div>
@@ -332,7 +318,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
               </div>
               <div>
                 <div className="font-display font-extrabold text-sm text-white">
-                  {userTeam ? `Squad: ${userTeam.name}` : 'Enrolled in Premier League (Tier 1)'}
+                  {userTeam ? `Squad: ${userTeam.name}` : `Enrolled in ${activeLeagueName}`}
                 </div>
                 <div className="text-xs text-slate-400">
                   {userTeam ? `${userTeam.totalPlayers}/15 Teammates Registered` : 'Official EA FC Developer League Membership'}
@@ -352,7 +338,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
           <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">
-                SELECT MATCH COMPETITION MODE (PREMIER LEAGUE &lt; CHAMPIONS LEAGUE &lt; WORLD CUP)
+                SELECT MATCH COMPETITION MODE ({activeLeagueName.toUpperCase()} &lt; CHAMPIONS LEAGUE &lt; WORLD CUP)
               </label>
               <span className="text-[10px] font-mono font-bold text-amber-400">
                 {currentMultiplier.label}
@@ -366,7 +352,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {/* 1. PREMIER LEAGUE - UNLOCKED BY DEFAULT */}
+              {/* 1. ACTIVE LEAGUE - UNLOCKED BY DEFAULT */}
               <button
                 onClick={() => handleSelectMode('premier')}
                 className={`py-3 px-3 rounded-2xl text-xs font-bold font-mono transition-all border flex flex-col items-center justify-center gap-1 ${
@@ -375,9 +361,9 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
                     : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800'
                 }`}
               >
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1 text-center">
                   <span>⚽</span>
-                  <span>PREMIER LEAGUE</span>
+                  <span className="truncate max-w-[140px]">{activeLeagueName.toUpperCase()}</span>
                 </div>
                 <span className="text-[9px] font-normal opacity-80">REGULAR DIFFICULTY</span>
               </button>
