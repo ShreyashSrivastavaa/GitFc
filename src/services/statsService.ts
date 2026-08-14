@@ -4,10 +4,13 @@ export interface CounterStats {
   lastUpdated: string;
 }
 
-const STORAGE_KEY = 'gitcards_total_generations';
-const BASE_COUNT = 14523;
+const STORAGE_KEY = 'gitcards_total_generations_v2';
+const INITIAL_COUNT = 1;
 
 export function formatGenerationsCount(count: number): string {
+  if (count < 100) {
+    return `${count}`;
+  }
   if (count >= 100000) {
     const k = Math.floor(count / 1000);
     return `${k}K+`;
@@ -18,12 +21,12 @@ export function formatGenerationsCount(count: number): string {
 }
 
 export function getCounterStats(): CounterStats {
-  let current = BASE_COUNT;
+  let current = INITIAL_COUNT;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = parseInt(stored, 10);
-      if (!isNaN(parsed) && parsed >= BASE_COUNT) {
+      if (!isNaN(parsed) && parsed >= 1) {
         current = parsed;
       }
     } else {

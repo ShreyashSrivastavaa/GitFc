@@ -7,11 +7,11 @@
   --bg-primary: #0d1117;
   --bg-secondary: #161b22;
   --bg-card: #1c2128;
-  --text-primary: #e6edf3;
-  --text-secondary: #8b949e;
-  --text-muted: #484f58;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
   --border: #30363d;
-  --border-strong: #484f58;
+  --border-strong: #475569;
   --accent: #f5c400;         /* EA FC Gold */
   --accent-hover: #e6b800;
   --green: #00ff87;
@@ -21,20 +21,20 @@
 }
 
 :root[data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f6f8fa;
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
   --bg-card: #ffffff;
-  --text-primary: #1c2128;
-  --text-secondary: #57606a;
-  --text-muted: #8c959f;
-  --border: #d0d7de;
-  --border-strong: #afb8c1;
-  --accent: #d4a017;         /* EA FC Gold (darker for light) */
-  --accent-hover: #b8870f;
-  --green: #1a7f37;
-  --blue: #0969da;
-  --red: #cf222e;
-  --card-bg: linear-gradient(135deg, #f6f8fa 0%, #ffffff 100%);
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --accent: #d97706;         /* EA FC Amber Gold */
+  --accent-hover: #b45309;
+  --green: #059669;
+  --blue: #0284c7;
+  --red: #dc2626;
+  --card-bg: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
 }
 
 @layer base {
@@ -45,34 +45,148 @@
   }
 }
 
-/* Light mode overrides for high-level container backgrounds */
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LIGHT MODE HIGH-CONTRAST DESIGN SYSTEM (html.theme-light)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* Body Canvas */
 html.theme-light body {
-  background-color: #f6f8fa !important;
-  color: #1c2128 !important;
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
 }
 
-html.theme-light .bg-slate-950,
-html.theme-light .bg-\[\#0a0c10\] {
-  background-color: #f6f8fa !important;
+/* Light Mode Main Background Override */
+html.theme-light main {
+  background-color: #f8fafc;
 }
 
-html.theme-light .bg-slate-900 {
+/* Light mode for standard cards (excluding .dark-banner) */
+html.theme-light .bg-slate-900:not(.dark-banner) {
   background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.02) !important;
 }
 
-html.theme-light .border-slate-800,
-html.theme-light .border-slate-700 {
-  border-color: #d0d7de !important;
+html.theme-light .bg-slate-950:not(.dark-banner) {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
 }
 
-html.theme-light .text-white,
-html.theme-light .text-slate-100 {
-  color: #1c2128 !important;
+html.theme-light .bg-slate-950\/90:not(.dark-banner) {
+  background-color: #ffffff !important;
+  border-color: #cbd5e1 !important;
 }
 
-html.theme-light .text-slate-300,
-html.theme-light .text-slate-400 {
-  color: #57606a !important;
+html.theme-light .border-slate-800:not(.dark-banner),
+html.theme-light .border-slate-700:not(.dark-banner) {
+  border-color: #e2e8f0 !important;
+}
+
+/* Text overrides in Light Mode (only for light containers, not inside .dark-banner or EA FC cards) */
+html.theme-light .bg-slate-900:not(.dark-banner) .text-white,
+html.theme-light .bg-slate-900:not(.dark-banner) .text-slate-100,
+html.theme-light .bg-slate-900:not(.dark-banner) .text-slate-200,
+html.theme-light .bg-slate-950:not(.dark-banner) .text-white,
+html.theme-light .bg-slate-950:not(.dark-banner) .text-slate-100,
+html.theme-light body > div > main > div:not(.dark-banner) h1:not(.banner-text),
+html.theme-light body > div > main > div:not(.dark-banner) h2:not(.banner-text),
+html.theme-light body > div > main > div:not(.dark-banner) h3:not(.banner-text) {
+  color: #0f172a;
+}
+
+html.theme-light .bg-slate-900:not(.dark-banner) .text-slate-300,
+html.theme-light .bg-slate-900:not(.dark-banner) .text-slate-400,
+html.theme-light .bg-slate-950:not(.dark-banner) .text-slate-300,
+html.theme-light .bg-slate-950:not(.dark-banner) .text-slate-400 {
+  color: #475569;
+}
+
+/* Inputs in Light Mode */
+html.theme-light input[type="text"],
+html.theme-light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.theme-light input[type="text"]::placeholder,
+html.theme-light textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Navbar in Light Mode */
+html.theme-light header {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #e2e8f0 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+html.theme-light header nav {
+  background-color: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.theme-light header nav button:not(.bg-amber-500) {
+  color: #475569 !important;
+}
+
+html.theme-light header nav button:not(.bg-amber-500):hover {
+  color: #0f172a !important;
+  background-color: #e2e8f0 !important;
+}
+
+html.theme-light header .text-white {
+  color: #0f172a !important;
+}
+
+html.theme-light header .bg-slate-800 {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+
+html.theme-light header .bg-slate-800 svg {
+  fill: #0f172a !important;
+}
+
+/* Dark Banners (.dark-banner) - Preserve Vibrant Dark Navy Metallic Gradient & Crisp White Text */
+.dark-banner,
+html.theme-light .dark-banner {
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) !important;
+  border-color: #334155 !important;
+  color: #ffffff !important;
+  box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.3) !important;
+}
+
+.dark-banner h1,
+.dark-banner h2,
+.dark-banner h3,
+.dark-banner p,
+.dark-banner span,
+.dark-banner div,
+html.theme-light .dark-banner h1,
+html.theme-light .dark-banner h2,
+html.theme-light .dark-banner h3,
+html.theme-light .dark-banner p,
+html.theme-light .dark-banner span:not(.text-amber-400):not(.text-emerald-400):not(.text-sky-400),
+html.theme-light .dark-banner div:not(.text-amber-400):not(.text-emerald-400) {
+  color: #ffffff;
+}
+
+html.theme-light .dark-banner p {
+  color: #cbd5e1 !important;
+}
+
+html.theme-light .dark-banner .text-slate-300,
+html.theme-light .dark-banner .text-slate-400 {
+  color: #cbd5e1 !important;
+}
+
+/* EA FC Cards - Preserve Authentic Gold, TOTY, Icon Metallic Colors */
+.ea-fc-card-shape,
+.ea-fc-card-shape * {
+  color: inherit;
 }
 
 /* Custom EA FC Card Shape Clip-Path */
@@ -185,25 +299,6 @@ html.theme-light .text-slate-400 {
   background-size: 200% 200%;
   mix-blend-mode: color-dodge;
   pointer-events: none;
-}
-
-/* Glowing Border Pulse for TOTY / Icon cards */
-.toty-glow-effect {
-  box-shadow: 0 0 25px rgba(59, 130, 246, 0.6), inset 0 0 15px rgba(96, 165, 250, 0.4);
-}
-
-.icon-glow-effect {
-  box-shadow: 0 0 30px rgba(251, 191, 36, 0.7), inset 0 0 20px rgba(254, 240, 138, 0.5);
-}
-
-/* EA FC 3D Card Container Perspective */
-.card-perspective {
-  perspective: 1000px;
-}
-
-.card-tilt-inner {
-  transition: transform 0.15s ease-out;
-  transform-style: preserve-3d;
 }
 
 /* Floating Card Keyframes */

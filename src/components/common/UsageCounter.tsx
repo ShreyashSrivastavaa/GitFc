@@ -7,7 +7,7 @@ interface UsageCounterProps {
 }
 
 export const UsageCounter: React.FC<UsageCounterProps> = ({
-  prefixEmoji = '✨',
+  prefixEmoji = '⚡',
   className = '',
 }) => {
   const [stats, setStats] = useState<CounterStats | null>(null);
@@ -18,16 +18,15 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
     setStats(currentStats);
 
     const target = currentStats.totalGenerations;
-    const start = Math.max(0, target - 100);
+    const start = Math.max(0, target - 50);
     setAnimatedValue(start);
 
-    const duration = 1200; // 1.2s animation
+    const duration = 1000;
     const startTime = performance.now();
 
     const updateAnimation = (now: number) => {
       const elapsed = now - startTime;
       const progress = Math.min(1, elapsed / duration);
-      // Ease out cubic
       const easeProgress = 1 - Math.pow(1 - progress, 3);
       const current = Math.floor(start + (target - start) * easeProgress);
       setAnimatedValue(current);
@@ -43,7 +42,6 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
   useEffect(() => {
     fetchAndAnimate();
 
-    // Refresh every 60 seconds
     const interval = setInterval(() => {
       const updated = getCounterStats();
       setStats(updated);
@@ -52,14 +50,16 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
     return () => clearInterval(interval);
   }, []);
 
+  const totalCount = stats ? stats.totalGenerations : 1;
   const displayFormatted = stats
     ? formatGenerationsCount(animatedValue || stats.totalGenerations)
-    : '14,500+';
+    : '1';
+  const pluralSuffix = totalCount === 1 ? '' : 's';
 
   return (
-    <span className={`inline-flex items-center gap-1.5 font-mono text-emerald-400 font-bold ${className}`}>
+    <span className={`inline-flex items-center gap-1.5 font-mono text-emerald-500 dark:text-emerald-400 font-bold ${className}`}>
       <span>{prefixEmoji}</span>
-      <span>Join {displayFormatted} developers who generated cards</span>
+      <span>Join {displayFormatted} developer{pluralSuffix} who generated cards</span>
     </span>
   );
 };

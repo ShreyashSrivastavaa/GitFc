@@ -119,7 +119,7 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
   return (
     <div className="space-y-10 animate-fade-in">
       {/* Header Banner & Team Overview */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/40 p-8 md:p-12 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
+      <div className="relative dark-banner p-8 md:p-12 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
         <div className="max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-4">
             <Trophy className="w-4 h-4" /> TEAM HUB & DRESSING ROOM
@@ -150,7 +150,7 @@ export const DressingRoomView: React.FC<DressingRoomViewProps> = ({
         </div>
 
         <div className="flex flex-col items-center md:items-end gap-3 w-full md:w-auto">
-          <div className="bg-slate-950/90 border border-slate-800 p-6 rounded-3xl text-center min-w-[240px] shadow-xl">
+          <div className="dark-banner p-6 rounded-3xl text-center min-w-[240px] shadow-xl">
             <div className="text-[10px] font-mono text-slate-400 uppercase font-bold">SQUAD VALUE</div>
             <div className="font-display font-black text-4xl text-amber-400 mt-1">
               {(teamState.squadValue / 1000000).toFixed(1)}M ⚡

@@ -31,7 +31,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   // If not connected to GitHub -> Show Connect Wall
   if (!isConnected || !currentUserCard) {
     return (
-      <div className="w-full bg-slate-900/90 border border-slate-800 rounded-3xl p-8 md:p-12 shadow-2xl backdrop-blur-md text-center max-w-3xl mx-auto my-6 space-y-6">
+      <div className="w-full dark-banner rounded-3xl p-8 md:p-12 shadow-2xl backdrop-blur-md text-center max-w-3xl mx-auto my-6 space-y-6">
         <div className="w-16 h-16 rounded-3xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mx-auto">
           <Trophy className="w-8 h-8" />
         </div>

@@ -66,7 +66,7 @@ export const LeaguesView: React.FC<LeaguesViewProps> = ({
   return (
     <div className="space-y-10 animate-fade-in">
       {/* Header Banner */}
-      <div className="relative bg-gradient-to-r from-slate-900 via-slate-900 to-amber-950/40 p-8 md:p-12 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden">
+      <div className="relative dark-banner p-8 md:p-12 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden">
         <div className="max-w-3xl">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/10 text-amber-400 font-mono text-xs font-bold border border-amber-500/30 mb-4">
             <Trophy className="w-4 h-4" /> EXCLUSIVE LEAGUE SYSTEM 2026
