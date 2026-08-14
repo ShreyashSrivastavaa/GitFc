@@ -20,6 +20,7 @@ import { UsageCounter } from './components/common/UsageCounter';
 import { TeamInviteBanner } from './components/team/TeamInviteBanner';
 
 import { Sparkles, Loader2 } from 'lucide-react';
+import { Analytics } from '@vercel/analytics/react';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('generator');
@@ -360,6 +361,8 @@ export function App() {
           setActiveTab('dressing-room');
         }}
       />
+
+      <Analytics />
     </div>
   );
 }
