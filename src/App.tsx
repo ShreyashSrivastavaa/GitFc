@@ -173,6 +173,7 @@ export function App() {
             <GeneratedProfileView
               card={currentCard}
               userTeam={userTeam}
+              isConnected={isConnected}
               onOpenExportModal={() => setIsExportModalOpen(true)}
               onOpenConnectModal={() => setIsConnectModalOpen(true)}
               onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}

@@ -7,6 +7,7 @@ import { Download, Star, MessageCircle, ArrowLeft, Trophy, Sparkles, Award, Shar
 interface GeneratedProfileViewProps {
   card: EAFCDevCard;
   userTeam: Team | null;
+  isConnected: boolean;
   onOpenExportModal: () => void;
   onOpenConnectModal: () => void;
   onOpenCreateTeamModal: () => void;
@@ -18,6 +19,7 @@ interface GeneratedProfileViewProps {
 export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
   card,
   userTeam,
+  isConnected,
   onOpenExportModal,
   onOpenConnectModal,
   onOpenCreateTeamModal,
@@ -25,6 +27,15 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
   onLookupUser,
   onNavigateToLeagues,
 }) => {
+  const handleJoinLeagueClick = () => {
+    if (!isConnected) {
+      onOpenConnectModal();
+      return;
+    }
+    if (onNavigateToLeagues) {
+      onNavigateToLeagues();
+    }
+  };
   const [matchFormat, setMatchFormat] = useState<'premier' | 'champions' | 'worldcup'>('premier');
   const [lockNotice, setLockNotice] = useState('');
 
@@ -330,7 +341,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <button
-                onClick={onNavigateToLeagues || onOpenConnectModal}
+                onClick={handleJoinLeagueClick}
                 className="flex-1 sm:flex-none px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-display font-extrabold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5"
               >
                 <Trophy className="w-3.5 h-3.5" />
@@ -359,7 +370,7 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
                   {currentMultiplier.label}
                 </span>
                 <button
-                  onClick={onNavigateToLeagues || onOpenConnectModal}
+                  onClick={handleJoinLeagueClick}
                   className="px-3 py-1 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[11px] font-mono font-bold transition flex items-center gap-1 shrink-0"
                 >
                   <Trophy className="w-3 h-3" /> JOIN / SWITCH LEAGUE
