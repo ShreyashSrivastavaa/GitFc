@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import type { ActiveTab } from '../../types';
 import { Sparkles, Trophy, Star, Menu, X } from 'lucide-react';
-import { ThemeToggle } from './ThemeToggle';
 
 interface NavbarProps {
   activeTab: ActiveTab;
@@ -100,8 +99,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* RIGHT ACTION BUTTONS */}
         <div className="flex items-center gap-2">
-          <ThemeToggle />
-
           <a
             href="https://github.com/ShreyashSrivastavaa/GitFc"
             target="_blank"

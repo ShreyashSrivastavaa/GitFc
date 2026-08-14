@@ -2,8 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-:root,
-:root[data-theme="dark"] {
+:root {
   --bg-primary: #0d1117;
   --bg-secondary: #161b22;
   --bg-card: #1c2128;
@@ -20,139 +19,12 @@
   --card-bg: linear-gradient(135deg, #1c2128 0%, #0d1117 100%);
 }
 
-:root[data-theme="light"],
-html.theme-light {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-card: #ffffff;
-  --text-primary: #111827;
-  --text-secondary: #4b5563;
-  --text-muted: #6b7280;
-  --border: #e5e7eb;
-  --border-strong: #d1d5db;
-  --accent: #ff8c00;         /* Accent Orange / Gold */
-  --accent-hover: #e07b00;
-  --blue: #0061ff;           /* Brand Blue */
-  --green: #10b981;          /* Success Green */
-  --red: #ef4444;
-  --card-bg: #ffffff;
-}
-
 @layer base {
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
     @apply font-sans overflow-x-hidden transition-colors duration-200;
   }
-}
-
-/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-   LIGHT MODE HIGH-CONTRAST DESIGN SYSTEM (html.theme-light)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-
-/* Body Canvas */
-html.theme-light body {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-}
-
-/* Light Mode Main Background Override */
-html.theme-light main {
-  background-color: #ffffff !important;
-}
-
-/* Light mode for standard cards (excluding .dark-banner) */
-html.theme-light .bg-slate-900:not(.dark-banner) {
-  background-color: #ffffff !important;
-  border-color: #e5e7eb !important;
-  color: #111827 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05) !important;
-}
-
-html.theme-light .bg-slate-950:not(.dark-banner) {
-  background-color: #f9fafb !important;
-  border-color: #e5e7eb !important;
-  color: #111827 !important;
-}
-
-html.theme-light .bg-slate-950\/90:not(.dark-banner),
-html.theme-light .bg-slate-900\/90:not(.dark-banner) {
-  background-color: #ffffff !important;
-  border-color: #e5e7eb !important;
-  color: #111827 !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
-}
-
-html.theme-light .border-slate-800:not(.dark-banner),
-html.theme-light .border-slate-700:not(.dark-banner) {
-  border-color: #e5e7eb !important;
-}
-
-/* Text overrides in Light Mode */
-html.theme-light .text-slate-900:not(.dark-banner),
-html.theme-light .text-slate-800:not(.dark-banner),
-html.theme-light .text-white:not(.dark-banner),
-html.theme-light .text-slate-100:not(.dark-banner),
-html.theme-light .text-slate-200:not(.dark-banner) {
-  color: #111827 !important;
-}
-
-html.theme-light .text-slate-300:not(.dark-banner),
-html.theme-light .text-slate-400:not(.dark-banner) {
-  color: #4b5563 !important;
-}
-
-html.theme-light .text-slate-500:not(.dark-banner),
-html.theme-light .text-slate-600:not(.dark-banner) {
-  color: #6b7280 !important;
-}
-
-/* Inputs in Light Mode */
-html.theme-light input[type="text"],
-html.theme-light textarea {
-  background-color: #ffffff !important;
-  color: #111827 !important;
-  border-color: #d1d5db !important;
-}
-
-html.theme-light input[type="text"]::placeholder,
-html.theme-light textarea::placeholder {
-  color: #6b7280 !important;
-}
-
-/* Navbar in Light Mode */
-html.theme-light header {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border-color: #e5e7eb !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-}
-
-html.theme-light header nav {
-  background-color: #f9fafb !important;
-  border-color: #e5e7eb !important;
-}
-
-html.theme-light header nav button:not(.bg-amber-500) {
-  color: #4b5563 !important;
-}
-
-html.theme-light header nav button:not(.bg-amber-500):hover {
-  color: #111827 !important;
-  background-color: #f3f4f6 !important;
-}
-
-html.theme-light header .text-white {
-  color: #111827 !important;
-}
-
-html.theme-light header .bg-slate-800 {
-  background-color: #f3f4f6 !important;
-  color: #111827 !important;
-  border-color: #d1d5db !important;
-}
-
-html.theme-light header .bg-slate-800 svg {
-  fill: #111827 !important;
 }
 
 /* Dark Banners (.dark-banner) - Preserve Vibrant Dark Navy Metallic Gradient & Crisp White Text */
