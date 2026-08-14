@@ -8,7 +8,7 @@ export default function handler(req: VercelRequest, res: VercelResponse) {
   const returnOrigin = isLocal ? `http://${host}` : 'https://gitfc.vercel.app';
 
   // ALWAYS send the exact registered production URI so GitHub never throws "Invalid Redirect URI"
-  const redirectUri = process.env.GITHUB_CALLBACK_URL || 'https://gitfc.vercel.app/api/auth/callback';
+  const redirectUri = 'https://gitfc.vercel.app/api/auth/callback';
 
   // Encode return origin into CSRF state token
   const randomState = Math.random().toString(36).substring(2) + Date.now().toString(36);
