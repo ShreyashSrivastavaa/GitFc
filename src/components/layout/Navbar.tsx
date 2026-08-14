@@ -34,9 +34,11 @@ export const Navbar: React.FC<NavbarProps> = ({
           tabIndex={0}
           aria-label="GitCards Home"
         >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-yellow-600 flex items-center justify-center text-slate-950 font-display font-black text-xl shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
-            FC
-          </div>
+          <img
+            src="/gitfc-clean.png"
+            alt="GitFC Logo"
+            className="w-9 h-9 object-contain rounded-xl drop-shadow-md group-hover:scale-105 transition-transform"
+          />
           <div>
             <div className="font-display font-black text-xl tracking-tight text-white flex items-center gap-1.5">
               GITCARDS <span className="text-amber-400 font-extrabold text-sm px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">UT 25</span>
