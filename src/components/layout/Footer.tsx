@@ -1,12 +1,12 @@
 import React from 'react';
-import { Sparkles, Mail, Send } from 'lucide-react';
+import { Sparkles, Mail, Star } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
     <footer className="bg-[#07090e] border-t border-slate-800/80 pt-12 pb-8 px-4 lg:px-8 text-slate-400 mt-16 font-sans">
       <div className="max-w-7xl mx-auto space-y-10">
         {/* TOP SECTION: LOGO & LINKS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
           {/* BRAND COLUMN (2 Cols) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
@@ -82,33 +82,9 @@ export const Footer: React.FC = () => {
               <li className="hover:text-indigo-400 transition cursor-default">Maintenance & Support</li>
             </ul>
           </div>
-
-          {/* STAY UPDATED / CONTACT COLUMN */}
-          <div className="space-y-3">
-            <h3 className="font-display font-extrabold text-xs tracking-wider text-slate-200 uppercase">
-              Stay Updated
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Subscribe to get updates on AI trends, web solutions, and tech insights.
-            </p>
-
-            <form onSubmit={(e) => e.preventDefault()} className="space-y-2">
-              <input
-                type="email"
-                placeholder="Your email address"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition min-h-[44px]"
-              />
-              <button
-                type="submit"
-                className="w-full px-4 py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition shadow-lg shadow-indigo-500/20 min-h-[44px]"
-              >
-                Subscribe <Send className="w-3.5 h-3.5" />
-              </button>
-            </form>
-          </div>
         </div>
 
-        {/* BOTTOM COPYRIGHT & EMAIL BAR */}
+        {/* BOTTOM COPYRIGHT & CREATED BY SHREYASH BAR */}
         <div className="pt-6 border-t border-slate-800/60 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
           <div className="flex flex-wrap items-center gap-2 text-slate-400">
             <span>© 2026 <strong className="text-slate-200">UpscaleTechSolutions</strong>. All rights reserved.</span>
@@ -121,10 +97,17 @@ export const Footer: React.FC = () => {
             </a>
           </div>
 
-          <div className="flex items-center gap-4 text-slate-500">
-            <a href="#" className="hover:text-slate-300 transition">Privacy Policy</a>
+          <div className="flex flex-wrap items-center gap-3 text-slate-400 font-mono">
+            <span>Created by <strong className="text-slate-200 font-sans">Shreyash Srivastava</strong></span>
             <span>•</span>
-            <a href="#" className="hover:text-slate-300 transition">Terms of Service</a>
+            <a
+              href="https://github.com/ShreyashSrivastavaa/GitFc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-amber-400 font-bold hover:underline flex items-center gap-1"
+            >
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" /> Star on GitHub (ShreyashSrivastavaa/GitFc)
+            </a>
           </div>
         </div>
       </div>
