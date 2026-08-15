@@ -2,14 +2,26 @@
 <html lang="en" class="dark">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" href="/gitfc-clean.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>GitFC — Turn Your GitHub Into a Football Card ⚽</title>
-    <meta name="description" content="Transform your GitHub stats into an authentic EA FC Ultimate Team player card with ratings, positions, pack opener animations, and squad leaderboards." />
     
-    <link rel="canonical" href="https://gitfc.vercel.app/" />
-    <meta name="keywords" content="GitHub, EA FC, Ultimate Team, Developer Cards, GitHub Stats, OVR Rating, Open Source, GitFC, FIFA Cards" />
+    <!-- Primary Meta Tags -->
+    <meta name="description" content="Transform your GitHub stats into an authentic EA FC Ultimate Team player card with ratings, positions, pack opener animations, and squad leaderboards." />
+    <meta name="keywords" content="GitHub, EA FC, Ultimate Team, Developer Cards, GitHub Stats, OVR Rating, Open Source, GitFC, FIFA Cards, Developer Portfolio" />
+    <meta name="author" content="Shreyash Srivastava (GitFC)" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
     <meta name="theme-color" content="#0a0c10" />
+
+    <!-- Canonical Link -->
+    <link rel="canonical" href="https://gitfc.vercel.app/" />
+
+    <!-- Favicon & PWA Icons -->
+    <link rel="icon" type="image/png" href="/gitfc-clean.png" />
+    <link rel="apple-touch-icon" href="/gitfc-clean.png" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Preload Key Brand Assets -->
+    <link rel="preload" href="/gitfc-clean.png" as="image" type="image/png" />
 
     <!-- Open Graph / Facebook / WhatsApp / LinkedIn / Discord -->
     <meta property="og:type" content="website" />
@@ -20,7 +32,9 @@
     <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="GitFC EA FC Developer Cards Banner" />
     <meta property="og:site_name" content="GitFC" />
+    <meta property="og:locale" content="en_US" />
 
     <!-- Twitter / X -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -28,27 +42,99 @@
     <meta name="twitter:title" content="GitFC — Turn Your GitHub Into a Football Card ⚽" />
     <meta name="twitter:description" content="What's your GitFC rating? Turn your GitHub profile into an authentic EA FC Ultimate Team developer card!" />
     <meta name="twitter:image" content="https://gitfc.vercel.app/gitbanner-clean.png" />
+    <meta name="twitter:image:alt" content="GitFC EA FC Developer Cards Banner" />
+    <meta name="twitter:site" content="@gitfc" />
+    <meta name="twitter:creator" content="@ShreyashSrivastavaa" />
 
-    <!-- JSON-LD Structured Data Schema Markup -->
+    <!-- Structured Data (JSON-LD) Schemas -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "GitFC",
-      "url": "https://gitfc.vercel.app/",
-      "description": "Transform your GitHub activity, repositories, and contributions into an authentic EA FC Ultimate Team player card.",
-      "applicationCategory": "DeveloperApplication",
-      "operatingSystem": "All",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": "GitFC Team",
-        "url": "https://github.com/ShreyashSrivastavaa/GitFc"
-      }
+      "@graph": [
+        {
+          "@type": "WebApplication",
+          "@id": "https://gitfc.vercel.app/#webapp",
+          "url": "https://gitfc.vercel.app/",
+          "name": "GitFC",
+          "applicationCategory": "DeveloperApplication",
+          "operatingSystem": "All",
+          "browserRequirements": "Requires JavaScript. Requires HTML5.",
+          "description": "Transform your GitHub activity, repositories, commits, and contributions into an authentic EA FC Ultimate Team player card.",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "author": {
+            "@type": "Organization",
+            "name": "GitFC Team",
+            "url": "https://github.com/ShreyashSrivastavaa/GitFc"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://gitfc.vercel.app/#website",
+          "url": "https://gitfc.vercel.app/",
+          "name": "GitFC — EA FC GitHub Stats Generator",
+          "description": "Turn your GitHub stats into an authentic EA FC Ultimate Team player card",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://gitfc.vercel.app/?card={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://gitfc.vercel.app/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "How does GitFC generate EA FC developer cards?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "GitFC fetches public GitHub activity using the GitHub GraphQL API and converts stats like commits, pull requests, stars, active streaks, and language diversity into EA FC ratings (PAS, SHO, DRI, PAC, DEF, PHY)."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Is GitFC free and open source?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes! GitFC is 100% free, client-side, read-only, and open source. No password or private tokens are required."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "How is Overall Rating (OVR) calculated on GitFC?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "OVR is calculated as a weighted average of key developer metrics: Commits (Passing 20%), Stars (Dribbling 20%), PRs Merged (Shooting 15%), Followers (Physicality 15%), Active Streak (Pace 12%), Skill (10%), Issues Closed (Defense 4%), and Stamina (4%)."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Can I export my EA FC card as an image?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes, GitFC provides 1-click high-resolution PNG export for sharing your card on Twitter, LinkedIn, Discord, and developer portfolios."
+              }
+            }
+          ]
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://gitfc.vercel.app/#organization",
+          "name": "GitFC",
+          "url": "https://gitfc.vercel.app/",
+          "logo": "https://gitfc.vercel.app/gitfc-clean.png",
+          "sameAs": [
+            "https://github.com/ShreyashSrivastavaa/GitFc"
+          ]
+        }
+      ]
     }
     </script>
 

@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
 
+# Host & Sitemap Directives
+Host: https://gitfc.vercel.app
 Sitemap: https://gitfc.vercel.app/sitemap.xml

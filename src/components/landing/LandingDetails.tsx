@@ -5,7 +5,7 @@ export const LandingDetails: React.FC = () => {
   return (
     <div className="space-y-24 py-12 border-t border-slate-800/80">
       {/* SECTION 1: HOW THE SEASON WORKS (3 STEPS) */}
-      <section className="text-center space-y-10">
+      <section id="how-it-works" aria-label="How the Season Works" className="text-center space-y-10">
         <div className="space-y-3">
           <h2 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight uppercase">
             HOW THE SEASON WORKS
@@ -52,7 +52,7 @@ export const LandingDetails: React.FC = () => {
       </section>
 
       {/* SECTION 2: GITHUB TO EA FC TRANSLATION */}
-      <section className="text-center space-y-10">
+      <section id="stat-mappings" aria-label="GitHub to EA FC Translation" className="text-center space-y-10">
         <div className="space-y-3">
           <h2 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight uppercase">
             GITHUB TO EA FC TRANSLATION
@@ -192,7 +192,7 @@ export const LandingDetails: React.FC = () => {
       </section>
 
       {/* SECTION 3: UNDERSTANDING THE CALCULATIONS & FC CARD SHELLS (THE RULE BOOK) */}
-      <section className="space-y-10 text-center">
+      <section id="rule-book" aria-label="Understanding the Calculations and FC Card Shells" className="space-y-10 text-center">
         <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-400 font-mono text-xs font-bold border border-blue-500/30 uppercase tracking-widest mx-auto">
           THE RULE BOOK
         </div>

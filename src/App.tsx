@@ -19,6 +19,7 @@ import { LandingDetails } from './components/landing/LandingDetails';
 import { GeneratedProfileView } from './components/profile/GeneratedProfileView';
 import { UsageCounter } from './components/common/UsageCounter';
 import { TeamInviteBanner } from './components/team/TeamInviteBanner';
+import { SEOHead } from './components/common/SEOHead';
 
 import { Sparkles, Loader2 } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
@@ -151,6 +152,11 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black transition-colors duration-200">
+      <SEOHead
+        activeTab={activeTab}
+        isCardSearched={isCardSearched}
+        currentCard={isCardSearched ? currentCard : null}
+      />
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
