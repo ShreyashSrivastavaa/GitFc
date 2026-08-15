@@ -71,7 +71,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }),
     });
 
-    const tokenData = await tokenRes.json();
+    const tokenData = (await tokenRes.json()) as any;
     if (tokenData.error || !tokenData.access_token) {
       console.error('OAuth token exchange error:', tokenData);
       res.setHeader('Set-Cookie', clearStateCookie);
@@ -93,7 +93,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.redirect(302, `${returnOrigin}/?auth=error&message=GitHub+is+temporarily+unavailable.+Please+try+again.`);
     }
 
-    const userData = await userRes.json();
+    const userData = (await userRes.json()) as any;
     const username = userData.login;
 
     // 6. Create secure HTTP-only session cookie

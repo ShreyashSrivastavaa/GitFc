@@ -53,7 +53,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         { headers }
       );
       if (reposRes.ok) {
-        reposData = await reposRes.json();
+        reposData = (await reposRes.json()) as any[];
       }
     } catch {
       // Non-fatal if repos fetch fails
