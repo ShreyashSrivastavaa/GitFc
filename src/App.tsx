@@ -23,7 +23,6 @@ import { SEOHead } from './components/common/SEOHead';
 import { Preloader } from './components/common/Preloader';
 
 import { Sparkles, Loader2 } from 'lucide-react';
-import { Analytics } from '@vercel/analytics/react';
 
 export function App() {
   const [showPreloader, setShowPreloader] = useState(true);
@@ -371,8 +370,6 @@ export function App() {
           setActiveTab('dressing-room');
         }}
       />
-
-      <Analytics />
     </div>
   );
 }
