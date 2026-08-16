@@ -48,21 +48,21 @@ export function determineRarity(overall: number, powerScore: number, stats?: Git
 
 export function determinePosition(stats: GitHubRawStats, ratings: EAFCRatings): { position: CardPosition; title: string } {
   if (ratings.dri >= 85 || stats.stars > 1000) {
-    return { position: 'INF', title: 'Open Source Influencer' };
+    return { position: 'ST', title: 'Open Source Influencer' };
   }
   if (ratings.pas >= 85 && stats.languages.length >= 6) {
-    return { position: 'GEN', title: 'Full Stack Generalist' };
+    return { position: 'CAM', title: 'Full Stack Generalist' };
   }
   if (ratings.sho >= 82 || stats.prsMerged > 200) {
-    return { position: 'COL', title: 'Master Collaborator' };
+    return { position: 'CM', title: 'Master Collaborator' };
   }
   if (ratings.pac >= 85 || stats.streakDays > 180) {
-    return { position: 'HUS', title: 'Daily Code Hustler' };
+    return { position: 'LW', title: 'Daily Code Hustler' };
   }
   if (ratings.sta >= 80 || stats.publicRepos > 50) {
-    return { position: 'ARC', title: 'System Architect' };
+    return { position: 'CB', title: 'System Architect' };
   }
-  return { position: 'DEV', title: 'Core Developer' };
+  return { position: 'RW', title: 'Core Developer' };
 }
 
 export function generateDevBadges(stats: GitHubRawStats): DevBadge[] {

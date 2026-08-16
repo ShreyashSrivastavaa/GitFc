@@ -16,20 +16,17 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
   const handlePositionChange = (position: CardPosition) => {
     const positionTitles: Partial<Record<CardPosition, string>> = {
       ST: 'Striker',
-      CAM: 'Midfielder',
-      CB: 'Defender',
+      CF: 'Center Forward',
+      CAM: 'Attacking Midfielder',
+      CM: 'Central Midfielder',
+      CB: 'Center Back',
       GK: 'Goalkeeper',
+      LW: 'Left Wing',
+      RW: 'Right Wing',
       MGR: 'Manager',
       SUB: 'Substitute',
-      CM: 'Central Midfielder',
-      GEN: 'Full Stack Generalist',
-      INF: 'Open Source Influencer',
-      COL: 'Master Collaborator',
-      HUS: 'Daily Code Hustler',
-      DEV: 'Core Developer',
-      ARC: 'System Architect'
     };
-    onUpdateCard({ ...card, position, positionTitle: positionTitles[position] || 'Core Developer' });
+    onUpdateCard({ ...card, position, positionTitle: positionTitles[position] || card.positionTitle });
   };
 
   const handleChemChange = (chemistryStyle: any) => {
@@ -127,14 +124,14 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
 
         <div>
           <label className="block text-xs font-mono text-slate-400 mb-2 uppercase font-bold">
-            STAT POSITION CATEGORY
+            CARD POSITION SHORTCODE
           </label>
-          <div className="grid grid-cols-3 gap-2">
-            {(['GEN', 'INF', 'COL', 'HUS', 'DEV', 'ARC'] as CardPosition[]).map((pos) => (
+          <div className="grid grid-cols-5 gap-2">
+            {(['ST', 'CF', 'CAM', 'CM', 'CB', 'GK', 'LW', 'RW', 'MGR', 'SUB'] as CardPosition[]).map((pos) => (
               <button
                 key={pos}
                 onClick={() => handlePositionChange(pos)}
-                className={`py-1.5 px-3 rounded-xl text-xs font-bold transition border ${
+                className={`py-1.5 px-2 rounded-xl text-xs font-bold transition border ${
                   card.position === pos
                     ? 'bg-amber-500 text-slate-950 border-amber-400 font-black'
                     : 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700'
