@@ -19,12 +19,13 @@ import { LandingDetails } from './components/landing/LandingDetails';
 import { GeneratedProfileView } from './components/profile/GeneratedProfileView';
 import { UsageCounter } from './components/common/UsageCounter';
 import { TeamInviteBanner } from './components/team/TeamInviteBanner';
-import { SEOHead } from './components/common/SEOHead';
+import { Preloader } from './components/common/Preloader';
 
 import { Sparkles, Loader2 } from 'lucide-react';
 import { Analytics } from '@vercel/analytics/react';
 
 export function App() {
+  const [showPreloader, setShowPreloader] = useState(true);
   const [activeTab, setActiveTab] = useState<ActiveTab>('generator');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentCard, setCurrentCard] = useState<EAFCDevCard>(PRESET_DEVS[0]);
@@ -150,8 +151,17 @@ export function App() {
     setPendingInvite(null);
   };
 
+  const handleGoHome = () => {
+    setActiveTab('generator');
+    setIsCardSearched(false);
+    if (window.location.search) {
+      window.history.pushState({}, document.title, window.location.pathname);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black transition-colors duration-200 overflow-x-hidden max-w-full w-full">
+      {showPreloader && <Preloader onComplete={() => setShowPreloader(false)} />}
       <SEOHead
         activeTab={activeTab}
         isCardSearched={isCardSearched}
@@ -162,6 +172,7 @@ export function App() {
         setActiveTab={setActiveTab}
         onConnectGitHub={handleConnectGitHub}
         onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
+        onGoHome={handleGoHome}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 space-y-6 overflow-x-hidden">

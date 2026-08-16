@@ -7,6 +7,7 @@ interface NavbarProps {
   setActiveTab: (tab: ActiveTab) => void;
   onConnectGitHub: () => void;
   onOpenCreateTeamModal: () => void;
+  onGoHome?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -14,6 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   setActiveTab,
   onConnectGitHub,
   onOpenCreateTeamModal,
+  onGoHome,
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -22,12 +24,22 @@ export const Navbar: React.FC<NavbarProps> = ({
     setIsMobileMenuOpen(false);
   };
 
+  const handleLogoClick = () => {
+    if (onGoHome) {
+      onGoHome();
+    } else {
+      setActiveTab('generator');
+    }
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-slate-950/80 backdrop-blur-xl border-b border-slate-800/80 px-4 lg:px-8 py-3">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* LOGO & BRAND */}
         <div
-          onClick={() => handleTabClick('generator')}
+          onClick={handleLogoClick}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleLogoClick(); }}
           className="flex items-center gap-2.5 cursor-pointer group min-h-[44px]"
           role="button"
           tabIndex={0}
