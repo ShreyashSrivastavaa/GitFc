@@ -52,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           />
           <div>
             <div className="font-display font-black text-xl tracking-tight text-white flex items-center gap-1.5">
-              GITCARDS <span className="text-amber-400 font-extrabold text-sm px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">UT 25</span>
+              GITCARDS <span className="text-amber-400 font-extrabold text-sm px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">UT 26</span>
             </div>
             <div className="text-[10px] font-mono text-slate-400">EA FC GitHub Stats Generator</div>
           </div>

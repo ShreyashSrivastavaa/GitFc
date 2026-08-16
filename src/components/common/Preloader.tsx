@@ -59,7 +59,7 @@ export const Preloader: React.FC<PreloaderProps> = ({ onComplete, minDuration = 
               GITFC
             </span>
             <span className="text-xs font-mono font-extrabold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/40 uppercase tracking-widest">
-              UT 25
+              UT 26
             </span>
           </h1>
           <p className="text-[11px] sm:text-xs font-mono font-bold text-slate-400 tracking-widest uppercase">
