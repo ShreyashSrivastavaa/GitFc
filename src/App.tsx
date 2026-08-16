@@ -19,6 +19,7 @@ import { LandingDetails } from './components/landing/LandingDetails';
 import { GeneratedProfileView } from './components/profile/GeneratedProfileView';
 import { UsageCounter } from './components/common/UsageCounter';
 import { TeamInviteBanner } from './components/team/TeamInviteBanner';
+import { SEOHead } from './components/common/SEOHead';
 import { Preloader } from './components/common/Preloader';
 
 import { Sparkles, Loader2 } from 'lucide-react';
