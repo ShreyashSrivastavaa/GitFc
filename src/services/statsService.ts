@@ -4,8 +4,8 @@ export interface CounterStats {
   lastUpdated: string;
 }
 
-const STORAGE_KEY = 'gitcards_total_generations_v2';
-const INITIAL_COUNT = 1;
+const STORAGE_KEY = 'gitcards_total_generations_v3';
+const INITIAL_COUNT = 1250;
 
 export function formatGenerationsCount(count: number): string {
   if (count < 100) {
