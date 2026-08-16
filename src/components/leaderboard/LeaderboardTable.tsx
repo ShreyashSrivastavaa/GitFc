@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import type { EAFCDevCard, CardRarity, Team } from '../../types';
-import { Trophy, Lock, UserPlus, Copy, Check, RefreshCw } from 'lucide-react';
+import { Trophy, Lock, UserPlus, Copy, Check } from 'lucide-react';
 import { buildNetworkLeaderboard, type NetworkRelationship } from '../../services/leaderboardService';
+import { AddNetworkDevModal } from './AddNetworkDevModal';
 
 interface LeaderboardTableProps {
   cards: EAFCDevCard[];
@@ -24,9 +25,44 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   onConnectGitHub,
   onSelectCard,
 }) => {
-  const [filterRelation, setFilterRelation] = useState<'all' | 'following' | 'followers' | 'teammate' | 'mutual'>('all');
+  const [filterRelation, setFilterRelation] = useState<'all' | 'following' | 'followers' | 'teammate' | 'mutual' | 'custom'>('all');
   const [sortBy, setSortBy] = useState<'overall' | 'stars' | 'commits' | 'followers'>('overall');
   const [copiedLink, setCopiedLink] = useState(false);
+
+  // Custom added developers saved in localStorage
+  const [addedNetworkCards, setAddedNetworkCards] = useState<EAFCDevCard[]>(() => {
+    try {
+      const saved = localStorage.getItem('gitfc_custom_network_cards');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+
+  const handleAddDevToNetwork = (card: EAFCDevCard) => {
+    setAddedNetworkCards((prev) => {
+      if (prev.some((c) => c.username.toLowerCase() === card.username.toLowerCase())) {
+        return prev;
+      }
+      const updated = [...prev, card];
+      try {
+        localStorage.setItem('gitfc_custom_network_cards', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleRemoveDevFromNetwork = (username: string) => {
+    setAddedNetworkCards((prev) => {
+      const updated = prev.filter((c) => c.username.toLowerCase() !== username.toLowerCase());
+      try {
+        localStorage.setItem('gitfc_custom_network_cards', JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
 
   // If not connected to GitHub -> Show Connect Wall
   if (!isConnected || !currentUserCard) {
@@ -63,7 +99,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         <div className="pt-2">
           <button
             onClick={onConnectGitHub}
-            className="py-4 px-8 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-sm hover:brightness-110 shadow-xl shadow-amber-500/20 inline-flex items-center gap-2 transition"
+            className="py-4 px-8 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-sm hover:brightness-110 shadow-xl shadow-amber-500/20 inline-flex items-center gap-2 transition cursor-pointer"
           >
             <Lock className="w-4 h-4" /> 🔗 Connect GitHub to View
           </button>
@@ -78,7 +114,8 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     following,
     followers,
     userTeam,
-    cards
+    cards,
+    addedNetworkCards
   );
 
   const filteredEntries = networkEntries
@@ -87,6 +124,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
       if (filterRelation === 'followers') return entry.relationship === 'follows_you' || entry.relationship === 'mutual' || entry.isCurrentUser;
       if (filterRelation === 'teammate') return entry.relationship === 'teammate' || entry.isCurrentUser;
       if (filterRelation === 'mutual') return entry.relationship === 'mutual' || entry.isCurrentUser;
+      if (filterRelation === 'custom') return entry.relationship === 'custom' || entry.isCurrentUser;
       return true;
     })
     .sort((a, b) => {
@@ -97,9 +135,12 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
     });
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(window.location.origin);
+    const origin = window.location.origin.includes('localhost') ? 'https://gitfc.vercel.app' : window.location.origin;
+    const inviteUrl = `${origin}/?card=${encodeURIComponent(currentUserCard.username)}`;
+    const text = `Check out my EA FC GitHub Player Card & compare ratings on GitFC! ⚽ ${inviteUrl}`;
+    navigator.clipboard.writeText(text);
     setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
+    setTimeout(() => setCopiedLink(false), 3000);
   };
 
   const getRelationshipBadge = (relationship: NetworkRelationship) => {
@@ -114,6 +155,8 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-500/20 text-emerald-300 uppercase border border-emerald-400/40">FOLLOWS YOU</span>;
       case 'teammate':
         return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-yellow-500/20 text-yellow-300 uppercase border border-yellow-400/40">TEAMMATE</span>;
+      case 'custom':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-cyan-500/20 text-cyan-300 uppercase border border-cyan-400/40">ADDED DEV</span>;
     }
   };
 
@@ -135,7 +178,7 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
   };
 
   return (
-    <div className="w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl backdrop-blur-md space-y-6">
+    <div className="w-full bg-slate-900/80 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl backdrop-blur-md space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-slate-800">
         <div>
@@ -146,18 +189,26 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
             🏆 YOUR DEVELOPER NETWORK RANKINGS
           </h2>
           <p className="text-xs text-slate-400 mt-1 font-mono">
-            Only showing developers in your GitHub network (@{currentUserCard.username})
+            Showing developers in your GitHub network & added cards (@{currentUserCard.username})
           </p>
         </div>
 
-        {/* Filter Controls */}
+        {/* Action & Filter Controls */}
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-xs hover:brightness-110 shadow transition flex items-center gap-1.5 cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5" /> + ADD DEV TO NETWORK
+          </button>
+
           <select
             value={filterRelation}
             onChange={(e) => setFilterRelation(e.target.value as any)}
             className="px-3 py-2 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 focus:outline-none focus:border-amber-400"
           >
-            <option value="all">All Network</option>
+            <option value="all">All Network ({networkEntries.length})</option>
+            <option value="custom">Added Devs ({addedNetworkCards.length})</option>
             <option value="following">Following only</option>
             <option value="followers">Followers only</option>
             <option value="teammate">Team members only</option>
@@ -177,22 +228,28 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
         </div>
       </div>
 
-      {/* Low Network Count State (< 5 users) */}
+      {/* Low Network Count Banner (< 5 users) */}
       {networkEntries.length < 5 && (
         <div className="bg-slate-950 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-slate-300">
           <div>
             <span className="text-amber-400 font-bold">
-              Only {networkEntries.length} people in your network use GitCards.
+              Only {networkEntries.length} developer{networkEntries.length === 1 ? '' : 's'} in your network leaderboard.
             </span>{' '}
-            Invite more friends to compete!
+            Search and add any GitHub dev or copy your card invite link!
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="px-3 py-1.5 rounded-xl bg-amber-500 text-slate-950 font-bold text-xs flex items-center gap-1.5 hover:bg-amber-400 transition cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" /> + Add Dev to Network
+            </button>
             <button
               onClick={handleCopyLink}
-              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition"
+              className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold flex items-center gap-1.5 border border-slate-700 transition cursor-pointer"
             >
-              {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-              {copiedLink ? 'Copied Link!' : 'Copy Invite Link'}
+              {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+              {copiedLink ? 'Copied Card Invite Link!' : 'Copy Invite Link'}
             </button>
           </div>
         </div>
@@ -285,23 +342,33 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 
       {/* Footer controls */}
       <div className="pt-4 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-slate-400">
-        <div>Only showing developers in your GitHub network</div>
-        <div className="flex items-center gap-3">
+        <div>Showing developers in your network ({networkEntries.length} total)</div>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
           <button
-            onClick={() => window.location.reload()}
-            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold flex items-center gap-1.5 transition"
+            onClick={() => setIsAddModalOpen(true)}
+            className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold flex items-center gap-1.5 transition cursor-pointer"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-amber-400" /> Refresh Network
+            <UserPlus className="w-3.5 h-3.5" /> + Add Dev to Network
           </button>
 
           <button
-            onClick={onConnectGitHub}
-            className="px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-bold flex items-center gap-1.5 transition"
+            onClick={handleCopyLink}
+            className="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold flex items-center gap-1.5 border border-slate-700 transition cursor-pointer"
           >
-            <UserPlus className="w-3.5 h-3.5" /> + Invite Friend to GitCards
+            {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+            {copiedLink ? 'Copied Card Invite Link!' : 'Copy Invite Link'}
           </button>
         </div>
       </div>
+
+      {/* ADD DEVELOPER TO NETWORK MODAL */}
+      <AddNetworkDevModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        addedNetworkCards={addedNetworkCards}
+        onAddDevToNetwork={handleAddDevToNetwork}
+        onRemoveDevFromNetwork={handleRemoveDevFromNetwork}
+      />
     </div>
   );
 };
