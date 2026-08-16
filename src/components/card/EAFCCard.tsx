@@ -189,7 +189,7 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
           style={{ transform: transformStyle }}
-          className={`card-tilt-inner relative w-[340px] h-[520px] rounded-3xl p-4 shadow-2xl border-4 ${config.bgClass} flex flex-col justify-between overflow-hidden cursor-pointer transition-shadow duration-300`}
+          className={`card-tilt-inner relative w-[290px] xs:w-[320px] sm:w-[340px] max-w-full h-[480px] xs:h-[500px] sm:h-[520px] rounded-3xl p-3.5 sm:p-4 shadow-2xl border-4 ${config.bgClass} flex flex-col justify-between overflow-hidden cursor-pointer transition-shadow duration-300`}
         >
           <div
             className="absolute inset-0 holographic-overlay transition-opacity duration-300 pointer-events-none"
@@ -262,7 +262,7 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
         style={{ transform: transformStyle }}
         role="article"
         aria-label={`EA FC Player Card for ${card.name} (@${card.username}), ${card.ratings.overall} OVR`}
-        className={`card-tilt-inner relative w-[320px] sm:w-[340px] h-[520px] rounded-3xl p-4 shadow-2xl border-4 ${config.bgClass} flex flex-col justify-between overflow-hidden cursor-pointer transition-shadow duration-300`}
+        className={`card-tilt-inner relative w-[290px] xs:w-[320px] sm:w-[340px] max-w-full h-[480px] xs:h-[500px] sm:h-[520px] rounded-3xl p-3.5 sm:p-4 shadow-2xl border-4 ${config.bgClass} flex flex-col justify-between overflow-hidden cursor-pointer transition-shadow duration-300`}
       >
         <div
           className="absolute inset-0 holographic-overlay transition-opacity duration-300 pointer-events-none"

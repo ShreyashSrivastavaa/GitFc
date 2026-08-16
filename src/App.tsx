@@ -151,7 +151,7 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black transition-colors duration-200">
+    <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black transition-colors duration-200 overflow-x-hidden max-w-full w-full">
       <SEOHead
         activeTab={activeTab}
         isCardSearched={isCardSearched}
@@ -164,7 +164,7 @@ export function App() {
         onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 space-y-6 overflow-x-hidden">
         {/* IN-APP TEAM INVITATION NOTIFICATION BANNER */}
         {pendingInvite && (
           <TeamInviteBanner
@@ -197,7 +197,7 @@ export function App() {
                     <Sparkles className="w-3.5 h-3.5" /> YOUR GITHUB. YOUR SQUAD. • 100% CLIENT-SIDE READ-ONLY
                   </div>
 
-                  <h1 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.15]">
+                  <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.15]">
                     Turn your GitHub Profile into an <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-300 to-amber-500">EA FC Player Card</span>
                   </h1>
 

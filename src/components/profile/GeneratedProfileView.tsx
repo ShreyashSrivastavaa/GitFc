@@ -314,16 +314,16 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
         </div>
 
         {/* RIGHT COLUMN: PLAYER ATTRIBUTES & FOOTBALL DETAILS */}
-        <div className="lg:col-span-7 space-y-6 text-left">
+        <div className="lg:col-span-7 space-y-6 text-left max-w-full overflow-hidden">
           {/* PLAYER HEADER & OVR BADGE */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl relative overflow-hidden">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="font-display font-black text-3xl sm:text-4xl text-white tracking-tight">
+              <div className="min-w-0 max-w-full">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <h1 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight break-words">
                     {card.name}
                   </h1>
-                  <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 font-display font-black text-base">
+                  <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 font-display font-black text-sm sm:text-base">
                     OVR {card.ratings.overall}
                   </span>
                 </div>
@@ -336,11 +336,11 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
                     @{card.username}
                   </span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 mt-3">
-                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono text-xs font-bold flex items-center gap-1.5">
-                    <span>⚡</span> Developer Archetype: <strong className="text-white">{card.positionTitle}</strong>
+                <div className="flex flex-wrap items-center gap-2 mt-3 max-w-full">
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono text-[11px] sm:text-xs font-bold flex items-center gap-1.5 max-w-full">
+                    <span>⚡</span> Archetype: <strong className="text-white">{card.positionTitle}</strong>
                   </span>
-                  <span className="px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono text-xs font-bold flex items-center gap-1.5">
+                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono text-[11px] sm:text-xs font-bold flex items-center gap-1.5 max-w-full">
                     <span>{card.footballPositionBadge || '⚽'}</span> Position: <strong className="text-white">{card.position}</strong> ({card.footballPositionTitle})
                   </span>
                 </div>
@@ -352,16 +352,16 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
           </div>
 
           {/* LEAGUE MEMBERSHIP BANNER */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 max-w-full">
+            <div className="flex items-center gap-3 min-w-0 max-w-full">
               <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
                 <Trophy className="w-5 h-5" />
               </div>
-              <div className="min-w-0">
-                <div className="font-display font-extrabold text-sm text-white truncate">
+              <div className="min-w-0 max-w-full">
+                <div className="font-display font-extrabold text-xs sm:text-sm text-white truncate max-w-full">
                   {userTeam ? `Squad: ${userTeam.name} • Active in ${activeLeagueName}` : `Active League: ${activeLeagueName}`}
                 </div>
-                <div className="text-xs text-slate-400 truncate">
+                <div className="text-[11px] sm:text-xs text-slate-400 truncate max-w-full">
                   {userTeam ? `${userTeam.totalPlayers}/15 Teammates Registered • Rank #${userTeam.leaguePosition || 1}` : 'Official EA FC Developer League Membership'}
                 </div>
               </div>
@@ -388,10 +388,10 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
           </div>
 
           {/* MATCH FORMAT COMPETITION SELECTOR WITH PROGRESSIVE LOCKS */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-xl space-y-3">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3 max-w-full">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
               <label className="block text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">
-                SELECT MATCH COMPETITION MODE ({activeLeagueName.toUpperCase()} &lt; CHAMPIONS LEAGUE &lt; WORLD CUP)
+                SELECT MATCH COMPETITION MODE <span className="hidden sm:inline">({activeLeagueName.toUpperCase()} &lt; CHAMPIONS LEAGUE &lt; WORLD CUP)</span>
               </label>
               <span className="text-xs font-mono font-bold text-amber-400 whitespace-nowrap">
                 {currentMultiplier.label}
