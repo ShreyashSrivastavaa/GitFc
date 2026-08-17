@@ -1,80 +1,117 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Persistent UUID bucket on KVDB
-const KV_BUCKET = 'c4b14d48-64bf-4b95-a13f-9a1b660505b3';
-const KV_KEY = 'gitfc_total_card_generations';
-const BASELINE_DEFAULT = 142;
+const BASELINE_DEFAULT = 144;
+
+// Primary & Secondary global counter endpoints
+const COUNTER_KEY = 'gitfc_global_card_generations_2026';
+const CODETABS_URL = `https://api.codetabs.com/v1/counter?key=${COUNTER_KEY}`;
+const COUNTERAPI_URL = `https://api.counterapi.dev/v2/gitfc_app_2026/card_generations`;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS headers for cross-device requests
+  // Enable CORS headers for cross-device requests (phones, laptops, tablets)
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
-  const kvUrl = `https://kvdb.io/${KV_BUCKET}/${KV_KEY}`;
-
   try {
     if (req.method === 'POST') {
-      // 1. Atomic global increment via KVDB (?inc=1)
-      try {
-        const incRes = await fetch(`${kvUrl}?inc=1`, { method: 'POST' });
-        if (incRes.ok) {
-          const text = await incRes.text();
-          const parsed = parseInt(text.trim(), 10);
-          if (!isNaN(parsed) && parsed > 0) {
-            return res.status(200).json({ count: parsed, source: 'kv_store_inc' });
-          }
-        }
-      } catch (err) {
-        console.warn('KVDB inc failed, trying fallback write', err);
-      }
-
-      // 2. Fallback: Read current and add 1
-      const current = await getGlobalCount(kvUrl);
-      const nextCount = current + 1;
-      await setGlobalCount(kvUrl, nextCount);
-
-      return res.status(200).json({ count: nextCount, source: 'kv_store_write' });
+      const nextCount = await incrementGlobalCount();
+      return res.status(200).json({ count: nextCount, source: 'global_counter_inc' });
     }
 
-    // GET Request - Read exact live global count
-    const current = await getGlobalCount(kvUrl);
-    return res.status(200).json({ count: current, source: 'kv_store_read' });
+    // GET Request - Read live global count
+    const current = await readGlobalCount();
+    return res.status(200).json({ count: current, source: 'global_counter_read' });
   } catch (err: any) {
     console.error('Serverless stats handler error:', err);
     return res.status(200).json({ count: BASELINE_DEFAULT, source: 'fallback' });
   }
 }
 
-async function getGlobalCount(url: string): Promise<number> {
+async function incrementGlobalCount(): Promise<number> {
+  // 1. Try CodeTabs counter (returns JSON count or integer)
   try {
-    const response = await fetch(url, { method: 'GET' });
-    if (response.ok) {
-      const text = await response.text();
-      const parsed = parseInt(text.trim(), 10);
-      if (!isNaN(parsed) && parsed >= BASELINE_DEFAULT) {
-        return parsed;
+    const res = await fetch(`${CODETABS_URL}&action=inc`, { method: 'GET', headers: { Accept: 'application/json' } });
+    if (res.ok) {
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        const count = json.count || json.value || parseInt(text, 10);
+        if (typeof count === 'number' && !isNaN(count) && count >= BASELINE_DEFAULT) {
+          return count;
+        }
+      } catch {
+        const parsed = parseInt(text.trim(), 10);
+        if (!isNaN(parsed) && parsed >= BASELINE_DEFAULT) {
+          return parsed;
+        }
       }
     }
   } catch (err) {
-    console.warn('Failed to read from KV storage', err);
+    console.warn('CodeTabs inc failed, trying secondary counter:', err);
   }
+
+  // 2. Try CounterAPI v2 endpoint
+  try {
+    const res = await fetch(`${COUNTERAPI_URL}/up`, { method: 'GET', headers: { Accept: 'application/json' } });
+    if (res.ok) {
+      const data = (await res.json()) as any;
+      const count = data?.data?.up || data?.count || data?.value;
+      if (typeof count === 'number' && !isNaN(count) && count >= BASELINE_DEFAULT) {
+        return count;
+      }
+    }
+  } catch (err) {
+    console.warn('CounterAPI v2 inc failed:', err);
+  }
+
+  // Fallback if APIs fail temporarily
+  return BASELINE_DEFAULT + 1;
+}
+
+async function readGlobalCount(): Promise<number> {
+  // 1. Try CodeTabs counter GET
+  try {
+    const res = await fetch(CODETABS_URL, { method: 'GET', headers: { Accept: 'application/json' } });
+    if (res.ok) {
+      const text = await res.text();
+      try {
+        const json = JSON.parse(text);
+        const count = json.count || json.value || parseInt(text, 10);
+        if (typeof count === 'number' && !isNaN(count) && count >= BASELINE_DEFAULT) {
+          return count;
+        }
+      } catch {
+        const parsed = parseInt(text.trim(), 10);
+        if (!isNaN(parsed) && parsed >= BASELINE_DEFAULT) {
+          return parsed;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('CodeTabs GET failed:', err);
+  }
+
+  // 2. Try CounterAPI v2 GET
+  try {
+    const res = await fetch(COUNTERAPI_URL, { method: 'GET', headers: { Accept: 'application/json' } });
+    if (res.ok) {
+      const data = (await res.json()) as any;
+      const count = data?.data?.up || data?.count || data?.value;
+      if (typeof count === 'number' && !isNaN(count) && count >= BASELINE_DEFAULT) {
+        return count;
+      }
+    }
+  } catch (err) {
+    console.warn('CounterAPI v2 GET failed:', err);
+  }
+
   return BASELINE_DEFAULT;
 }
 
-async function setGlobalCount(url: string, count: number): Promise<void> {
-  try {
-    await fetch(url, {
-      method: 'POST',
-      body: count.toString(),
-      headers: { 'Content-Type': 'text/plain' },
-    });
-  } catch (err) {
-    console.warn('Failed to write to KV storage', err);
-  }
-}

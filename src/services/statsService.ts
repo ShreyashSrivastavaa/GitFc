@@ -4,8 +4,8 @@ export interface CounterStats {
   lastUpdated: string;
 }
 
-const STORAGE_KEY = 'gitcards_global_generations_cache_v5';
-const FALLBACK_BASELINE = 142; // Current global baseline
+const STORAGE_KEY = 'gitcards_global_generations_cache_v6';
+const FALLBACK_BASELINE = 144; // Current baseline counter
 
 export function formatGenerationsCount(count: number): string {
   return count.toLocaleString();
@@ -54,9 +54,17 @@ export async function fetchLiveCounterStats(): Promise<CounterStats> {
 }
 
 export async function incrementCounterStats(): Promise<CounterStats> {
-  let nextCount = getCounterStatsSync().totalGenerations + 1;
+  // Optimistic increment for instantaneous UI update on current device
+  const currentSync = getCounterStatsSync();
+  let nextCount = currentSync.totalGenerations + 1;
   saveLocalCache(nextCount);
 
+  // Instantly notify local UI
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('gitfc_counter_updated', { detail: nextCount }));
+  }
+
+  // Post increment to global persistent serverless API
   try {
     const res = await fetch('/api/stats', {
       method: 'POST',
@@ -65,18 +73,17 @@ export async function incrementCounterStats(): Promise<CounterStats> {
 
     if (res && res.ok) {
       const data = await res.json();
-      if (data && typeof data.count === 'number') {
+      if (data && typeof data.count === 'number' && data.count >= FALLBACK_BASELINE) {
         nextCount = data.count;
         saveLocalCache(nextCount);
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('gitfc_counter_updated', { detail: nextCount }));
+        }
       }
     }
   } catch (err) {
     console.warn('Failed to post global counter increment', err);
-  }
-
-  // Dispatch custom event to notify UI
-  if (typeof window !== 'undefined') {
-    window.dispatchEvent(new CustomEvent('gitfc_counter_updated', { detail: nextCount }));
   }
 
   return {
@@ -95,3 +102,4 @@ function saveLocalCache(count: number) {
 export function getCounterStats(): CounterStats {
   return getCounterStatsSync();
 }
+
