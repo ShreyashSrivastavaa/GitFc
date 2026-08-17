@@ -1,8 +1,9 @@
 /**
  * Counter Service for GitCards
- * Manages developer card generation counters with request deduplication,
- * 500ms debouncing, 60s Set throttling per user, 3-attempt exponential backoff retries,
- * localStorage state tracking, offline fallback, and structured console logging.
+ * Manages developer card generation counters.
+ * Increments the global/local counter on EVERY card generation with instantaneous UI updates,
+ * deduplication against same-frame double-triggers, 3-attempt exponential backoff retries,
+ * and localStorage fallback.
  */
 
 export interface CounterSessionData {
@@ -20,15 +21,14 @@ export interface CounterStats {
   lastUpdated: string;
 }
 
-export const COUNTER_DEBOUNCE_MS = 500;
+export const COUNTER_DEBOUNCE_MS = 200;
 export const SESSION_COUNTER_KEY = 'gitcards_counter_session';
 export const USER_ID_KEY = 'gitcards_user_id';
 export const FALLBACK_BASELINE = 142;
 
-// In-memory set for 60-second request deduplication per user
+// In-memory set for microsecond deduplication of exact same event
 const lastCounterUpdate = new Set<string>();
 
-// Expose set on window for quick browser debugging
 if (typeof window !== 'undefined') {
   (window as any).lastCounterUpdateSet = lastCounterUpdate;
 }
@@ -107,18 +107,18 @@ export function saveSessionData(data: CounterSessionData): void {
  * Fetch helper with 3-attempt exponential backoff retry logic (2s, 4s, 8s)
  */
 async function fetchWithRetry(url: string, init?: RequestInit, maxRetries = 3): Promise<Response> {
-  const delays = [0, 2000, 4000, 8000];
+  const delays = [0, 1500, 3000, 5000];
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     if (attempt > 0) {
-      const delay = delays[attempt] || 8000;
+      const delay = delays[attempt] || 5000;
       console.log(`[CounterService] Retrying API call (Attempt ${attempt}/${maxRetries}) after ${delay}ms...`);
       await new Promise((r) => setTimeout(r, delay));
     }
 
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
+      const timeoutId = setTimeout(() => controller.abort(), 4000);
 
       const response = await fetch(url, {
         ...init,
@@ -140,14 +140,14 @@ async function fetchWithRetry(url: string, init?: RequestInit, maxRetries = 3): 
 }
 
 /**
- * Clean up old keys from lastCounterUpdate Set (keep entries from current minute)
+ * Clean up old entries from lastCounterUpdate Set
  */
 function cleanupExpiredThrottleKeys() {
-  const currentBucket = Math.floor(Date.now() / 60000);
+  const currentBucket = Math.floor(Date.now() / 1000);
   for (const key of lastCounterUpdate) {
     const parts = key.split('_');
     const bucket = parseInt(parts[parts.length - 1], 10);
-    if (!isNaN(bucket) && currentBucket - bucket > 1) {
+    if (!isNaN(bucket) && currentBucket - bucket > 2) {
       lastCounterUpdate.delete(key);
     }
   }
@@ -156,34 +156,54 @@ function cleanupExpiredThrottleKeys() {
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
 /**
- * Increment counter safely with deduplication, throttling, retries, and offline fallback.
+ * Increment counter on EVERY card generation.
+ * Performs instantaneous optimistic local update (+1) and sends background API update.
  */
-export async function incrementCounterSafely(): Promise<number> {
+export async function incrementCounterSafely(customGenId?: string): Promise<number> {
   cleanupExpiredThrottleKeys();
 
   const userId = getUserId();
-  const minuteBucket = Math.floor(Date.now() / 60000);
-  const key = `${userId}_${minuteBucket}`;
+  // 300ms window key to deduplicate exact same microtask event double-trigger
+  const timeBucket = customGenId || `${userId}_${Math.floor(Date.now() / 300)}`;
 
-  if (lastCounterUpdate.has(key)) {
-    console.group('GitCards Counter Service');
-    console.log('Counter already incremented this minute for user key:', key);
-    console.groupEnd();
+  if (lastCounterUpdate.has(timeBucket)) {
+    console.log('[CounterService] Suppressed duplicate micro-trigger for same generation');
     return getStoredSessionData().count;
   }
-
-  lastCounterUpdate.add(key);
+  lastCounterUpdate.add(timeBucket);
 
   console.group('GitCards Counter Service');
   console.log('generation_success');
+
+  // Optimistically increment local count immediately for instantaneous UI update
+  const stored = getStoredSessionData();
+  const optimisticCount = stored.count + 1;
+
+  const optimisticData: CounterSessionData = {
+    count: optimisticCount,
+    lastCounterUpdate: Date.now(),
+    totalGenerated: stored.totalGenerated + 1,
+    lastUserId: userId,
+    timestamp: Date.now(),
+    fallback: false,
+  };
+
+  saveSessionData(optimisticData);
+
+  // Dispatch custom event to immediately update UsageCounter UI component
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('gitfc_counter_updated', { detail: optimisticCount })
+    );
+  }
+
   console.log('counter_increment_attempt', {
     userId,
-    key,
+    optimisticCount,
     timestamp: new Date().toISOString(),
   });
 
   try {
-    // Try primary serverless proxy first, fall back to direct CounterAPI endpoint
     let response: Response | null = null;
 
     try {
@@ -199,78 +219,49 @@ export async function incrementCounterSafely(): Promise<number> {
       );
     }
 
-    if (!response || !response.ok) {
-      throw new Error(`Counter API returned status ${response?.status || 'network_error'}`);
+    if (response && response.ok) {
+      const data = await response.json();
+      const serverCount = data.value ?? data.count ?? data?.data?.up_count;
+
+      if (typeof serverCount === 'number' && !isNaN(serverCount)) {
+        const finalCount = Math.max(serverCount, optimisticCount);
+        const finalData: CounterSessionData = {
+          ...optimisticData,
+          count: finalCount,
+        };
+
+        saveSessionData(finalData);
+
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('gitfc_counter_updated', { detail: finalCount })
+          );
+        }
+
+        console.log('counter_success', {
+          count: finalCount,
+          timestamp: new Date().toISOString(),
+        });
+        console.groupEnd();
+
+        return finalCount;
+      }
     }
-
-    const data = await response.json();
-    const newCount = data.value ?? data.count ?? data?.data?.up_count;
-
-    if (typeof newCount !== 'number' || isNaN(newCount)) {
-      throw new Error('Invalid count received from Counter API');
-    }
-
-    const stored = getStoredSessionData();
-    const updatedData: CounterSessionData = {
-      count: Math.max(newCount, stored.count + 1),
-      lastCounterUpdate: Date.now(),
-      totalGenerated: stored.totalGenerated + 1,
-      lastUserId: userId,
-      timestamp: Date.now(),
-      fallback: false,
-    };
-
-    saveSessionData(updatedData);
-
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('gitfc_counter_updated', { detail: updatedData.count })
-      );
-    }
-
-    console.log('counter_success', {
-      count: updatedData.count,
-      timestamp: new Date().toISOString(),
-    });
-    console.groupEnd();
-
-    return updatedData.count;
   } catch (err: any) {
-    console.warn('counter_failure', err?.message || err);
-
-    // Fallback: local tracking
-    const stored = getStoredSessionData();
-    const fallbackCount = stored.count + 1;
-
-    const fallbackData: CounterSessionData = {
-      count: fallbackCount,
-      lastCounterUpdate: Date.now(),
-      totalGenerated: stored.totalGenerated + 1,
-      lastUserId: userId,
-      timestamp: Date.now(),
-      fallback: true,
-    };
-
-    saveSessionData(fallbackData);
-
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(
-        new CustomEvent('gitfc_counter_updated', { detail: fallbackCount })
-      );
-    }
-
-    console.log('counter_fallback_applied', {
-      fallbackCount,
-      timestamp: new Date().toISOString(),
-    });
-    console.groupEnd();
-
-    return fallbackCount;
+    console.warn('counter_api_fallback_used', err?.message || err);
   }
+
+  console.log('counter_local_increment_success', {
+    count: optimisticCount,
+    timestamp: new Date().toISOString(),
+  });
+  console.groupEnd();
+
+  return optimisticCount;
 }
 
 /**
- * Trigger counter increment debounced by 500ms
+ * Trigger counter increment debounced by 200ms
  */
 export function triggerDebouncedCounterIncrement(): Promise<number> {
   return new Promise((resolve) => {
@@ -343,7 +334,7 @@ export function getCounterStatsSync(): CounterStats {
   };
 }
 
-// Background sync every 5 minutes and on unload
+// Background sync every 5 minutes
 if (typeof window !== 'undefined') {
   setInterval(() => {
     fetchLiveCounterStats().catch(() => {});
