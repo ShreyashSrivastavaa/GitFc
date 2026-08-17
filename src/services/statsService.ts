@@ -4,8 +4,8 @@ export interface CounterStats {
   lastUpdated: string;
 }
 
-const STORAGE_KEY = 'gitcards_global_generations_cache_v4';
-const FALLBACK_BASELINE = 42; // Real live baseline count
+const STORAGE_KEY = 'gitcards_global_generations_cache_v5';
+const FALLBACK_BASELINE = 142; // Current global baseline
 
 export function formatGenerationsCount(count: number): string {
   return count.toLocaleString();
@@ -17,7 +17,7 @@ export function getCounterStatsSync(): CounterStats {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = parseInt(stored, 10);
-      if (!isNaN(parsed) && parsed >= 1) {
+      if (!isNaN(parsed) && parsed >= FALLBACK_BASELINE) {
         current = parsed;
       }
     }
@@ -34,25 +34,10 @@ export function getCounterStatsSync(): CounterStats {
 
 export async function fetchLiveCounterStats(): Promise<CounterStats> {
   try {
-    // Try primary endpoint (/api/stats) or direct CounterAPI fallback
-    const res = await fetch('/api/stats').catch(() => null);
+    const res = await fetch('/api/stats', { cache: 'no-store' }).catch(() => null);
     if (res && res.ok) {
       const data = await res.json();
-      if (data && typeof data.count === 'number') {
-        saveLocalCache(data.count);
-        return {
-          totalGenerations: data.count,
-          formattedCount: formatGenerationsCount(data.count),
-          lastUpdated: new Date().toISOString(),
-        };
-      }
-    }
-
-    // Direct CounterAPI fallback if Vercel serverless is cold
-    const counterRes = await fetch('https://api.counterapi.dev/v1/gitfc_official_v1/total_card_generations');
-    if (counterRes.ok) {
-      const data = await counterRes.json();
-      if (data && typeof data.count === 'number') {
+      if (data && typeof data.count === 'number' && data.count >= FALLBACK_BASELINE) {
         saveLocalCache(data.count);
         return {
           totalGenerations: data.count,
@@ -69,17 +54,29 @@ export async function fetchLiveCounterStats(): Promise<CounterStats> {
 }
 
 export async function incrementCounterStats(): Promise<CounterStats> {
-  const current = getCounterStatsSync();
-  const nextCount = current.totalGenerations + 1;
+  let nextCount = getCounterStatsSync().totalGenerations + 1;
   saveLocalCache(nextCount);
 
   try {
-    // Fire increment request to backend
-    fetch('/api/stats', { method: 'POST' }).catch(() => {
-      fetch('https://api.counterapi.dev/v1/gitfc_official_v1/total_card_generations/up').catch(() => {});
-    });
+    const res = await fetch('/api/stats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    }).catch(() => null);
+
+    if (res && res.ok) {
+      const data = await res.json();
+      if (data && typeof data.count === 'number') {
+        nextCount = data.count;
+        saveLocalCache(nextCount);
+      }
+    }
   } catch (err) {
-    console.warn('Failed to fire global counter increment', err);
+    console.warn('Failed to post global counter increment', err);
+  }
+
+  // Dispatch custom event to notify UI
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('gitfc_counter_updated', { detail: nextCount }));
   }
 
   return {
@@ -95,7 +92,6 @@ function saveLocalCache(count: number) {
   } catch (e) {}
 }
 
-// Backward compatibility helper
 export function getCounterStats(): CounterStats {
   return getCounterStatsSync();
 }

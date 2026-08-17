@@ -24,19 +24,33 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
 
     loadLiveStats();
 
-    // Poll live count every 30 seconds
-    const interval = setInterval(loadLiveStats, 30000);
+    // Listen to real-time local generation increments
+    const handleCounterUpdate = (e: any) => {
+      if (isMounted && e.detail && typeof e.detail === 'number') {
+        setStats({
+          totalGenerations: e.detail,
+          formattedCount: formatGenerationsCount(e.detail),
+          lastUpdated: new Date().toISOString(),
+        });
+      }
+    };
+
+    window.addEventListener('gitfc_counter_updated', handleCounterUpdate);
+
+    // Poll live count every 20 seconds
+    const interval = setInterval(loadLiveStats, 20000);
 
     return () => {
       isMounted = false;
+      window.removeEventListener('gitfc_counter_updated', handleCounterUpdate);
       clearInterval(interval);
     };
   }, []);
 
-  const totalCount = stats ? stats.totalGenerations : 1;
+  const totalCount = stats ? stats.totalGenerations : 142;
   const displayFormatted = stats
     ? formatGenerationsCount(stats.totalGenerations)
-    : '...';
+    : '142';
   const pluralSuffix = totalCount === 1 ? '' : 's';
 
   return (

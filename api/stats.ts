@@ -1,10 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-// Fallback in-memory counter for local dev / serverless instance warming
-let inMemoryCount = 142;
+// Persistent UUID bucket on KVDB
+const KV_BUCKET = 'c4b14d48-64bf-4b95-a13f-9a1b660505b3';
+const KV_KEY = 'gitfc_total_card_generations';
+const BASELINE_DEFAULT = 142;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Enable CORS headers
+  // Enable CORS headers for cross-device requests
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
@@ -14,51 +16,65 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  const COUNTER_NAMESPACE = 'gitfc_official_v1';
-  const COUNTER_KEY = 'total_card_generations';
+  const kvUrl = `https://kvdb.io/${KV_BUCKET}/${KV_KEY}`;
 
   try {
     if (req.method === 'POST') {
-      // Increment counter globally
+      // 1. Atomic global increment via KVDB (?inc=1)
       try {
-        const response = await fetch(
-          `https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${COUNTER_KEY}/up`,
-          { method: 'GET' }
-        );
-        if (response.ok) {
-          const data = (await response.json()) as any;
-          if (data && typeof data.count === 'number') {
-            inMemoryCount = data.count;
-            return res.status(200).json({ count: data.count, source: 'global_api' });
+        const incRes = await fetch(`${kvUrl}?inc=1`, { method: 'POST' });
+        if (incRes.ok) {
+          const text = await incRes.text();
+          const parsed = parseInt(text.trim(), 10);
+          if (!isNaN(parsed) && parsed > 0) {
+            return res.status(200).json({ count: parsed, source: 'kv_store_inc' });
           }
         }
       } catch (err) {
-        console.warn('CounterAPI unreachable, using fallback increment', err);
+        console.warn('KVDB inc failed, trying fallback write', err);
       }
 
-      inMemoryCount += 1;
-      return res.status(200).json({ count: inMemoryCount, source: 'memory' });
+      // 2. Fallback: Read current and add 1
+      const current = await getGlobalCount(kvUrl);
+      const nextCount = current + 1;
+      await setGlobalCount(kvUrl, nextCount);
+
+      return res.status(200).json({ count: nextCount, source: 'kv_store_write' });
     }
 
-    // GET Request - Read exact count
-    try {
-      const response = await fetch(
-        `https://api.counterapi.dev/v1/${COUNTER_NAMESPACE}/${COUNTER_KEY}`,
-        { method: 'GET' }
-      );
-      if (response.ok) {
-        const data = (await response.json()) as any;
-        if (data && typeof data.count === 'number') {
-          inMemoryCount = data.count;
-          return res.status(200).json({ count: data.count, source: 'global_api' });
-        }
-      }
-    } catch (err) {
-      console.warn('CounterAPI read unreachable, using fallback', err);
-    }
-
-    return res.status(200).json({ count: inMemoryCount, source: 'memory' });
+    // GET Request - Read exact live global count
+    const current = await getGlobalCount(kvUrl);
+    return res.status(200).json({ count: current, source: 'kv_store_read' });
   } catch (err: any) {
-    return res.status(200).json({ count: inMemoryCount, source: 'fallback' });
+    console.error('Serverless stats handler error:', err);
+    return res.status(200).json({ count: BASELINE_DEFAULT, source: 'fallback' });
+  }
+}
+
+async function getGlobalCount(url: string): Promise<number> {
+  try {
+    const response = await fetch(url, { method: 'GET' });
+    if (response.ok) {
+      const text = await response.text();
+      const parsed = parseInt(text.trim(), 10);
+      if (!isNaN(parsed) && parsed >= BASELINE_DEFAULT) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to read from KV storage', err);
+  }
+  return BASELINE_DEFAULT;
+}
+
+async function setGlobalCount(url: string, count: number): Promise<void> {
+  try {
+    await fetch(url, {
+      method: 'POST',
+      body: count.toString(),
+      headers: { 'Content-Type': 'text/plain' },
+    });
+  } catch (err) {
+    console.warn('Failed to write to KV storage', err);
   }
 }
