@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fetchLiveCounterStats, formatGenerationsCount, type CounterStats } from '../../services/statsService';
+import { fetchLiveCounterStats, getCounterStatsSync, formatGenerationsCount, type CounterStats } from '../../services/statsService';
 
 interface UsageCounterProps {
   prefixEmoji?: string;
@@ -10,7 +10,7 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
   prefixEmoji = '⚡',
   className = '',
 }) => {
-  const [stats, setStats] = useState<CounterStats | null>(null);
+  const [stats, setStats] = useState<CounterStats>(() => getCounterStatsSync());
 
   useEffect(() => {
     let isMounted = true;
@@ -37,8 +37,8 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
 
     window.addEventListener('gitfc_counter_updated', handleCounterUpdate);
 
-    // Poll live count every 20 seconds
-    const interval = setInterval(loadLiveStats, 20000);
+    // Poll live count every 5 minutes (300,000 ms)
+    const interval = setInterval(loadLiveStats, 300000);
 
     return () => {
       isMounted = false;

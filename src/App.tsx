@@ -89,6 +89,7 @@ export function App() {
 
       // Increment stats counter ONCE strictly after successful card generation
       console.log(`[App] Card generation succeeded for @${username}. Triggering counter increment.`);
+      await new Promise((r) => setTimeout(r, 100));
       incrementCounterStats();
 
       setLeaderboardCards((prev) => {
