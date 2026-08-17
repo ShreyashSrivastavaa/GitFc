@@ -4,6 +4,8 @@ import App from './App.tsx';
 import './index.css';
 import { Analytics } from '@vercel/analytics/react';
 
+console.log('[Analytics] Vercel Analytics loaded and initialized in main.tsx');
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <App />

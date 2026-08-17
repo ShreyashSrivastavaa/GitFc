@@ -87,7 +87,8 @@ export function App() {
       setCurrentCard(card);
       setIsCardSearched(true);
 
-      // Increment stats counter
+      // Increment stats counter ONCE strictly after successful card generation
+      console.log(`[App] Card generation succeeded for @${username}. Triggering counter increment.`);
       incrementCounterStats();
 
       setLeaderboardCards((prev) => {

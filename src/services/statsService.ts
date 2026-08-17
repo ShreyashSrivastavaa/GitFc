@@ -5,7 +5,7 @@ export interface CounterStats {
 }
 
 const STORAGE_KEY = 'gitcards_global_generations_cache_v6';
-const FALLBACK_BASELINE = 144; // Current baseline counter
+const FALLBACK_BASELINE = 142; // Current baseline counter
 
 export function formatGenerationsCount(count: number): string {
   return count.toLocaleString();
@@ -47,13 +47,15 @@ export async function fetchLiveCounterStats(): Promise<CounterStats> {
       }
     }
   } catch (err) {
-    console.warn('Unable to fetch live global counter, using cached value', err);
+    console.warn('[StatsService] Unable to fetch live global counter, using cached value', err);
   }
 
   return getCounterStatsSync();
 }
 
 export async function incrementCounterStats(): Promise<CounterStats> {
+  console.log('[StatsService] incrementCounterStats triggered after card generation');
+
   // Optimistic increment for instantaneous UI update on current device
   const currentSync = getCounterStatsSync();
   let nextCount = currentSync.totalGenerations + 1;
@@ -61,18 +63,24 @@ export async function incrementCounterStats(): Promise<CounterStats> {
 
   // Instantly notify local UI
   if (typeof window !== 'undefined') {
+    console.log('[StatsService] Optimistic local counter update:', nextCount);
     window.dispatchEvent(new CustomEvent('gitfc_counter_updated', { detail: nextCount }));
   }
 
   // Post increment to global persistent serverless API
   try {
+    console.log('[StatsService] Sending POST request to /api/stats...');
     const res = await fetch('/api/stats', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-    }).catch(() => null);
+    }).catch((err) => {
+      console.error('[StatsService] Network error sending POST /api/stats:', err);
+      return null;
+    });
 
     if (res && res.ok) {
       const data = await res.json();
+      console.log('[StatsService] POST /api/stats succeeded, server returned count:', data?.count);
       if (data && typeof data.count === 'number' && data.count >= FALLBACK_BASELINE) {
         nextCount = data.count;
         saveLocalCache(nextCount);
@@ -81,9 +89,11 @@ export async function incrementCounterStats(): Promise<CounterStats> {
           window.dispatchEvent(new CustomEvent('gitfc_counter_updated', { detail: nextCount }));
         }
       }
+    } else {
+      console.warn('[StatsService] POST /api/stats returned non-OK status:', res?.status);
     }
   } catch (err) {
-    console.warn('Failed to post global counter increment', err);
+    console.error('[StatsService] Error calling POST /api/stats:', err);
   }
 
   return {
@@ -102,4 +112,3 @@ function saveLocalCache(count: number) {
 export function getCounterStats(): CounterStats {
   return getCounterStatsSync();
 }
-
