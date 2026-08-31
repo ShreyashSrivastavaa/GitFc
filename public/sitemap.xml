@@ -3,41 +3,47 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://gitfc.vercel.app/</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-31</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
     <image:image>
       <image:loc>https://gitfc.vercel.app/gitbanner-clean.png</image:loc>
-      <image:title>GitFC EA FC Developer Cards</image:title>
+      <image:title>GitFC — Turn Your GitHub into a Football Card</image:title>
     </image:image>
   </url>
   <url>
     <loc>https://gitfc.vercel.app/?card=torvalds</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://gitfc.vercel.app/?card=gaearon</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://gitfc.vercel.app/?card=antfu</loc>
+    <lastmod>2026-08-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://gitfc.vercel.app/?card=shadcn</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://gitfc.vercel.app/?card=mitchellh</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://gitfc.vercel.app/?card=rauchg</loc>
-    <lastmod>2026-08-16</lastmod>
+    <lastmod>2026-08-31</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
