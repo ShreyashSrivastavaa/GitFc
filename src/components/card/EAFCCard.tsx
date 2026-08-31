@@ -174,13 +174,13 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
                 {card.countryFlag || '🌐'}
               </span>
               
-              <div className="mt-1 px-1.5 py-0.5 rounded text-[9px] font-gaming font-semibold tracking-wider uppercase bg-black/40 border border-white/20 text-white/90 max-w-[64px] truncate">
+              <div className="mt-1 px-2 py-0.5 rounded-md text-[9px] font-gaming font-bold tracking-wider uppercase bg-black/50 border border-white/20 text-white/90 max-w-[80px] truncate shadow-sm">
                 {card.clubName || 'GITFC'}
               </div>
             </div>
 
             {/* Right: Player Avatar with Glow Backing */}
-            <div className="relative flex-1 flex justify-center items-center mt-1 -mr-2">
+            <div className="relative flex-1 flex justify-center items-center mt-0.5 -mr-1">
               <div className="relative w-36 h-36">
                 <div className="absolute inset-0 rounded-full bg-white/20 blur-md transform scale-95" />
                 <img
@@ -198,20 +198,20 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
 
           {/* Center Info: Player Name & Archetype */}
           <div className="px-2 text-center mt-1">
-            <h2 className="font-display font-extrabold text-2xl tracking-wide uppercase text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] truncate">
+            <h2 className="font-display font-black text-2xl tracking-wide uppercase text-white drop-shadow-[0_3px_6px_rgba(0,0,0,0.9)] truncate">
               {card.name || card.username}
             </h2>
             <div className="flex items-center justify-center gap-1.5 mt-0.5">
-              <span className="text-xs text-white/70 font-mono">@{card.username}</span>
+              <span className="text-xs text-white/80 font-mono">@{card.username}</span>
               <span className="text-white/40">•</span>
-              <span className="text-xs font-gaming font-bold text-amber-300 drop-shadow truncate max-w-[160px]">
+              <span className="text-xs font-gaming font-bold text-amber-300 drop-shadow truncate max-w-[150px]">
                 {card.archetype}
               </span>
             </div>
 
-            {/* Rarity Pill */}
+            {/* Clean Single-Layer Rarity Pill */}
             <div className="mt-1 flex justify-center">
-              <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-gaming font-extrabold tracking-widest uppercase shadow-md ${config.badgeTitleBg}`}>
+              <span className={`px-3 py-0.5 rounded-full text-[10px] font-gaming font-extrabold tracking-wider uppercase shadow-md ${config.badgeTitleBg}`}>
                 {config.label}
               </span>
             </div>
@@ -296,9 +296,9 @@ export const EAFCCard: React.FC<EAFCCardProps> = ({
           </div>
 
           {/* Footer Watermark */}
-          <div className="text-center pb-0.5">
-            <span className="font-gaming font-bold text-[9px] tracking-widest text-white/50 uppercase">
-              GITFC.XYZ • OFFICIAL DEV CARD
+          <div className="text-center pb-2 z-20">
+            <span className="font-gaming font-bold text-[9px] tracking-widest text-white/60 uppercase">
+              GITFC.VERCEL.APP • OFFICIAL DEV CARD
             </span>
           </div>
 
