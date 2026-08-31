@@ -5,8 +5,8 @@ const SEED_BASELINE = 142;
 const REDIS_KEY = 'gitfc:card_generations';
 
 function getRedisClient(): Redis | null {
-  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+  const url = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL || 'https://verified-redfish-198404.upstash.io';
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN || 'gQAAAAAAAwcEAAIgcDE3ZDRhOTVjYjBhMjI0MjVhOWFiZDliMTQwYWI0M2M5MQ';
 
   if (url && token) {
     try {
