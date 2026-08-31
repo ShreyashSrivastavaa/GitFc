@@ -101,6 +101,21 @@ export const Footer: React.FC = () => {
             <span>Created by <strong className="text-slate-200 font-sans">Shreyash Srivastava</strong></span>
             <span>•</span>
             <a
+              href="https://www.producthunt.com/products/gitfc?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-gitfc"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center hover:opacity-90 transition-opacity"
+            >
+              <img
+                src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1237125&theme=dark&t=1788158120807"
+                alt="GitFC on Product Hunt"
+                width="150"
+                height="32"
+                className="h-[26px] w-auto"
+              />
+            </a>
+            <span>•</span>
+            <a
               href="https://github.com/ShreyashSrivastavaa/GitFc"
               target="_blank"
               rel="noopener noreferrer"

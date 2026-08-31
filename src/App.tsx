@@ -253,8 +253,25 @@ export function App() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center min-h-[500px]">
                 {/* LEFT COLUMN: HERO TEXT & SEARCH FORM */}
                 <div className="lg:col-span-7 space-y-6 text-left">
-                  <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30 uppercase tracking-wider">
-                    <Sparkles className="w-3.5 h-3.5" /> YOUR GITHUB. YOUR SQUAD. • 100% CLIENT-SIDE READ-ONLY
+                  <div className="flex flex-wrap items-center gap-3">
+                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30 uppercase tracking-wider">
+                      <Sparkles className="w-3.5 h-3.5" /> YOUR GITHUB. YOUR SQUAD. • 100% CLIENT-SIDE READ-ONLY
+                    </div>
+                    <a
+                      href="https://www.producthunt.com/products/gitfc?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-gitfc"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-block transition-transform hover:scale-105"
+                      aria-label="GitFC on Product Hunt"
+                    >
+                      <img
+                        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1237125&theme=dark&t=1788158120807"
+                        alt="GitFC - Your GitHub profile, turned into a shareable card | Product Hunt"
+                        width="200"
+                        height="43"
+                        className="h-[34px] w-auto object-contain"
+                      />
+                    </a>
                   </div>
 
                   <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.15]">
