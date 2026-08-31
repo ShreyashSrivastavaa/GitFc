@@ -162,18 +162,16 @@ export const LeaderboardTable: React.FC<LeaderboardTableProps> = ({
 
   const getRarityBadge = (rarity: CardRarity) => {
     switch (rarity) {
-      case 'icon':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-400 text-black uppercase">ICON</span>;
-      case 'toty':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-blue-500 text-white uppercase">TOTY</span>;
-      case 'hero':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-purple-500 text-white uppercase">HERO</span>;
-      case 'gold':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-500 text-black uppercase">GOLD</span>;
-      case 'silver':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-slate-300 text-slate-900 uppercase">SILVER</span>;
+      case 'elite':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-gaming font-black bg-cyan-400 text-slate-950 uppercase border border-cyan-300">ELITE</span>;
+      case 'legendary':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-gaming font-black bg-purple-500 text-white uppercase border border-purple-400">LEGENDARY</span>;
+      case 'epic':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-gaming font-black bg-amber-400 text-slate-950 uppercase border border-amber-300">EPIC</span>;
+      case 'rare':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-gaming font-black bg-slate-300 text-slate-900 uppercase border border-slate-200">RARE</span>;
       default:
-        return <span className="px-2 py-0.5 rounded text-[10px] font-black bg-amber-700 text-amber-100 uppercase">BRONZE</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-gaming font-black bg-amber-800 text-amber-100 uppercase border border-amber-700">COMMON</span>;
     }
   };
 

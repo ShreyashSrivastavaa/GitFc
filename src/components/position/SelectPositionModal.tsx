@@ -19,12 +19,12 @@ export const SelectPositionModal: React.FC<SelectPositionModalProps> = ({
   leagueName,
 }) => {
   const recommendedPos = assignPosition(card.stats);
-  const [selectedPos, setSelectedPos] = useState<FootballPosition>(card.footballPosition || recommendedPos);
+  const [selectedPos, setSelectedPos] = useState<FootballPosition>((card.footballPosition as FootballPosition) || recommendedPos);
   const step = 2;
 
   useEffect(() => {
     if (card.footballPosition) {
-      setSelectedPos(card.footballPosition);
+      setSelectedPos(card.footballPosition as FootballPosition);
     } else {
       setSelectedPos(recommendedPos);
     }

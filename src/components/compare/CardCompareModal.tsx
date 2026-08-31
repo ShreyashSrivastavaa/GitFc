@@ -90,40 +90,65 @@ export const CardCompareModal: React.FC<CardCompareModalProps> = ({
             <div className="transform scale-90 md:scale-100">
               <EAFCCard card={primaryCard} interactive={true} />
             </div>
-            {primaryCard.ratings.overall >= secondaryCard.ratings.overall && (
-              <div className="mt-4 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 font-display font-extrabold text-sm flex items-center gap-1.5">
+            {primaryCard.attributes.overall >= secondaryCard.attributes.overall && (
+              <div className="mt-4 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 font-gaming font-black text-xs tracking-wider flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" /> HIGHER OVR WINNER
               </div>
             )}
           </div>
 
-          <div className="lg:col-span-4 bg-slate-950/80 p-5 rounded-2xl border border-slate-800 shadow-xl">
-            <h3 className="font-display font-bold text-center text-slate-300 text-sm mb-4 uppercase tracking-wider">
-              HEAD-TO-HEAD METRICS
+          <div className="lg:col-span-4 bg-slate-950/80 p-5 rounded-2xl border border-gitfc-border shadow-xl">
+            <h3 className="font-gaming font-black text-center text-sm text-slate-300 uppercase tracking-widest mb-4">
+              ATTRIBUTE FACE-OFF
             </h3>
 
-            <div className="space-y-3 font-mono text-xs">
+            <div className="space-y-3 font-gaming text-xs">
               {[
-                { label: 'OVERALL (OVR)', key: 'overall' },
-                { label: 'PASSING (PAS)', key: 'pas' },
-                { label: 'DRIBBLING (DRI)', key: 'dri' },
-                { label: 'SHOOTING (SHO)', key: 'sho' },
-                { label: 'PHYSICAL (PHY)', key: 'phy' },
-                { label: 'PACE (PAC)', key: 'pac' },
-                { label: 'DEFENSE (DEF)', key: 'def' },
-                { label: 'STAMINA (STA)', key: 'sta' },
-                { label: 'SKILL (SKL)', key: 'skl' },
+                { label: 'ATTACK (ATT)', key: 'att' as const },
+                { label: 'PASSING (PAS)', key: 'pas' as const },
+                { label: 'DEFENDING (DEF)', key: 'def' as const },
+                { label: 'PACE (PAC)', key: 'pac' as const },
+                { label: 'DRIBBLING (DRI)', key: 'dri' as const },
+                { label: 'SHOOTING (SHO)', key: 'sho' as const },
+                { label: 'VISION (VIS)', key: 'vis' as const },
+                { label: 'STAMINA (STA)', key: 'sta' as const },
               ].map(({ label, key }) => {
-                const valA = (primaryCard.ratings as any)[key];
-                const valB = (secondaryCard.ratings as any)[key];
+                const valA = primaryCard.attributes?.[key] || 50;
+                const valB = secondaryCard.attributes?.[key] || 50;
+
                 return (
-                  <div key={key} className="flex justify-between items-center py-1.5 border-b border-slate-800/60">
-                    <span className={getStatDiffColor(valA, valB)}>{valA}</span>
-                    <span className="text-slate-400 font-bold uppercase text-[11px]">{label}</span>
-                    <span className={getStatDiffColor(valB, valA)}>{valB}</span>
+                  <div key={key} className="space-y-1">
+                    <div className="flex justify-between items-center text-[11px]">
+                      <span className={getStatDiffColor(valA, valB)}>{valA}</span>
+                      <span className="font-gaming text-slate-400 font-bold uppercase">{label}</span>
+                      <span className={getStatDiffColor(valB, valA)}>{valB}</span>
+                    </div>
+                    <div className="flex gap-1 h-2 bg-slate-900 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          valA >= valB ? 'bg-gitfc-neonGreen' : 'bg-slate-700'
+                        }`}
+                        style={{ width: `${(valA / (valA + valB)) * 100}%` }}
+                      />
+                      <div
+                        className={`h-full rounded-full transition-all duration-500 ${
+                          valB > valA ? 'bg-gitfc-electricBlue' : 'bg-slate-700'
+                        }`}
+                        style={{ width: `${(valB / (valA + valB)) * 100}%` }}
+                      />
+                    </div>
                   </div>
                 );
               })}
+            </div>
+
+            <div className="mt-6 pt-4 border-t border-slate-800 text-center">
+              <div className="text-[11px] font-gaming text-slate-400">OVERALL RATING BATTLE</div>
+              <div className="flex justify-around items-center mt-2 font-gaming font-black text-2xl">
+                <span className="text-gitfc-neonGreen">{primaryCard.attributes.overall}</span>
+                <span className="text-slate-600 font-mono text-sm">VS</span>
+                <span className="text-gitfc-electricBlue">{secondaryCard.attributes.overall}</span>
+              </div>
             </div>
           </div>
 
@@ -131,8 +156,8 @@ export const CardCompareModal: React.FC<CardCompareModalProps> = ({
             <div className="transform scale-90 md:scale-100">
               <EAFCCard card={secondaryCard} interactive={true} />
             </div>
-            {secondaryCard.ratings.overall > primaryCard.ratings.overall && (
-              <div className="mt-4 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 font-display font-extrabold text-sm flex items-center gap-1.5">
+            {secondaryCard.attributes.overall >= primaryCard.attributes.overall && (
+              <div className="mt-4 px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-400/40 text-emerald-400 font-gaming font-black text-xs tracking-wider flex items-center gap-1.5">
                 <Trophy className="w-4 h-4" /> HIGHER OVR WINNER
               </div>
             )}

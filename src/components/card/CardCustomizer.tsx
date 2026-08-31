@@ -16,15 +16,15 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
   const handlePositionChange = (position: CardPosition) => {
     const positionTitles: Partial<Record<CardPosition, string>> = {
       ST: 'Striker',
-      CF: 'Center Forward',
       CAM: 'Attacking Midfielder',
       CM: 'Central Midfielder',
+      CDM: 'Defensive Midfielder',
       CB: 'Center Back',
-      GK: 'Goalkeeper',
+      LB: 'Left Back',
+      RB: 'Right Back',
       LW: 'Left Wing',
       RW: 'Right Wing',
-      MGR: 'Manager',
-      SUB: 'Substitute',
+      GK: 'Goalkeeper',
     };
     onUpdateCard({ ...card, position, positionTitle: positionTitles[position] || card.positionTitle });
   };

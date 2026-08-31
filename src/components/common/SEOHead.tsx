@@ -9,19 +9,20 @@ interface SEOHeadProps {
 
 export function SEOHead({ activeTab, isCardSearched, currentCard }: SEOHeadProps) {
   useEffect(() => {
-    let title = 'GitFC — Turn Your GitHub Into a Football Card ⚽';
-    let description = 'Transform your GitHub stats into an authentic EA FC Ultimate Team player card with ratings, positions, pack opener animations, and squad leaderboards.';
+    let title = 'GitFC — Turn Your GitHub into a Football Card ⚽';
+    let description = 'Transform your GitHub profile into an authentic football trading card with 8 attributes, OVR ratings, dev positions, and 3D card exports.';
     let url = 'https://gitfc.vercel.app/';
 
     if (isCardSearched && currentCard) {
-      title = `${currentCard.name} (@${currentCard.username}) — ${currentCard.ratings.overall} OVR EA FC Card | GitFC`;
-      description = `Check out ${currentCard.name}'s (@${currentCard.username}) EA FC Ultimate Team developer card! ${currentCard.ratings.overall} OVR (${currentCard.position}), ${currentCard.stats.commits.toLocaleString()} commits, and ${currentCard.stats.stars.toLocaleString()} stars.`;
+      const ovr = currentCard.attributes?.overall || currentCard.ratings?.overall;
+      title = `${currentCard.name} (@${currentCard.username}) — ${ovr} OVR Football Card | GitFC`;
+      description = `Check out ${currentCard.name}'s (@${currentCard.username}) GitFC Card! ${ovr} OVR (${currentCard.position} - ${currentCard.archetype}), ${currentCard.stats.commits.toLocaleString()} commits, and ${currentCard.stats.stars.toLocaleString()} stars.`;
       url = `https://gitfc.vercel.app/?card=${encodeURIComponent(currentCard.username)}`;
     } else if (activeTab === 'leagues') {
-      title = 'Ultimate Leagues & Squad Builder | GitFC';
+      title = 'Developer Leagues & Squad Builder | GitFC';
       description = 'Build your ultimate developer squad, create custom leagues, and compete with developer teams across GitHub.';
     } else if (activeTab === 'dressing-room') {
-      title = 'Dressing Room & Team Tactics | GitFC';
+      title = 'Dressing Room & Tactics | GitFC';
       description = 'Manage your developer squad roster, assign tactical positions, unlock team badges, and optimize team chemistry.';
     } else if (activeTab === 'leaderboard') {
       title = 'Global Developer Leaderboard & OVR Rankings | GitFC';

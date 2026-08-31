@@ -1,204 +1,211 @@
-import React, { useState } from 'react';
-import confetti from 'canvas-confetti';
+import React, { useState, useEffect } from 'react';
+import type { GitFCDevCard } from '../../types';
 import { EAFCCard } from '../card/EAFCCard';
-import type { EAFCDevCard } from '../../types';
-import { PRESET_DEVS } from '../../services/presets';
-import { X, Trophy, Gift, Play, Zap } from 'lucide-react';
+import { Sparkles, Compass, Search, Terminal, Zap, CheckCircle2, AlertTriangle, X } from 'lucide-react';
+import confetti from 'canvas-confetti';
 
-interface PackOpenerModalProps {
+interface ScoutSequenceModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectCard: (card: EAFCDevCard) => void;
+  username: string;
+  card: GitFCDevCard | null;
+  isLoading: boolean;
+  error: string | null;
+  onRetry: () => void;
 }
 
-export const PackOpenerModal: React.FC<PackOpenerModalProps> = ({
+const SCOUT_STEPS = [
+  { id: 1, title: 'CONNECTING SATELLITE RADAR', detail: 'Locating GitHub profile & repos...', icon: Search },
+  { id: 2, title: 'ANALYZING COMMIT TELEMETRY', detail: 'Scoring velocity, streaks & pull requests...', icon: Terminal },
+  { id: 3, title: 'CALIBRATING ATTRIBUTES', detail: 'Calculating OVR, position & signature archetype...', icon: Zap },
+  { id: 4, title: 'PLAYER REVEAL', detail: 'Generating authentic trading card...', icon: Sparkles },
+];
+
+export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
   isOpen,
   onClose,
-  onSelectCard
+  username,
+  card,
+  isLoading,
+  error,
+  onRetry,
 }) => {
-  const [stage, setStage] = useState<'select' | 'opening' | 'walkout' | 'reveal'>('select');
-  const [revealedCard, setRevealedCard] = useState<EAFCDevCard | null>(null);
-  const [countdown, setCountdown] = useState(3);
+  const [currentStep, setCurrentStep] = useState(1);
+  const [revealed, setRevealed] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep(1);
+      setRevealed(false);
+      return;
+    }
+
+    if (isLoading) {
+      setRevealed(false);
+      setCurrentStep(1);
+      const t1 = setTimeout(() => setCurrentStep(2), 700);
+      const t2 = setTimeout(() => setCurrentStep(3), 1500);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    } else if (card && !error) {
+      setCurrentStep(4);
+      const t3 = setTimeout(() => {
+        setRevealed(true);
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#00ff87', '#00d2ff', '#f5c518', '#a855f7'],
+        });
+      }, 500);
+      return () => clearTimeout(t3);
+    }
+  }, [isOpen, isLoading, card, error]);
 
   if (!isOpen) return null;
 
-  const handleOpenPack = (packType: 'gold' | 'hero' | 'toty') => {
-    setStage('opening');
-    setCountdown(3);
-
-    let pool = PRESET_DEVS;
-    if (packType === 'hero') {
-      pool = PRESET_DEVS.filter(c => c.rarity === 'hero' || c.rarity === 'toty');
-    } else if (packType === 'toty') {
-      pool = PRESET_DEVS.filter(c => c.rarity === 'toty' || c.rarity === 'icon');
-    }
-
-    const card = pool[Math.floor(Math.random() * pool.length)] || PRESET_DEVS[0];
-    setRevealedCard(card);
-
-    const timer = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          triggerWalkout(card);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 900);
-  };
-
-  const triggerWalkout = (card: EAFCDevCard) => {
-    setStage('walkout');
-
-    if (card.ratings.overall >= 90) {
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 }
-      });
-    }
-
-    setTimeout(() => {
-      setStage('reveal');
-    }, 2000);
-  };
-
-  const handleReset = () => {
-    setStage('select');
-    setRevealedCard(null);
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-xl animate-fade-in">
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-700/80 rounded-3xl overflow-hidden shadow-2xl p-6 md:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xl animate-fadeIn">
+      <div className="absolute w-[500px] h-[500px] bg-gradient-to-tr from-emerald-500/20 via-cyan-500/20 to-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="relative w-full max-w-lg bg-gitfc-card/95 border-2 border-gitfc-border rounded-3xl p-6 shadow-2xl overflow-hidden flex flex-col items-center">
+        
+        {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-5 right-5 z-20 p-2 rounded-full bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition"
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors z-20"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
 
-        {stage === 'select' && (
-          <div className="flex flex-col items-center text-center py-6">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 text-amber-400 font-mono text-sm font-bold border border-amber-500/30 mb-4">
-              <Gift className="w-4 h-4" /> EA FC ULTIMATE TEAM PACK STORE
+        {/* Error State: Gaming "PLAYER NOT FOUND" / Rate Limit */}
+        {error ? (
+          <div className="w-full flex flex-col items-center text-center py-6">
+            <div className="w-16 h-16 rounded-full bg-rose-500/20 border-2 border-rose-500/50 flex items-center justify-center mb-4">
+              <AlertTriangle className="w-8 h-8 text-rose-400" />
             </div>
-            <h2 className="font-display font-black text-3xl md:text-5xl text-white tracking-tight">
-              OPEN DEVELOPER PACK
-            </h2>
-            <p className="mt-2 text-slate-400 max-w-lg text-sm md:text-base">
-              Test your luck! Open an EA FC Ultimate Team pack to reveal legendary open-source developer walkouts with special animations.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8 w-full">
-              <div className="relative group bg-gradient-to-b from-amber-950/60 to-slate-950 p-6 rounded-2xl border-2 border-amber-500/50 hover:border-amber-400 hover:scale-105 transition-all flex flex-col items-center justify-between">
-                <div className="w-20 h-20 rounded-2xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-4xl shadow-xl">
-                  🎁
-                </div>
-                <h3 className="mt-4 font-display font-extrabold text-xl text-amber-300">GOLD DEV PACK</h3>
-                <p className="text-xs text-slate-400 mt-1">Contains Gold+ rating developers</p>
-                <button
-                  onClick={() => handleOpenPack('gold')}
-                  className="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-extrabold text-sm hover:brightness-110 shadow-lg flex items-center justify-center gap-2"
-                >
-                  <Play className="w-4 h-4 fill-current" /> OPEN PACK
-                </button>
-              </div>
-
-              <div className="relative group bg-gradient-to-b from-purple-950/60 to-slate-950 p-6 rounded-2xl border-2 border-purple-500/50 hover:border-purple-400 hover:scale-105 transition-all flex flex-col items-center justify-between">
-                <div className="w-20 h-20 rounded-2xl bg-purple-500/20 border border-purple-400/40 flex items-center justify-center text-4xl shadow-xl">
-                  ⚡
-                </div>
-                <h3 className="mt-4 font-display font-extrabold text-xl text-purple-300">HERO DEV PACK</h3>
-                <p className="text-xs text-slate-400 mt-1">Guaranteed 90+ Hero rating</p>
-                <button
-                  onClick={() => handleOpenPack('hero')}
-                  className="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-purple-400 text-white font-display font-extrabold text-sm hover:brightness-110 shadow-lg flex items-center justify-center gap-2"
-                >
-                  <Play className="w-4 h-4 fill-current" /> OPEN PACK
-                </button>
-              </div>
-
-              <div className="relative group bg-gradient-to-b from-blue-950/60 to-slate-950 p-6 rounded-2xl border-2 border-blue-500/50 hover:border-blue-400 hover:scale-105 transition-all flex flex-col items-center justify-between">
-                <div className="w-20 h-20 rounded-2xl bg-blue-500/20 border border-blue-400/40 flex items-center justify-center text-4xl shadow-xl">
-                  🏆
-                </div>
-                <h3 className="mt-4 font-display font-extrabold text-xl text-blue-300">TOTY ICON PACK</h3>
-                <p className="text-xs text-slate-400 mt-1">Ultimate 94+ Icon & TOTY devs</p>
-                <button
-                  onClick={() => handleOpenPack('toty')}
-                  className="mt-6 w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-sky-400 text-white font-display font-extrabold text-sm hover:brightness-110 shadow-lg flex items-center justify-center gap-2"
-                >
-                  <Play className="w-4 h-4 fill-current" /> OPEN PACK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {stage === 'opening' && (
-          <div className="flex flex-col items-center justify-center py-20 min-h-[400px]">
-            <div className="relative flex items-center justify-center">
-              <div className="absolute w-72 h-72 rounded-full bg-amber-500/20 blur-3xl animate-pulse" />
-              <div className="font-display font-black text-8xl text-transparent bg-clip-text bg-gradient-to-b from-amber-300 to-yellow-600 animate-bounce">
-                {countdown}
-              </div>
-            </div>
-            <p className="mt-6 font-mono text-amber-400 tracking-widest text-sm uppercase animate-pulse">
-              OPENING PACK... PREPARE FOR WALKOUT
-            </p>
-          </div>
-        )}
-
-        {stage === 'walkout' && revealedCard && (
-          <div className="flex flex-col items-center justify-center py-16 min-h-[400px] text-center animate-pulse">
-            <div className="text-6xl mb-4">✨ 🎆 ✨</div>
-            <span className="font-mono text-sm tracking-widest text-amber-400 uppercase font-bold">
-              {revealedCard.countryFlag} {revealedCard.location} • {revealedCard.position}
+            
+            <span className="font-gaming font-black text-2xl tracking-wider uppercase text-white mb-2">
+              SCOUT REPORT: FAILED
             </span>
-            <h3 className="font-display font-black text-4xl md:text-6xl text-white mt-2 tracking-tight">
-              {revealedCard.name.toUpperCase()}
-            </h3>
-            <div className="mt-4 inline-flex items-center gap-2 px-6 py-2 rounded-full bg-amber-500 text-slate-950 font-display font-extrabold text-xl shadow-lg">
-              <Trophy className="w-6 h-6" /> OVR {revealedCard.ratings.overall}
+            
+            <p className="text-slate-300 text-sm max-w-md mb-6 leading-relaxed">
+              {error.includes('not found') || error.includes('404')
+                ? `GitHub player "@${username}" could not be located on the global radar. Please check the spelling.`
+                : error.includes('rate limit')
+                ? `GitHub radar is temporarily cooling down. Sign in or try again in a few moments.`
+                : error}
+            </p>
+
+            <div className="flex gap-3 w-full max-w-xs">
+              <button
+                onClick={onRetry}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-gaming font-bold tracking-wider hover:opacity-90 transition-opacity"
+              >
+                RE-SCOUT
+              </button>
+              <button
+                onClick={onClose}
+                className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-gaming font-bold tracking-wider transition-colors"
+              >
+                CANCEL
+              </button>
             </div>
           </div>
-        )}
-
-        {stage === 'reveal' && revealedCard && (
-          <div className="flex flex-col items-center py-4 animate-fade-in">
-            <div className="text-center mb-6">
-              <span className="text-xs font-mono font-bold tracking-widest text-amber-400 uppercase">
-                PACK WALKOUT REVEALED
+        ) : revealed && card ? (
+          /* Success: Card Revealed */
+          <div className="flex flex-col items-center text-center py-2 animate-scaleUp">
+            <div className="flex items-center gap-2 mb-3">
+              <span className="px-3 py-1 rounded-full text-xs font-gaming font-bold uppercase bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center gap-1.5 shadow">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                PLAYER SCOUTED SUCCESSFULLY
               </span>
-              <h2 className="font-display font-black text-3xl text-white">
-                {revealedCard.name}
-              </h2>
             </div>
 
-            <EAFCCard card={revealedCard} interactive={true} />
+            <div className="my-2 transform hover:scale-105 transition-transform duration-300">
+              <EAFCCard card={card} scale={0.92} interactive={true} />
+            </div>
 
-            <div className="flex items-center gap-4 mt-8">
+            <div className="mt-4 flex gap-3 w-full max-w-sm">
               <button
-                onClick={handleReset}
-                className="px-6 py-3 rounded-xl bg-slate-800 text-slate-300 hover:bg-slate-700 font-semibold text-sm transition"
+                onClick={onClose}
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black tracking-widest uppercase hover:shadow-[0_0_25px_rgba(0,255,135,0.6)] transition-all"
               >
-                OPEN ANOTHER PACK
-              </button>
-              <button
-                onClick={() => {
-                  onSelectCard(revealedCard);
-                  onClose();
-                }}
-                className="px-6 py-3 rounded-xl bg-amber-500 text-slate-950 hover:bg-amber-400 font-display font-extrabold text-sm transition shadow-lg flex items-center gap-2"
-              >
-                <Zap className="w-4 h-4 fill-current" /> INSPECT & CUSTOMIZE CARD
+                VIEW FULL PROFILE
               </button>
             </div>
           </div>
+        ) : (
+          /* Scouting In-Progress Animation */
+          <div className="w-full flex flex-col items-center text-center py-8">
+            <div className="relative w-28 h-28 mb-6 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-2 border-gitfc-neonGreen/30 animate-ping opacity-40" />
+              <div className="absolute inset-2 rounded-full border border-gitfc-electricBlue/40 animate-pulse" />
+              <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border-2 border-gitfc-neonGreen flex items-center justify-center shadow-[0_0_30px_rgba(0,255,135,0.4)]">
+                <Compass className="w-10 h-10 text-gitfc-neonGreen animate-spin [animation-duration:6s]" />
+              </div>
+            </div>
+
+            <span className="font-gaming font-black text-2xl tracking-wider text-white uppercase mb-1">
+              SCOUTING @{username || 'DEVELOPER'}
+            </span>
+            <p className="text-slate-400 text-xs font-mono mb-6">
+              Scanning public repositories & commit logs...
+            </p>
+
+            <div className="w-full space-y-3 max-w-md text-left">
+              {SCOUT_STEPS.map((step) => {
+                const isCurrent = currentStep === step.id;
+                const isDone = currentStep > step.id;
+                const Icon = step.icon;
+
+                return (
+                  <div
+                    key={step.id}
+                    className={`flex items-center gap-3 p-3 rounded-xl border transition-all duration-300 ${
+                      isCurrent
+                        ? 'bg-emerald-500/10 border-emerald-500/50 shadow-[0_0_15px_rgba(0,255,135,0.15)]'
+                        : isDone
+                        ? 'bg-slate-900/60 border-emerald-500/30 opacity-80'
+                        : 'bg-slate-900/30 border-white/5 opacity-40'
+                    }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-gaming font-bold ${
+                        isCurrent
+                          ? 'bg-gitfc-neonGreen text-slate-950 animate-bounce'
+                          : isDone
+                          ? 'bg-emerald-500/20 text-emerald-400'
+                          : 'bg-white/10 text-slate-400'
+                      }`}
+                    >
+                      {isDone ? '✓' : <Icon className="w-4 h-4" />}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="font-gaming font-bold text-xs tracking-wider text-white truncate">
+                        {step.title}
+                      </div>
+                      <div className="text-[11px] text-slate-400 truncate">
+                        {step.detail}
+                      </div>
+                    </div>
+
+                    {isCurrent && (
+                      <div className="w-2 h-2 rounded-full bg-gitfc-neonGreen animate-ping" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
+
       </div>
     </div>
   );
 };
+
+

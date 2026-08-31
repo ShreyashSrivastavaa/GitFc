@@ -1,560 +1,316 @@
 import React, { useState } from 'react';
-import type { EAFCDevCard, Team } from '../../types';
+import type { GitFCDevCard } from '../../types';
 import { EAFCCard } from '../card/EAFCCard';
-import { toPng } from 'html-to-image';
-import { Download, Star, MessageCircle, ArrowLeft, Trophy, Sparkles, Award, Share2, Loader2 } from 'lucide-react';
+import { 
+  Download, 
+  Share2, 
+  Sparkles, 
+  Swords, 
+  ExternalLink, 
+  Check, 
+  Trophy, 
+  Zap, 
+  Shield, 
+  GitCommit, 
+  Flame, 
+  RotateCcw,
+  ShieldAlert
+} from 'lucide-react';
 
 interface GeneratedProfileViewProps {
-  card: EAFCDevCard;
-  userTeam: Team | null;
-  isConnected: boolean;
+  card: GitFCDevCard;
+  userTeam?: any;
+  isConnected?: boolean;
   onOpenExportModal: () => void;
-  onOpenConnectModal: () => void;
-  onOpenCreateTeamModal: () => void;
+  onOpenConnectModal?: () => void;
+  onOpenCreateTeamModal?: () => void;
   onResetSearch: () => void;
-  onLookupUser: (username: string) => void;
+  onLookupUser: (username: string) => Promise<GitFCDevCard | null>;
   onNavigateToLeagues?: () => void;
+  onCompare?: (card: GitFCDevCard) => void;
 }
 
 export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
   card,
-  userTeam,
-  isConnected,
   onOpenExportModal,
-  onOpenConnectModal,
-  onOpenCreateTeamModal,
   onResetSearch,
-  onLookupUser,
-  onNavigateToLeagues,
+  onCompare,
 }) => {
-  const handleJoinLeagueClick = () => {
-    if (!isConnected) {
-      onOpenConnectModal();
-      return;
-    }
-    if (onNavigateToLeagues) {
-      onNavigateToLeagues();
-    }
-  };
-  const [matchFormat, setMatchFormat] = useState<'premier' | 'champions' | 'worldcup'>('premier');
-  const [lockNotice, setLockNotice] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const attrs = card.attributes;
 
-  // COMPETITION DIFFICULTY PROGRESSION: Premier League < Champions League < World Cup
-  // Progressive Unlock Rules: Only allow next level if previous level is qualified/won (OVR / Power Score / Badges)
-  const isChampionsUnlocked =
-    card.ratings.overall >= 82 ||
-    card.powerScore >= 5000 ||
-    card.badges.some((b) => b.id === 'star-lord' || b.id === 'commit-machine' || b.id === 'pr-champion');
-
-  const isWorldCupUnlocked =
-    isChampionsUnlocked &&
-    (card.ratings.overall >= 90 ||
-      card.powerScore >= 15000 ||
-      card.rarity === 'toty' ||
-      card.rarity === 'toty_icon' ||
-      card.rarity === 'icon');
-
-  const handleSelectMode = (mode: 'premier' | 'champions' | 'worldcup') => {
-    if (mode === 'champions' && !isChampionsUnlocked) {
-      setLockNotice(`🔒 Champions League Locked! Win ${activeLeagueName} or reach 82+ OVR to unlock.`);
-      setTimeout(() => setLockNotice(''), 4000);
-      return;
-    }
-    if (mode === 'worldcup' && !isWorldCupUnlocked) {
-      setLockNotice('🔒 World Cup Locked! Win Champions League or reach 90+ OVR to unlock.');
-      setTimeout(() => setLockNotice(''), 4000);
-      return;
-    }
-    setMatchFormat(mode);
-    setLockNotice('');
+  const handleCopyProfileLink = () => {
+    const url = `${window.location.origin}/?card=${encodeURIComponent(card.username)}`;
+    navigator.clipboard.writeText(url);
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
   };
 
-  const activeLeagueName = userTeam?.leagueName || 'Premier DevLeague';
+  const handleShareTwitter = () => {
+    const text = `⚽ Check out my GitFC Developer Card!
+Rating: ${attrs.overall} OVR | ${card.position} (${card.archetype})
+Attack: ${attrs.att} | Passing: ${attrs.pas} | Vision: ${attrs.vis}
 
-  // DIFFICULTY ATTRIBUTE MULTIPLIER MATRIX
-  const getFormatMultiplier = () => {
-    switch (matchFormat) {
-      case 'champions':
-        return { pas: 1.04, sho: 1.05, dri: 1.03, phy: 1.04, pac: 1.05, def: 1.04, label: 'CHAMPIONS LEAGUE (PRO TIER - HARD)' };
-      case 'worldcup':
-        return { pas: 1.08, sho: 1.10, dri: 1.06, phy: 1.08, pac: 1.10, def: 1.08, label: 'WORLD CUP (PINNACLE TIER - EXTREME)' };
-      default:
-        return { pas: 1.0, sho: 1.0, dri: 1.0, phy: 1.0, pac: 1.0, def: 1.0, label: `${activeLeagueName.toUpperCase()} (BASE TIER - REGULAR)` };
-    }
-  };
-
-  const currentMultiplier = getFormatMultiplier();
-
-  const getScaledValue = (val: number, mult: number) => {
-    return Math.min(99, Math.round(val * mult));
-  };
-  const [isFavorite, setIsFavorite] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      onLookupUser(searchQuery.trim());
-      setSearchQuery('');
-    }
-  };
-
-  const [sharingImage, setSharingImage] = useState(false);
-  const [shareNotice, setShareNotice] = useState('');
-
-  const getCardShareUrl = () => {
-    const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://gitfc.vercel.app';
-    const baseUrl = origin.includes('localhost') ? 'https://gitfc.vercel.app' : origin;
-    return `${baseUrl}/?card=${encodeURIComponent(card.username)}`;
-  };
-
-  const handleShareImageAndLink = async () => {
-    setSharingImage(true);
-    setShareNotice('');
-    const shareUrl = getCardShareUrl();
-    const text = `Check out my EA FC GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽ ${shareUrl}`;
-
-    try {
-      const cardElement = document.getElementById('ea-fc-export-card');
-      if (cardElement) {
-        const dataUrl = await toPng(cardElement, { pixelRatio: 2, quality: 0.95 });
-        const blob = await (await fetch(dataUrl)).blob();
-        const file = new File([blob], `gitfc-card-${card.username}.png`, { type: 'image/png' });
-
-        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          await navigator.share({
-            title: `GitFC Card - ${card.name}`,
-            text,
-            url: shareUrl,
-            files: [file],
-          });
-          setSharingImage(false);
-          return;
-        }
-      }
-    } catch (err) {
-      console.warn('Native image share fallback:', err);
-    }
-
-    // Fallback: Download Card Image + Copy Link Text to Clipboard
-    try {
-      const cardElement = document.getElementById('ea-fc-export-card');
-      if (cardElement) {
-        const dataUrl = await toPng(cardElement, { pixelRatio: 2, quality: 0.95 });
-        const link = document.createElement('a');
-        link.download = `gitfc-card-${card.username}.png`;
-        link.href = dataUrl;
-        link.click();
-      }
-      await navigator.clipboard.writeText(text);
-      setShareNotice('📸 Card image downloaded & share link copied to clipboard! Paste into WhatsApp or chat.');
-      setTimeout(() => setShareNotice(''), 6000);
-    } catch {
-      const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-      window.open(url, '_blank');
-    } finally {
-      setSharingImage(false);
-    }
-  };
-
-  const downloadCardPng = async () => {
-    try {
-      const cardElement = document.getElementById('ea-fc-export-card');
-      if (cardElement) {
-        const dataUrl = await toPng(cardElement, { pixelRatio: 2, quality: 0.95 });
-        const link = document.createElement('a');
-        link.download = `gitfc-card-${card.username}.png`;
-        link.href = dataUrl;
-        link.click();
-      }
-    } catch (err) {
-      console.warn('Failed to download card PNG:', err);
-    }
-  };
-
-  const handleShareTwitter = async () => {
-    const shareUrl = getCardShareUrl();
-    const text = `Check out my EA FC GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽🔥`;
-    await downloadCardPng();
-    try {
-      await navigator.clipboard.writeText(`${text} ${shareUrl}`);
-    } catch {}
-    setShareNotice('📸 Card image downloaded & text copied! Attach your image on X.');
-    setTimeout(() => setShareNotice(''), 6000);
-    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`;
-    window.open(url, '_blank');
-  };
-
-  const handleShareWhatsApp = () => {
-    handleShareImageAndLink();
-  };
-
-  const handleShareLinkedIn = async () => {
-    const shareUrl = getCardShareUrl();
-    const text = `Check out my official EA FC Ultimate Team GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽ ${shareUrl}`;
-    await downloadCardPng();
-    try {
-      await navigator.clipboard.writeText(text);
-    } catch {}
-    setShareNotice('📸 Card image downloaded & post text copied! Paste text & attach image on LinkedIn.');
-    setTimeout(() => setShareNotice(''), 6000);
-    const url = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
+Generate yours here:`;
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
     window.open(url, '_blank');
   };
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* TOP BAR: BACK BUTTON + SEARCH BAR */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900/90 border border-slate-800 rounded-3xl p-4 shadow-xl">
+    <div className="space-y-12 animate-fadeIn max-w-6xl mx-auto px-2 sm:px-4">
+      
+      {/* TOP ACTION BAR: BACK & SHARING */}
+      <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gitfc-border">
         <button
           onClick={onResetSearch}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-mono text-xs font-bold transition border border-slate-700"
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-gitfc-border text-slate-300 hover:text-white hover:border-gitfc-neonGreen/40 font-gaming text-xs font-bold uppercase transition-all cursor-pointer"
         >
-          <ArrowLeft className="w-4 h-4" /> GENERATE ANOTHER CARD
+          <RotateCcw className="w-3.5 h-3.5" /> SCOUT ANOTHER DEV
         </button>
 
-        <form onSubmit={handleSearchSubmit} className="flex items-center gap-2 w-full sm:w-auto">
-          <div className="relative flex items-center bg-slate-950 border border-slate-800 rounded-2xl px-3 py-1.5 focus-within:border-amber-400">
-            <span className="text-slate-500 font-mono text-xs font-bold">@</span>
-            <input
-              type="text"
-              placeholder="github username"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="bg-transparent text-white text-xs font-mono px-2 py-1 focus:outline-none w-36 sm:w-48"
-            />
-          </div>
+        <div className="flex items-center gap-3">
+          {onCompare && (
+            <button
+              onClick={() => onCompare(card)}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-gitfc-electricBlue/40 text-gitfc-electricBlue font-gaming text-xs font-bold uppercase transition shadow-sm"
+            >
+              <Swords className="w-3.5 h-3.5" /> FACE-OFF / COMPARE
+            </button>
+          )}
+
           <button
-            type="submit"
-            className="px-4 py-2 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-display font-black text-xs transition shadow"
+            onClick={onOpenExportModal}
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming text-xs font-black uppercase tracking-wider hover:shadow-[0_0_20px_rgba(0,255,135,0.5)] transition"
           >
-            SEARCH
+            <Download className="w-3.5 h-3.5" /> EXPORT HD PNG
           </button>
-        </form>
+        </div>
       </div>
 
-      {/* MAIN GENERATED PROFILE LAYOUT */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* LEFT COLUMN: FLOATING EA FC CARD + ACTIONS */}
-        <div className="lg:col-span-5 flex flex-col items-center space-y-6">
-          <div className="relative animate-float drop-shadow-[0_25px_40px_rgba(0,0,0,0.9)]">
+      {/* HERO SPOTLIGHT: 3D CARD + IDENTITY PROFILE DOSSIER */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        
+        {/* LEFT COLUMN: HERO 3D PLAYER CARD */}
+        <div className="lg:col-span-5 flex flex-col items-center justify-center relative">
+          {/* Ambient Glow */}
+          <div className="absolute w-[360px] h-[520px] bg-gradient-to-tr from-gitfc-neonGreen/20 via-gitfc-electricBlue/20 to-gitfc-gold/20 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 drop-shadow-[0_30px_50px_rgba(0,0,0,0.9)]">
             <EAFCCard card={card} elementId="ea-fc-export-card" interactive={true} />
           </div>
 
-          <div className="w-full max-w-[340px] space-y-3">
-            <button
-              onClick={onOpenExportModal}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:brightness-110 text-slate-950 font-display font-black text-sm shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 transition"
-            >
-              <Download className="w-4 h-4" /> DOWNLOAD CARD PNG
-            </button>
-
-            <button
-              onClick={() => setIsFavorite(!isFavorite)}
-              className={`w-full py-3 rounded-2xl font-mono text-xs font-bold flex items-center justify-center gap-2 transition border ${
-                isFavorite
-                  ? 'bg-amber-500/20 text-amber-300 border-amber-400'
-                  : 'bg-slate-900 text-slate-300 border-slate-800 hover:bg-slate-800'
-              }`}
-            >
-              <Star className={`w-4 h-4 ${isFavorite ? 'fill-amber-400 text-amber-400' : ''}`} />
-              {isFavorite ? 'FAVORITED PLAYER CARD' : 'FAVORITE PLAYER CARD'}
-            </button>
-
-            {/* SHARE SCORECARD BUTTONS */}
-            <div className="pt-3 border-t border-slate-800 space-y-2">
-              <span className="block text-center text-[10px] font-mono text-slate-500 uppercase font-bold tracking-widest">
-                SHARE CARD & PROFILE LINK
-              </span>
-
-              <button
-                onClick={handleShareImageAndLink}
-                disabled={sharingImage}
-                className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500 hover:brightness-110 text-slate-950 font-display font-extrabold text-xs shadow-lg flex items-center justify-center gap-2 transition"
-              >
-                {sharingImage ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> PREPARING CARD IMAGE...
-                  </>
-                ) : (
-                  <>
-                    <Share2 className="w-4 h-4 text-slate-950" /> SHARE IMAGE + LINK
-                  </>
-                )}
-              </button>
-
-              {shareNotice && (
-                <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono text-center animate-fadeIn">
-                  {shareNotice}
-                </div>
-              )}
-
-              <div className="grid grid-cols-3 gap-2 pt-1">
-                <button
-                  onClick={handleShareTwitter}
-                  className="py-2.5 px-2.5 rounded-xl bg-slate-900 hover:bg-sky-500/20 hover:text-sky-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
-                >
-                  <span className="text-sky-400 font-bold">𝕏</span> Twitter / X
-                </button>
-                <button
-                  onClick={handleShareWhatsApp}
-                  className="py-2.5 px-2.5 rounded-xl bg-slate-900 hover:bg-emerald-500/20 hover:text-emerald-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
-                >
-                  <MessageCircle className="w-3.5 h-3.5 text-emerald-400" /> WhatsApp
-                </button>
-                <button
-                  onClick={handleShareLinkedIn}
-                  className="py-2.5 px-2.5 rounded-xl bg-slate-900 hover:bg-blue-500/20 hover:text-blue-300 border border-slate-800 text-slate-300 text-xs font-mono font-bold flex items-center justify-center gap-1.5 transition"
-                >
-                  <span className="text-blue-400 font-bold">in</span> LinkedIn
-                </button>
-              </div>
-            </div>
+          <div className="mt-4 flex items-center gap-2 text-xs font-mono text-slate-400">
+            <Sparkles className="w-3.5 h-3.5 text-gitfc-neonGreen" />
+            <span>Hover or move mouse to tilt in 3D</span>
           </div>
         </div>
 
-        {/* RIGHT COLUMN: PLAYER ATTRIBUTES & FOOTBALL DETAILS */}
-        <div className="lg:col-span-7 space-y-6 text-left max-w-full overflow-hidden">
-          {/* PLAYER HEADER & OVR BADGE */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl relative overflow-hidden">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0 max-w-full">
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                  <h1 className="font-display font-black text-2xl sm:text-4xl text-white tracking-tight break-words">
-                    {card.name}
-                  </h1>
-                  <span className="px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-400/40 font-display font-black text-sm sm:text-base">
-                    OVR {card.ratings.overall}
-                  </span>
+        {/* RIGHT COLUMN: PLAYER DOSSIER & ATTRIBUTE BREAKDOWN */}
+        <div className="lg:col-span-7 space-y-6">
+          
+          {/* PLAYER HEADER & ARCHETYPE */}
+          <div className="bg-gitfc-card/80 border border-gitfc-border rounded-3xl p-6 shadow-xl relative overflow-hidden">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-gaming font-bold uppercase bg-gitfc-neonGreen/10 border border-gitfc-neonGreen/30 text-gitfc-neonGreen mb-2">
+                  <span>{card.positionCategory}</span> • {card.positionTitle}
                 </div>
-                <div className="flex flex-wrap items-center gap-2 mt-2">
-                  <span className="font-mono text-xs font-bold text-amber-400">
-                    🏆 RANK #{card.powerScore > 20000 ? '1' : '46'} GLOBAL
-                  </span>
-                  <span className="text-slate-600">•</span>
-                  <span className="font-mono text-xs text-slate-400 font-semibold">
-                    @{card.username}
-                  </span>
+                <h1 className="font-display font-black text-3xl sm:text-4xl text-white uppercase tracking-tight">
+                  {card.name}
+                </h1>
+                <div className="flex items-center gap-2 mt-1 text-sm font-mono text-slate-400">
+                  <span>@{card.username}</span>
+                  <span>•</span>
+                  <span>{card.clubName}</span>
+                  <span>•</span>
+                  <span>{card.countryFlag} {card.location}</span>
                 </div>
-                <div className="flex flex-wrap items-center gap-2 mt-3 max-w-full">
-                  <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono text-[11px] sm:text-xs font-bold flex items-center gap-1.5 max-w-full">
-                    <span>⚡</span> Archetype: <strong className="text-white">{card.positionTitle}</strong>
-                  </span>
-                  <span className="px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/30 font-mono text-[11px] sm:text-xs font-bold flex items-center gap-1.5 max-w-full">
-                    <span>{card.footballPositionBadge || '⚽'}</span> Position: <strong className="text-white">{card.position}</strong> ({card.footballPositionTitle})
-                  </span>
+              </div>
+
+              {/* RATING BADGE */}
+              <div className="flex flex-col items-center bg-black/60 border-2 border-gitfc-gold/50 px-5 py-3 rounded-2xl shadow-xl">
+                <span className="font-gaming font-black text-4xl text-gitfc-gold leading-none">
+                  {attrs.overall}
+                </span>
+                <span className="font-gaming font-bold text-[10px] tracking-widest uppercase text-slate-400 mt-1">
+                  OVR RATING
+                </span>
+              </div>
+            </div>
+
+            {/* BIO & ARCHETYPE SUMMARY */}
+            <div className="mt-6 pt-4 border-t border-gitfc-border/80">
+              <div className="flex items-center gap-2 mb-1">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span className="font-gaming font-bold text-xs uppercase tracking-wider text-amber-300">
+                  SIGNATURE ARCHETYPE: {card.archetype}
+                </span>
+              </div>
+              <p className="text-slate-300 text-sm leading-relaxed">
+                {card.archetypeDescription}
+              </p>
+            </div>
+          </div>
+
+          {/* STRENGTHS & TACTICAL PLAYSTYLE */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            {/* STRENGTHS & WEAKNESSES */}
+            <div className="bg-gitfc-card/80 border border-gitfc-border rounded-3xl p-5 shadow-xl space-y-3">
+              <div className="font-gaming font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-emerald-400" /> KEY STRENGTHS
+              </div>
+              <div className="space-y-1.5">
+                {card.strengths.map((str, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-xs text-emerald-300 font-semibold bg-emerald-950/30 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
+                    <span>⚡</span> {str}
+                  </div>
+                ))}
+              </div>
+
+              <div className="font-gaming font-bold text-xs uppercase tracking-wider text-slate-400 pt-2 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-amber-400" /> ROOM FOR GROWTH
+              </div>
+              <div className="space-y-1.5">
+                {card.weaknesses.map((weak, idx) => (
+                  <div key={idx} className="flex items-center gap-2 text-xs text-amber-300/90 font-medium bg-amber-950/20 border border-amber-500/20 px-3 py-1.5 rounded-xl">
+                    <span>🛡️</span> {weak}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* PLAYSTYLE TACTICAL IDENTITY */}
+            <div className="bg-gitfc-card/80 border border-gitfc-border rounded-3xl p-5 shadow-xl space-y-3 flex flex-col justify-between">
+              <div>
+                <div className="font-gaming font-bold text-xs uppercase tracking-wider text-slate-300 flex items-center gap-2 mb-2">
+                  <Flame className="w-4 h-4 text-rose-400" /> TACTICAL PLAYSTYLE
                 </div>
-                <p className="text-xs sm:text-sm text-slate-300 mt-3 leading-relaxed">
-                  {card.bio}
+                <p className="text-slate-300 text-xs sm:text-sm leading-relaxed italic">
+                  "{card.playstyle}"
                 </p>
               </div>
-            </div>
-          </div>
 
-          {/* LEAGUE MEMBERSHIP BANNER */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 max-w-full">
-            <div className="flex items-center gap-3 min-w-0 max-w-full">
-              <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
-                <Trophy className="w-5 h-5" />
-              </div>
-              <div className="min-w-0 max-w-full">
-                <div className="font-display font-extrabold text-xs sm:text-sm text-white truncate max-w-full">
-                  {userTeam ? `Squad: ${userTeam.name} • Active in ${activeLeagueName}` : `Active League: ${activeLeagueName}`}
-                </div>
-                <div className="text-[11px] sm:text-xs text-slate-400 truncate max-w-full">
-                  {userTeam ? `${userTeam.totalPlayers}/15 Teammates Registered • Rank #${userTeam.leaguePosition || 1}` : 'Official EA FC Developer League Membership'}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-2.5 w-full md:w-auto shrink-0">
-              <button
-                onClick={handleJoinLeagueClick}
-                className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-display font-extrabold text-xs shadow-md transition cursor-pointer flex items-center justify-center gap-1.5 whitespace-nowrap"
-              >
-                <Trophy className="w-3.5 h-3.5" />
-                {userTeam ? 'SWITCH LEAGUE' : 'JOIN LEAGUE'}
-              </button>
-
-              {userTeam && (
-                <button
-                  onClick={onOpenCreateTeamModal}
-                  className="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-mono font-bold transition whitespace-nowrap"
-                >
-                  MANAGE SQUAD
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* MATCH FORMAT COMPETITION SELECTOR WITH PROGRESSIVE LOCKS */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-4 sm:p-5 shadow-xl space-y-3 max-w-full">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-3">
-              <label className="block text-xs font-mono text-slate-400 font-bold uppercase tracking-wider">
-                SELECT MATCH COMPETITION MODE <span className="hidden sm:inline">({activeLeagueName.toUpperCase()} &lt; CHAMPIONS LEAGUE &lt; WORLD CUP)</span>
-              </label>
-              <span className="text-xs font-mono font-bold text-amber-400 whitespace-nowrap">
-                {currentMultiplier.label}
-              </span>
-            </div>
-
-            {lockNotice && (
-              <div className="px-4 py-2 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-400 font-mono text-xs font-bold animate-pulse">
-                {lockNotice}
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-              {/* 1. ACTIVE LEAGUE - UNLOCKED BY DEFAULT */}
-              <button
-                onClick={() => handleSelectMode('premier')}
-                className={`py-3 px-3 rounded-2xl text-xs font-bold font-mono transition-all border flex flex-col items-center justify-center gap-1 ${
-                  matchFormat === 'premier'
-                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow-lg'
-                    : 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800'
-                }`}
-              >
-                <div className="flex items-center gap-1 text-center">
-                  <span>⚽</span>
-                  <span className="truncate max-w-[140px]">{activeLeagueName.toUpperCase()}</span>
-                </div>
-                <span className="text-[9px] font-normal opacity-80">REGULAR DIFFICULTY</span>
-              </button>
-
-              {/* 2. CHAMPIONS LEAGUE - REQUIRES PREMIER QUALIFICATION (OVR 82+) */}
-              <button
-                onClick={() => handleSelectMode('champions')}
-                className={`py-3 px-3 rounded-2xl text-xs font-bold font-mono transition-all border flex flex-col items-center justify-center gap-1 relative ${
-                  matchFormat === 'champions'
-                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow-lg'
-                    : isChampionsUnlocked
-                    ? 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800'
-                    : 'bg-slate-950/60 text-slate-500 border-slate-800/80 cursor-not-allowed opacity-75'
-                }`}
-              >
-                <div className="flex items-center gap-1">
-                  <span>{isChampionsUnlocked ? '🏆' : '🔒'}</span>
-                  <span>CHAMPIONS LEAGUE</span>
-                </div>
-                <span className={`text-[9px] font-normal ${isChampionsUnlocked ? 'text-amber-400' : 'text-slate-500'}`}>
-                  {isChampionsUnlocked ? 'PRO TIER (HARD)' : 'REQUIRES OVR 82+'}
+              {/* UNLOCKED BADGES */}
+              <div className="pt-3 border-t border-gitfc-border/80">
+                <span className="text-[11px] font-gaming font-bold uppercase text-slate-400 block mb-2">
+                  DEV BADGES UNLOCKED ({card.badges.length})
                 </span>
-              </button>
-
-              {/* 3. WORLD CUP - REQUIRES CHAMPIONS LEAGUE QUALIFICATION (OVR 90+) */}
-              <button
-                onClick={() => handleSelectMode('worldcup')}
-                className={`py-3 px-3 rounded-2xl text-xs font-bold font-mono transition-all border flex flex-col items-center justify-center gap-1 relative ${
-                  matchFormat === 'worldcup'
-                    ? 'bg-amber-500 text-slate-950 border-amber-400 font-extrabold shadow-lg'
-                    : isWorldCupUnlocked
-                    ? 'bg-slate-950 text-slate-300 border-slate-800 hover:bg-slate-800'
-                    : 'bg-slate-950/60 text-slate-500 border-slate-800/80 cursor-not-allowed opacity-75'
-                }`}
-              >
-                <div className="flex items-center gap-1">
-                  <span>{isWorldCupUnlocked ? '🌍' : '🔒'}</span>
-                  <span>WORLD CUP</span>
-                </div>
-                <span className={`text-[9px] font-normal ${isWorldCupUnlocked ? 'text-emerald-400' : 'text-slate-500'}`}>
-                  {isWorldCupUnlocked ? 'LEGENDARY TIER' : 'REQUIRES OVR 90+'}
-                </span>
-              </button>
-            </div>
-          </div>
-
-          {/* DETAILED FORMAT ATTRIBUTES WITH COMPETITION SCALING */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-display font-extrabold text-sm text-emerald-400 uppercase tracking-widest flex items-center gap-2">
-                <Sparkles className="w-4 h-4" /> DETAILED FORMAT ATTRIBUTES
-              </h3>
-              <span className="text-[10px] font-mono text-slate-400 font-semibold">
-                SCALED FOR {matchFormat.toUpperCase()}
-              </span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-              {[
-                { label: 'PASSING (COMMITS)', value: getScaledValue(card.ratings.pas, currentMultiplier.pas), raw: `${card.stats.commits.toLocaleString()} Commits` },
-                { label: 'SHOOTING (PRS MERGED)', value: getScaledValue(card.ratings.sho, currentMultiplier.sho), raw: `${card.stats.prsMerged.toLocaleString()} PRs` },
-                { label: 'DRIBBLING (STARS)', value: getScaledValue(card.ratings.dri, currentMultiplier.dri), raw: `${card.stats.stars.toLocaleString()} Stars` },
-                { label: 'PHYSICAL (FOLLOWERS)', value: getScaledValue(card.ratings.phy, currentMultiplier.phy), raw: `${card.stats.followers.toLocaleString()} Followers` },
-                { label: 'PACE (STREAK)', value: getScaledValue(card.ratings.pac, currentMultiplier.pac), raw: `${card.stats.streakDays} Days` },
-                { label: 'DEFENSE (ISSUES CLOSED)', value: getScaledValue(card.ratings.def, currentMultiplier.def), raw: `${card.stats.issuesClosed.toLocaleString()} Closed` },
-              ].map((stat) => (
-                <div key={stat.label} className="space-y-1.5">
-                  <div className="flex justify-between items-center text-xs font-mono">
-                    <span className="text-slate-300 font-bold">{stat.label}</span>
-                    <span className="text-amber-400 font-extrabold">
-                      {stat.value}/99 <span className="text-slate-500 text-[10px] font-normal">({stat.raw})</span>
+                <div className="flex flex-wrap gap-2">
+                  {card.badges.map((b) => (
+                    <span 
+                      key={b.id} 
+                      title={`${b.name}: ${b.description}`} 
+                      className="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-slate-900 border border-gitfc-border text-xs text-slate-300 hover:border-gitfc-gold/50 transition cursor-help"
+                    >
+                      <span>{b.icon}</span>
+                      <span className="font-gaming font-bold text-[11px]">{b.name}</span>
                     </span>
-                  </div>
-                  <div className="w-full h-2.5 rounded-full bg-slate-950 overflow-hidden border border-slate-800">
-                    <div
-                      className="h-full bg-gradient-to-r from-emerald-500 via-amber-400 to-yellow-300 transition-all duration-500"
-                      style={{ width: `${stat.value}%` }}
-                    />
-                  </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+            </div>
+
+          </div>
+
+          {/* SHARE CONTROLS */}
+          <div className="bg-gradient-to-r from-gitfc-card via-slate-900 to-gitfc-card border border-gitfc-border rounded-3xl p-4 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+            <span className="font-gaming font-bold text-xs text-slate-300 uppercase tracking-wider">
+              SHARE PLAYER CARD
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleShareTwitter}
+                className="px-3.5 py-1.5 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 font-gaming text-xs font-bold uppercase border border-sky-400/30 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                SHARE TO X
+              </button>
+              <button
+                onClick={handleCopyProfileLink}
+                className="px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-gaming text-xs font-bold uppercase border border-white/10 transition flex items-center gap-1.5 cursor-pointer"
+              >
+                {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Share2 className="w-3.5 h-3.5" />}
+                {copiedLink ? 'COPIED LINK!' : 'COPY URL'}
+              </button>
             </div>
           </div>
 
-          {/* FOOTBALL CAREER STATS GRID */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-center shadow-lg">
-              <div className="text-[10px] font-mono text-slate-500 uppercase font-bold">CAREER GOALS</div>
-              <div className="font-display font-black text-2xl text-white mt-1">
-                {card.stats.commits.toLocaleString()}
-              </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Total Commits</div>
-            </div>
-
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-center shadow-lg">
-              <div className="text-[10px] font-mono text-slate-500 uppercase font-bold">FAN FOLLOWING</div>
-              <div className="font-display font-black text-2xl text-amber-400 mt-1">
-                {card.stats.followers.toLocaleString()}
-              </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">GitHub Followers</div>
-            </div>
-
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-center shadow-lg">
-              <div className="text-[10px] font-mono text-slate-500 uppercase font-bold">MATCHES PLAYED</div>
-              <div className="font-display font-black text-2xl text-white mt-1">
-                {card.stats.publicRepos}
-              </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Public Repositories</div>
-            </div>
-
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 text-center shadow-lg">
-              <div className="text-[10px] font-mono text-slate-500 uppercase font-bold">FAVORITE PLAY</div>
-              <div className="font-display font-black text-lg text-emerald-400 mt-1 truncate">
-                {card.stats.languages[0] || 'TypeScript'}
-              </div>
-              <div className="text-[10px] text-slate-400 mt-0.5">Primary Tech Stack</div>
-            </div>
-          </div>
-
-          {/* UNLOCKED MATCH BADGES */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-3">
-            <h3 className="font-display font-extrabold text-sm text-amber-400 uppercase tracking-widest flex items-center gap-2">
-              <Award className="w-4 h-4" /> UNLOCKED MATCH BADGES
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {card.badges.map((badge) => (
-                <div
-                  key={badge.id}
-                  className="px-3 py-1.5 rounded-xl bg-slate-950 border border-slate-800 text-slate-200 text-xs font-mono font-bold flex items-center gap-2"
-                >
-                  <span className="text-sm">{badge.icon}</span>
-                  <span>{badge.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
+
+      {/* SUPPORTING GITHUB TELEMETRY SUMMARY (FOOTBALL IDENTITY STAYS PRIMARY) */}
+      <div className="pt-8 border-t border-gitfc-border">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="font-gaming font-black text-xl text-white uppercase tracking-wider flex items-center gap-2">
+              <GitCommit className="w-5 h-5 text-gitfc-neonGreen" />
+              SUPPORTING GITHUB TELEMETRY
+            </h3>
+            <p className="text-slate-400 text-xs font-mono">
+              Raw signals collected from public GitHub API logs
+            </p>
+          </div>
+          <a
+            href={`https://github.com/${card.username}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-xs font-mono text-gitfc-electricBlue hover:underline"
+          >
+            github.com/{card.username} <ExternalLink className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="bg-gitfc-card/60 border border-gitfc-border rounded-2xl p-4 text-center">
+            <div className="text-slate-400 text-[10px] font-mono uppercase mb-1">Commits</div>
+            <div className="font-gaming font-extrabold text-2xl text-white">{card.stats.commits.toLocaleString()}</div>
+          </div>
+
+          <div className="bg-gitfc-card/60 border border-gitfc-border rounded-2xl p-4 text-center">
+            <div className="text-slate-400 text-[10px] font-mono uppercase mb-1">Stars Earned</div>
+            <div className="font-gaming font-extrabold text-2xl text-gitfc-gold">{card.stats.stars.toLocaleString()}</div>
+          </div>
+
+          <div className="bg-gitfc-card/60 border border-gitfc-border rounded-2xl p-4 text-center">
+            <div className="text-slate-400 text-[10px] font-mono uppercase mb-1">PRs Merged</div>
+            <div className="font-gaming font-extrabold text-2xl text-gitfc-neonGreen">{card.stats.prsMerged.toLocaleString()}</div>
+          </div>
+
+          <div className="bg-gitfc-card/60 border border-gitfc-border rounded-2xl p-4 text-center">
+            <div className="text-slate-400 text-[10px] font-mono uppercase mb-1">Issues Solved</div>
+            <div className="font-gaming font-extrabold text-2xl text-gitfc-electricBlue">{card.stats.issuesClosed.toLocaleString()}</div>
+          </div>
+
+          <div className="bg-gitfc-card/60 border border-gitfc-border rounded-2xl p-4 text-center">
+            <div className="text-slate-400 text-[10px] font-mono uppercase mb-1">Active Streak</div>
+            <div className="font-gaming font-extrabold text-2xl text-pink-400">{card.stats.streakDays} Days</div>
+          </div>
+
+          <div className="bg-gitfc-card/60 border border-gitfc-border rounded-2xl p-4 text-center">
+            <div className="text-slate-400 text-[10px] font-mono uppercase mb-1">Public Repos</div>
+            <div className="font-gaming font-extrabold text-2xl text-purple-400">{card.stats.publicRepos}</div>
+          </div>
+        </div>
+
+        {/* LANGUAGES */}
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <span className="text-xs font-gaming font-bold text-slate-400 uppercase">TECH STACK:</span>
+          {card.stats.languages.map((lang) => (
+            <span key={lang} className="px-2.5 py-1 rounded-lg bg-slate-900 border border-gitfc-border text-xs font-mono text-slate-300">
+              {lang}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ENTERTAINMENT DISCLAIMER */}
+      <div className="bg-slate-950/60 border border-slate-800/80 rounded-2xl p-4 flex items-center gap-3 text-slate-400 text-xs">
+        <ShieldAlert className="w-5 h-5 text-amber-400 shrink-0" />
+        <span>
+          GitFC is an entertainment and social developer identity product. All ratings and positions are algorithmic gamification signals, not real engineering evaluations.
+        </span>
+      </div>
+
     </div>
   );
 };

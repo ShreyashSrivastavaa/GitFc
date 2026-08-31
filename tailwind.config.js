@@ -7,8 +7,21 @@ export default {
   theme: {
     extend: {
       colors: {
+        gitfc: {
+          bg: "#080a0f",
+          dark: "#0b0e14",
+          card: "#121620",
+          surface: "#181e2b",
+          border: "#263042",
+          gold: "#f5c518",
+          neonGreen: "#00ff87",
+          electricBlue: "#00d2ff",
+          totyPurple: "#8b5cf6",
+          eliteCyan: "#06b6d4",
+          accent: "#00ff87",
+        },
         eafc: {
-          dark: "#0a0c10",
+          dark: "#080a0f",
           panel: "#121620",
           cardBg: "#181e2a",
           gold: "#f3c64c",
@@ -18,12 +31,13 @@ export default {
           silver: "#d1d5db",
           toty: "#0f2b5c",
           hero: "#581c87",
-          accent: "#22c55e"
+          accent: "#00ff87"
         }
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        display: ['Montserrat', 'Impact', 'sans-serif'],
+        display: ['Outfit', 'sans-serif'],
+        gaming: ['"Chakra Petch"', 'sans-serif'],
       },
       animation: {
         'shimmer': 'shimmer 3s infinite linear',

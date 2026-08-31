@@ -258,33 +258,33 @@ export function App() {
                   </div>
 
                   <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.15]">
-                    Turn your GitHub Profile into an <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-amber-300 to-amber-500">EA FC Player Card</span>
+                    Turn your GitHub into a <span className="text-transparent bg-clip-text bg-gradient-to-r from-gitfc-neonGreen via-gitfc-electricBlue to-gitfc-gold">Football Card</span>
                   </h1>
 
                   <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-xl font-normal">
-                    GitCards maps your developer activity—commits, issues, pull requests, streaks, and languages—into custom, premium EA FC Ultimate Team player cards with custom ratings and themes.
+                    Transform your commits, pull requests, streaks, and language diversity into an authentic FIFA Ultimate Team style developer identity card.
                   </p>
 
                   {/* HORIZONTAL FEATURE BADGES */}
                   <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-300 text-xs font-mono font-medium border border-slate-800 flex items-center gap-1.5">
-                      <span className="text-emerald-400 font-bold">✓</span> 100% Free & Open Source
+                    <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 text-slate-300 text-xs font-gaming font-semibold border border-gitfc-border flex items-center gap-1.5 shadow-sm">
+                      <span className="text-gitfc-neonGreen font-bold">⚡</span> 8 Authentic Attributes
                     </span>
-                    <span className="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-300 text-xs font-mono font-medium border border-slate-800 flex items-center gap-1.5">
-                      <span className="text-emerald-400 font-bold">✓</span> Algorithmic OVR Ratings
+                    <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 text-slate-300 text-xs font-gaming font-semibold border border-gitfc-border flex items-center gap-1.5 shadow-sm">
+                      <span className="text-gitfc-electricBlue font-bold">🎯</span> Tactical Dev Positions
                     </span>
-                    <span className="px-3 py-1.5 rounded-lg bg-slate-900 text-slate-300 text-xs font-mono font-medium border border-slate-800 flex items-center gap-1.5">
-                      <span className="text-emerald-400 font-bold">✓</span> 1-Click High-Res PNG Export
+                    <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 text-slate-300 text-xs font-gaming font-semibold border border-gitfc-border flex items-center gap-1.5 shadow-sm">
+                      <span className="text-gitfc-gold font-bold">✨</span> 3D Holographic Export
                     </span>
                   </div>
 
                   {/* SEARCH INPUT CONTAINER */}
                   <form onSubmit={handleSearchSubmit} className="relative max-w-lg pt-2">
-                    <div className="relative flex items-center bg-slate-950/90 border border-slate-700/80 rounded-2xl p-1.5 shadow-2xl focus-within:border-amber-500 transition-colors">
-                      <span className="pl-4 text-slate-500 font-mono text-sm font-bold">@</span>
+                    <div className="relative flex items-center bg-slate-950/90 border-2 border-gitfc-border rounded-2xl p-1.5 shadow-2xl focus-within:border-gitfc-neonGreen transition-all">
+                      <span className="pl-4 text-gitfc-neonGreen font-gaming text-base font-bold">@</span>
                       <input
                         type="text"
-                        placeholder="enter github username (e.g. torvalds)"
+                        placeholder="Enter GitHub username (e.g. torvalds)"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full pl-2 pr-4 py-3 bg-transparent text-white placeholder-slate-500 text-sm font-medium focus:outline-none"
@@ -292,9 +292,9 @@ export function App() {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-white font-display font-black text-sm hover:brightness-110 shadow-lg shrink-0 flex items-center gap-1.5 transition cursor-pointer"
+                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black text-sm tracking-wider uppercase hover:shadow-[0_0_20px_rgba(0,255,135,0.5)] shrink-0 flex items-center gap-1.5 transition-all cursor-pointer"
                       >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Generate'}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : 'SCOUT PLAYER'}
                       </button>
                     </div>
                     {error && <p className="mt-2 text-xs font-mono text-rose-400">{error}</p>}
@@ -307,12 +307,15 @@ export function App() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-400">
-                      <span className="font-bold text-slate-400">TRY ICONIC DEVS:</span>
-                      {['torvalds', 'gaearon', 'shadcn', 'mitchellh', 'rauchg', 'sindresorhus'].map((user) => (
+                      <span className="font-gaming font-bold text-slate-300">SCOUT TRENDING DEVS:</span>
+                      {['torvalds', 'gaearon', 'antfu', 'shadcn', 'mitchellh', 'rauchg'].map((user) => (
                         <button
                           key={user}
-                          onClick={() => handleLookupUser(user)}
-                          className="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-amber-500/20 hover:text-amber-300 border border-slate-800 transition cursor-pointer shadow-xs"
+                          onClick={() => {
+                            setSearchQuery(user);
+                            handleLookupUser(user);
+                          }}
+                          className="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-gitfc-neonGreen/20 hover:text-gitfc-neonGreen hover:border-gitfc-neonGreen/40 border border-slate-800 transition cursor-pointer shadow-xs font-gaming font-semibold"
                         >
                           @{user}
                         </button>
@@ -324,29 +327,27 @@ export function App() {
                 {/* RIGHT COLUMN: FLOATING SHOWCASE CARD WITH AMBIENT GLOW */}
                 <div className="lg:col-span-5 flex flex-col items-center justify-center relative py-6">
                   {/* Ambient Radial Glow Aura */}
-                  <div className="absolute w-[340px] h-[480px] bg-gradient-to-tr from-amber-500/25 via-emerald-500/20 to-amber-400/30 rounded-full blur-3xl pointer-events-none animate-glow-pulse" />
+                  <div className="absolute w-[340px] h-[480px] bg-gradient-to-tr from-gitfc-neonGreen/20 via-gitfc-electricBlue/20 to-gitfc-gold/20 rounded-full blur-3xl pointer-events-none animate-glow-pulse" />
 
-                  {/* Floating Animated Empty EA FC Card Shell */}
+                  {/* Floating Animated Showcase Card */}
                   <div className="relative z-10 animate-float drop-shadow-[0_25px_40px_rgba(0,0,0,0.85)]">
                     <EAFCCard
-                      card={null}
-                      isEmpty={true}
-                      elementId="ea-fc-export-card"
+                      card={PRESET_DEVS[0]}
                       interactive={true}
                     />
                   </div>
 
-                  {/* Action Button */}
+                  {/* Quick Scout Action Button */}
                   <button
                     onClick={() => handleLookupUser(searchQuery || (isConnected && currentCard ? currentCard.username : 'torvalds'))}
-                    className="mt-6 z-10 w-full max-w-[320px] py-3.5 rounded-2xl bg-[#FF8C00] hover:bg-[#E07B00] text-white font-display font-black text-sm hover:-translate-y-0.5 shadow-xl shadow-amber-500/20 flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    className="mt-6 z-10 w-full max-w-[320px] py-3.5 rounded-2xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black text-sm tracking-widest uppercase hover:shadow-[0_0_25px_rgba(0,255,135,0.6)] flex items-center justify-center gap-2 transition-all cursor-pointer"
                   >
-                    <Sparkles className="w-4 h-4" /> GENERATE CARD PROFILE
+                    <Sparkles className="w-4 h-4" /> SCOUT THIS CARD
                   </button>
                 </div>
               </div>
 
-              {/* LANDING DETAILS: HOW IT WORKS, GITHUB TO EA FC TRANSLATION, THE RULE BOOK */}
+              {/* LANDING DETAILS: HOW IT WORKS, GITHUB TO FOOTBALL TRANSLATION */}
               <LandingDetails />
             </div>
           )

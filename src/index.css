@@ -3,174 +3,96 @@
 @tailwind utilities;
 
 :root {
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-card: #1c2128;
+  --bg-primary: #080a0f;
+  --bg-secondary: #0e121a;
+  --bg-card: #121622;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --border: #30363d;
-  --border-strong: #475569;
-  --accent: #f5c400;         /* EA FC Gold */
-  --accent-hover: #e6b800;
-  --green: #00ff87;
-  --blue: #58a6ff;
-  --red: #f85149;
-  --card-bg: linear-gradient(135deg, #1c2128 0%, #0d1117 100%);
+  --border: #1e2638;
+  --border-strong: #334155;
+  --accent-gold: #f5c518;
+  --accent-neon: #00ff87;
+  --accent-cyan: #00d2ff;
+  --accent-purple: #a855f7;
+  --font-gaming: 'Chakra Petch', sans-serif;
+  --font-display: 'Outfit', sans-serif;
 }
 
 @layer base {
   body {
     background-color: var(--bg-primary);
     color: var(--text-primary);
-    @apply font-sans overflow-x-hidden transition-colors duration-200;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, .font-display {
+    font-family: var(--font-display);
+  }
+
+  .font-gaming {
+    font-family: var(--font-gaming);
   }
 }
 
-/* Dark Banners (.dark-banner) - Preserve Vibrant Dark Navy Metallic Gradient & Crisp White Text */
-.dark-banner,
-html.theme-light .dark-banner {
-  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%) !important;
-  border-color: #334155 !important;
-  color: #ffffff !important;
-  box-shadow: 0 20px 30px -10px rgba(15, 23, 42, 0.3) !important;
-}
-
-.dark-banner h1,
-.dark-banner h2,
-.dark-banner h3,
-.dark-banner p,
-.dark-banner span,
-.dark-banner div,
-html.theme-light .dark-banner h1,
-html.theme-light .dark-banner h2,
-html.theme-light .dark-banner h3,
-html.theme-light .dark-banner p,
-html.theme-light .dark-banner span:not(.text-amber-400):not(.text-emerald-400):not(.text-sky-400),
-html.theme-light .dark-banner div:not(.text-amber-400):not(.text-emerald-400) {
-  color: #ffffff;
-}
-
-html.theme-light .dark-banner p {
-  color: #cbd5e1 !important;
-}
-
-html.theme-light .dark-banner .text-slate-300,
-html.theme-light .dark-banner .text-slate-400 {
-  color: #cbd5e1 !important;
-}
-
-/* EA FC Cards - Preserve Authentic Gold, TOTY, Icon Metallic Colors */
-.ea-fc-card-shape,
-.ea-fc-card-shape * {
-  color: inherit;
-}
-
-/* Custom EA FC Card Shape Clip-Path */
+/* Custom EA FC & GitFC Card Geometry Clip-Path */
 .ea-fc-card-shape {
   clip-path: polygon(
     14% 0%,
     86% 0%,
-    100% 12%,
-    100% 88%,
+    100% 10%,
+    100% 90%,
     50% 100%,
-    0% 88%,
-    0% 12%
+    0% 90%,
+    0% 10%
   );
 }
 
 .ea-fc-shield-top {
-  clip-path: polygon(0% 0%, 100% 0%, 100% 70%, 50% 100%, 0% 70%);
+  clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 50% 100%, 0% 75%);
 }
 
 .ea-fc-badge-shape {
-  clip-path: polygon(20% 0%, 80% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  clip-path: polygon(18% 0%, 82% 0%, 100% 22%, 100% 78%, 50% 100%, 0% 78%, 0% 22%);
 }
 
-/* Metallic Rarity Card Textures & Gradients */
-.bg-eafc-bronze {
-  background: linear-gradient(135deg, #7c4d29 0%, #a86c3d 30%, #5a371c 65%, #c87d46 100%);
-  border-color: #8c562e;
+/* Authentic 5 Rarity Card Textures & Gradients */
+.bg-card-common {
+  background: linear-gradient(145deg, #3d2314 0%, #784423 35%, #4a2814 70%, #9e5b30 100%);
+  border-color: #a86436;
 }
 
-.bg-eafc-silver {
-  background: linear-gradient(135deg, #788294 0%, #c0c7d4 35%, #565e6d 65%, #e2e8f0 100%);
-  border-color: #a0aab8;
+.bg-card-rare {
+  background: linear-gradient(145deg, #1e2530 0%, #475569 35%, #232d3d 70%, #94a3b8 100%);
+  border-color: #cbd5e1;
 }
 
-.bg-eafc-gold {
-  background: linear-gradient(135deg, #c69427 0%, #fef08a 25%, #946914 55%, #eab308 85%, #fef9c3 100%);
+.bg-card-epic {
+  background: linear-gradient(145deg, #452b04 0%, #b48316 28%, #5a3906 60%, #eab308 85%, #fef08a 100%);
   border-color: #facc15;
 }
 
-.bg-eafc-hero {
-  background: linear-gradient(135deg, #3b0764 0%, #9333ea 35%, #2e1065 65%, #c084fc 100%);
-  border-color: #a855f7;
-}
-
-.bg-eafc-toty {
-  background: radial-gradient(circle at 50% 15%, #3b82f6 0%, #1e3a8a 30%, #0f172a 65%, #030712 100%);
-  border-color: #facc15;
-}
-
-.bg-eafc-toty_icon {
-  background: radial-gradient(circle at 50% 15%, #60a5fa 0%, #ffffff 30%, #f8fafc 65%, #cbd5e1 100%);
-  border-color: #eab308;
-}
-
-.bg-eafc-icon {
-  background: linear-gradient(135deg, #ffffff 0%, #fef9c3 30%, #fef08a 65%, #e2e8f0 100%);
-  border-color: #eab308;
-}
-
-.bg-eafc-scream {
-  background: radial-gradient(circle at 50% 10%, #38bdf8 0%, #0c4a6e 35%, #0284c7 65%, #082f49 100%);
-  border-color: #0284c7;
-}
-
-.bg-eafc-world_tour {
-  background: linear-gradient(135deg, #f43f5e 0%, #fb923c 25%, #facc15 50%, #4ade80 75%, #06b6d4 100%);
-  border-color: #fb923c;
-}
-
-.bg-eafc-totw {
-  background: linear-gradient(135deg, #09090b 0%, #18181b 40%, #09090b 70%, #27272a 100%);
-  border-color: #facc15;
-}
-
-.bg-eafc-heroes {
-  background: linear-gradient(135deg, #2e1065 0%, #7e22ce 35%, #3b0764 70%, #c084fc 100%);
+.bg-card-legendary {
+  background: linear-gradient(145deg, #1e0b36 0%, #581c87 30%, #310c59 65%, #c084fc 90%, #f472b6 100%);
   border-color: #c084fc;
 }
 
-.bg-eafc-tots {
-  background: linear-gradient(135deg, #0284c7 0%, #38bdf8 30%, #1e3a8a 65%, #facc15 100%);
+.bg-card-elite {
+  background: radial-gradient(circle at 50% 10%, #0284c7 0%, #1e1b4b 45%, #050b14 85%),
+              linear-gradient(135deg, #06b6d4 0%, #3b82f6 50%, #6366f1 100%);
   border-color: #38bdf8;
 }
 
-.bg-eafc-flashback {
-  background: linear-gradient(135deg, #450a0a 0%, #991b1b 35%, #18181b 65%, #f43f5e 100%);
-  border-color: #f43f5e;
-}
-
-.bg-eafc-evos {
-  background: linear-gradient(135deg, #052e16 0%, #16a34a 35%, #091e11 65%, #4ade80 100%);
-  border-color: #4ade80;
-}
-
-.bg-eafc-centurions {
-  background: linear-gradient(135deg, #450a0a 0%, #b91c1c 35%, #78350f 65%, #f59e0b 100%);
-  border-color: #f59e0b;
-}
-
-/* Holographic Metallic Overlay */
-.holographic-overlay {
+/* Holographic Dynamic Shine Overlay */
+.holographic-shine {
   background: linear-gradient(
     115deg,
     transparent 20%,
-    rgba(255, 255, 255, 0.35) 45%,
-    rgba(255, 215, 0, 0.45) 50%,
-    rgba(147, 51, 234, 0.35) 55%,
+    rgba(255, 255, 255, 0.4) 45%,
+    rgba(0, 255, 135, 0.35) 50%,
+    rgba(0, 210, 255, 0.4) 55%,
+    rgba(168, 85, 247, 0.35) 60%,
     transparent 80%
   );
   background-size: 200% 200%;
@@ -178,31 +100,35 @@ html.theme-light .dark-banner .text-slate-400 {
   pointer-events: none;
 }
 
-/* Floating Card Keyframes */
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  50% {
-    transform: translateY(-14px) rotate(1.2deg);
-  }
+/* Glowing Aura per Rarity */
+.glow-common {
+  filter: drop-shadow(0 15px 30px rgba(168, 100, 54, 0.35));
+}
+.glow-rare {
+  filter: drop-shadow(0 15px 30px rgba(148, 163, 184, 0.35));
+}
+.glow-epic {
+  filter: drop-shadow(0 18px 36px rgba(234, 179, 8, 0.5));
+}
+.glow-legendary {
+  filter: drop-shadow(0 20px 40px rgba(192, 132, 252, 0.6));
+}
+.glow-elite {
+  filter: drop-shadow(0 20px 45px rgba(56, 189, 248, 0.7)) drop-shadow(0 0 25px rgba(0, 255, 135, 0.4));
 }
 
-.animate-float {
-  animation: float 4s ease-in-out infinite;
+/* Custom Sports / Gaming Scrollbar */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
 }
-
-@keyframes glow-pulse {
-  0%, 100% {
-    opacity: 0.5;
-    transform: scale(0.98);
-  }
-  50% {
-    opacity: 0.85;
-    transform: scale(1.08);
-  }
+::-webkit-scrollbar-track {
+  background: #080a0f;
 }
-
-.animate-glow-pulse {
-  animation: glow-pulse 3.5s ease-in-out infinite;
+::-webkit-scrollbar-thumb {
+  background: #1e2638;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
 }

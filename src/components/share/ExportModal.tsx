@@ -7,14 +7,14 @@ interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
   card: EAFCDevCard;
-  cardElementId: string;
+  cardElementId?: string;
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   onClose,
   card,
-  cardElementId
+  cardElementId = 'ea-fc-export-card'
 }) => {
   const [downloading, setDownloading] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -31,11 +31,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
     try {
       const dataUrl = await toPng(node, {
-        pixelRatio: 2,
-        quality: 0.95
+        pixelRatio: 3,
+        quality: 1
       });
       const link = document.createElement('a');
-      link.download = `EAFC_Card_${card.username}.png`;
+      link.download = `GitFC_${card.username}_${card.attributes?.overall || card.ratings?.overall}OVR.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -45,12 +45,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
   };
 
-
-
   const origin = typeof window !== 'undefined' && window.location.origin ? window.location.origin : 'https://gitfc.vercel.app';
   const baseUrl = origin.includes('localhost') ? 'https://gitfc.vercel.app' : origin;
   const shareUrl = `${baseUrl}/?card=${encodeURIComponent(card.username)}`;
-  const shareText = `Check out my official EA FC Ultimate Team GitHub Player Card! OVR ${card.ratings.overall} ${card.footballPositionTitle} (@${card.username}) on GitFC! ⚽ ${shareUrl}`;
+  const shareText = `⚽ My GitFC Developer Card is live! Rating: ${card.attributes?.overall || card.ratings?.overall} OVR | ${card.position} (${card.archetype}) on GitFC! Scout yours: ${shareUrl}`;
 
   const handleNativeShare = async () => {
     setSharingImage(true);
