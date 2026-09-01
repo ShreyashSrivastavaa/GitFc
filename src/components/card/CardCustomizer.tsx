@@ -1,6 +1,7 @@
 import React from 'react';
 import type { EAFCDevCard, CardRarity, CardPosition } from '../../types';
 import { Sliders } from 'lucide-react';
+import { trackEvent } from '../../services/analytics';
 
 interface CardCustomizerProps {
   card: EAFCDevCard;
@@ -11,6 +12,11 @@ interface CardCustomizerProps {
 export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCard, onOpenPositionModal }) => {
   const handleRarityChange = (rarity: CardRarity) => {
     onUpdateCard({ ...card, rarity });
+    trackEvent('card_customized', {
+      username: card.username,
+      rarity,
+      position: card.position,
+    });
   };
 
   const handlePositionChange = (position: CardPosition) => {
@@ -27,10 +33,19 @@ export const CardCustomizer: React.FC<CardCustomizerProps> = ({ card, onUpdateCa
       GK: 'Goalkeeper',
     };
     onUpdateCard({ ...card, position, positionTitle: positionTitles[position] || card.positionTitle });
+    trackEvent('card_customized', {
+      username: card.username,
+      position,
+      rarity: card.rarity,
+    });
   };
 
   const handleChemChange = (chemistryStyle: any) => {
     onUpdateCard({ ...card, chemistryStyle });
+    trackEvent('card_customized', {
+      username: card.username,
+      chemistryStyle,
+    });
   };
 
   const handleFlagChange = (countryFlag: string) => {

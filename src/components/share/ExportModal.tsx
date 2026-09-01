@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import type { EAFCDevCard } from '../../types';
 import { toPng } from 'html-to-image';
 import { X, Download, Share2, Copy, Check, Code, Loader2 } from 'lucide-react';
+import { trackEvent } from '../../services/analytics';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -38,6 +39,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       link.download = `GitFC_${card.username}_${card.attributes?.overall || card.ratings?.overall}OVR.png`;
       link.href = dataUrl;
       link.click();
+      trackEvent('card_shared', {
+        username: card.username,
+        ovr: card.attributes?.overall || card.ratings?.overall,
+        shareChannel: 'png',
+      });
     } catch (err) {
       console.error('Failed to export PNG:', err);
     } finally {
@@ -68,6 +74,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             url: shareUrl,
             files: [file],
           });
+          trackEvent('card_shared', {
+            username: card.username,
+            ovr: card.attributes?.overall || card.ratings?.overall,
+            shareChannel: 'native',
+          });
           setSharingImage(false);
           return;
         }
@@ -88,6 +99,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       }
       await navigator.clipboard.writeText(shareText);
       setShareNotice('📸 Card image downloaded & share link copied to clipboard! Paste into WhatsApp or chat.');
+      trackEvent('card_shared', {
+        username: card.username,
+        ovr: card.attributes?.overall || card.ratings?.overall,
+        shareChannel: 'whatsapp',
+      });
       setTimeout(() => setShareNotice(''), 6000);
     } catch {
       const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
@@ -100,6 +116,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
     setCopiedLink(true);
+    trackEvent('card_shared', {
+      username: card.username,
+      ovr: card.attributes?.overall || card.ratings?.overall,
+      shareChannel: 'copy_link',
+    });
     setTimeout(() => setCopiedLink(false), 2000);
   };
 
@@ -108,6 +129,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const handleCopyMarkdown = () => {
     navigator.clipboard.writeText(markdownBadge);
     setCopiedMarkdown(true);
+    trackEvent('card_shared', {
+      username: card.username,
+      ovr: card.attributes?.overall || card.ratings?.overall,
+      shareChannel: 'markdown',
+    });
     setTimeout(() => setCopiedMarkdown(false), 2000);
   };
 
@@ -117,6 +143,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       await navigator.clipboard.writeText(shareText);
     } catch {}
     setShareNotice('📸 Card image downloaded & tweet text copied! Attach your image on X.');
+    trackEvent('card_shared', {
+      username: card.username,
+      ovr: card.attributes?.overall || card.ratings?.overall,
+      shareChannel: 'x',
+    });
     setTimeout(() => setShareNotice(''), 6000);
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
     window.open(tweetUrl, '_blank');
@@ -128,6 +159,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       await navigator.clipboard.writeText(shareText);
     } catch {}
     setShareNotice('📸 Card image downloaded & post text copied! Paste text & attach image on LinkedIn.');
+    trackEvent('card_shared', {
+      username: card.username,
+      ovr: card.attributes?.overall || card.ratings?.overall,
+      shareChannel: 'linkedin',
+    });
     setTimeout(() => setShareNotice(''), 6000);
     const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(linkedinUrl, '_blank');
