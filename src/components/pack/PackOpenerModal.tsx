@@ -33,6 +33,11 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
   const [currentStep, setCurrentStep] = useState(1);
   const [revealed, setRevealed] = useState(false);
 
+  // Check prefers-reduced-motion
+  const prefersReducedMotion =
+    typeof window !== 'undefined' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
   useEffect(() => {
     if (!isOpen) {
       setCurrentStep(1);
@@ -43,26 +48,39 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
     if (isLoading) {
       setRevealed(false);
       setCurrentStep(1);
-      const t1 = setTimeout(() => setCurrentStep(2), 700);
-      const t2 = setTimeout(() => setCurrentStep(3), 1500);
+      if (prefersReducedMotion) {
+        // Fast-forward directly for reduced motion
+        setCurrentStep(3);
+        return;
+      }
+      const t1 = setTimeout(() => setCurrentStep(2), 600);
+      const t2 = setTimeout(() => setCurrentStep(3), 1200);
       return () => {
         clearTimeout(t1);
         clearTimeout(t2);
       };
     } else if (card && !error) {
       setCurrentStep(4);
+      if (prefersReducedMotion) {
+        setRevealed(true);
+        return;
+      }
+
       const t3 = setTimeout(() => {
         setRevealed(true);
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ['#00ff87', '#00d2ff', '#f5c518', '#a855f7'],
-        });
-      }, 500);
+        try {
+          confetti({
+            particleCount: 70,
+            spread: 60,
+            origin: { y: 0.6 },
+            colors: ['#00ff87', '#00d2ff', '#f5c518', '#a855f7'],
+            disableForReducedMotion: true,
+          });
+        } catch {}
+      }, 400);
       return () => clearTimeout(t3);
     }
-  }, [isOpen, isLoading, card, error]);
+  }, [isOpen, isLoading, card, error, prefersReducedMotion]);
 
   if (!isOpen) return null;
 
@@ -75,7 +93,8 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors z-20"
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white transition-colors z-20 cursor-pointer"
+          aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
@@ -93,8 +112,8 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
             
             <p className="text-slate-300 text-sm max-w-md mb-6 leading-relaxed">
               {error.includes('not found') || error.includes('404')
-                ? `GitHub player "@${username}" could not be located on the global radar. Please check the spelling.`
-                : error.includes('rate limit')
+                ? `GitHub player "@${username}" could not be located on the global radar. Please verify spelling.`
+                : error.includes('Rate limit') || error.includes('rate limit')
                 ? `GitHub radar is temporarily cooling down. Sign in or try again in a few moments.`
                 : error}
             </p>
@@ -102,13 +121,13 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
             <div className="flex gap-3 w-full max-w-xs">
               <button
                 onClick={onRetry}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-gaming font-bold tracking-wider hover:opacity-90 transition-opacity"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-gaming font-bold tracking-wider hover:opacity-90 transition-opacity cursor-pointer"
               >
                 RE-SCOUT
               </button>
               <button
                 onClick={onClose}
-                className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-gaming font-bold tracking-wider transition-colors"
+                className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/15 text-white font-gaming font-bold tracking-wider transition-colors cursor-pointer"
               >
                 CANCEL
               </button>
@@ -116,7 +135,7 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
           </div>
         ) : revealed && card ? (
           /* Success: Card Revealed */
-          <div className="flex flex-col items-center text-center py-2 animate-scaleUp">
+          <div className={`flex flex-col items-center text-center py-2 ${prefersReducedMotion ? '' : 'animate-scaleUp'}`}>
             <div className="flex items-center gap-2 mb-3">
               <span className="px-3 py-1 rounded-full text-xs font-gaming font-bold uppercase bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 flex items-center gap-1.5 shadow">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -124,14 +143,14 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
               </span>
             </div>
 
-            <div className="my-2 transform hover:scale-105 transition-transform duration-300">
-              <EAFCCard card={card} scale={0.92} interactive={true} />
+            <div className={`my-2 ${prefersReducedMotion ? '' : 'transform hover:scale-105 transition-transform duration-300'}`}>
+              <EAFCCard card={card} scale={0.92} interactive={!prefersReducedMotion} />
             </div>
 
             <div className="mt-4 flex gap-3 w-full max-w-sm">
               <button
                 onClick={onClose}
-                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black tracking-widest uppercase hover:shadow-[0_0_25px_rgba(0,255,135,0.6)] transition-all"
+                className="flex-1 py-3 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black tracking-widest uppercase hover:shadow-[0_0_25px_rgba(0,255,135,0.6)] transition-all cursor-pointer"
               >
                 VIEW FULL PROFILE
               </button>
@@ -141,10 +160,14 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
           /* Scouting In-Progress Animation */
           <div className="w-full flex flex-col items-center text-center py-8">
             <div className="relative w-28 h-28 mb-6 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full border-2 border-gitfc-neonGreen/30 animate-ping opacity-40" />
-              <div className="absolute inset-2 rounded-full border border-gitfc-electricBlue/40 animate-pulse" />
+              {!prefersReducedMotion && (
+                <>
+                  <div className="absolute inset-0 rounded-full border-2 border-gitfc-neonGreen/30 animate-ping opacity-40" />
+                  <div className="absolute inset-2 rounded-full border border-gitfc-electricBlue/40 animate-pulse" />
+                </>
+              )}
               <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500/20 to-cyan-500/20 border-2 border-gitfc-neonGreen flex items-center justify-center shadow-[0_0_30px_rgba(0,255,135,0.4)]">
-                <Compass className="w-10 h-10 text-gitfc-neonGreen animate-spin [animation-duration:6s]" />
+                <Compass className={`w-10 h-10 text-gitfc-neonGreen ${prefersReducedMotion ? '' : 'animate-spin [animation-duration:6s]'}`} />
               </div>
             </div>
 
@@ -152,7 +175,7 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
               SCOUTING @{username || 'DEVELOPER'}
             </span>
             <p className="text-slate-400 text-xs font-mono mb-6">
-              Scanning public repositories & commit logs...
+              Scanning public repositories & commit telemetry...
             </p>
 
             <div className="w-full space-y-3 max-w-md text-left">
@@ -175,7 +198,7 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
                     <div
                       className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-gaming font-bold ${
                         isCurrent
-                          ? 'bg-gitfc-neonGreen text-slate-950 animate-bounce'
+                          ? `bg-gitfc-neonGreen text-slate-950 ${prefersReducedMotion ? '' : 'animate-bounce'}`
                           : isDone
                           ? 'bg-emerald-500/20 text-emerald-400'
                           : 'bg-white/10 text-slate-400'
@@ -193,7 +216,7 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
                       </div>
                     </div>
 
-                    {isCurrent && (
+                    {isCurrent && !prefersReducedMotion && (
                       <div className="w-2 h-2 rounded-full bg-gitfc-neonGreen animate-ping" />
                     )}
                   </div>
@@ -207,5 +230,3 @@ export const ScoutSequenceModal: React.FC<ScoutSequenceModalProps> = ({
     </div>
   );
 };
-
-
