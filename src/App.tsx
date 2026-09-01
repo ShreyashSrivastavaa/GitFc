@@ -5,6 +5,8 @@ import { PRESET_DEVS } from './services/presets';
 import { createDefaultTeam, addPlayerToRoster } from './services/teamService';
 import { getAuthState, loginWithGitHubUser, logoutUser } from './services/authService';
 import { incrementCounterStats } from './services/statsService';
+import { trackEvent } from './services/analytics';
+import { recomputeCard } from './services/cardCalculator';
 
 import { Navbar } from './components/layout/Navbar';
 import { Footer } from './components/layout/Footer';
@@ -40,6 +42,7 @@ export function App() {
   const [pendingInvite, setPendingInvite] = useState<TeamInvite | null>(null);
 
   const [loading, setLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState('');
 
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
@@ -47,6 +50,8 @@ export function App() {
   const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
 
   useEffect(() => {
+    trackEvent('landing_page_view');
+
     // Check saved session auth
     const savedAuth = getAuthState();
     if (savedAuth.isConnected && savedAuth.userCard) {
@@ -64,6 +69,7 @@ export function App() {
     const authMessage = params.get('message');
 
     if (authStatus === 'success' && authUser) {
+      trackEvent('github_auth_completed', { username: authUser });
       handleConnectGitHubUser(authUser);
       window.history.replaceState({}, document.title, window.location.pathname);
     } else if (authStatus === 'error') {
@@ -72,6 +78,7 @@ export function App() {
     } else {
       const cardUser = params.get('card');
       if (cardUser) {
+        trackEvent('shared_card_viewed', { username: cardUser });
         handleLookupUser(cardUser);
       }
     }
@@ -86,6 +93,14 @@ export function App() {
       const card = await fetchGitHubUserStats(username);
       setCurrentCard(card);
       setIsCardSearched(true);
+
+      trackEvent('card_generated', {
+        username: card.username,
+        ovr: card.attributes?.overall || card.ratings?.overall,
+        position: card.position,
+        archetype: card.archetype,
+        rarity: card.rarity,
+      });
 
       // Increment stats counter ONCE strictly after successful card generation
       console.log(`[App] Card generation succeeded for @${username}. Triggering counter increment.`);
@@ -104,6 +119,25 @@ export function App() {
       return null;
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRefreshPackFriday = async (cardToRefresh: EAFCDevCard) => {
+    setIsRefreshing(true);
+    try {
+      // Re-fetch latest stats
+      const freshData = await fetchGitHubUserStats(cardToRefresh.username);
+      const recomputed = recomputeCard(cardToRefresh, freshData.stats);
+      setCurrentCard(recomputed);
+      trackEvent('card_generated', {
+        username: recomputed.username,
+        ovr: recomputed.attributes?.overall,
+        isPackFridayRefresh: true,
+      });
+    } catch (err: any) {
+      console.warn('Pack Friday refresh error:', err);
+    } finally {
+      setIsRefreshing(false);
     }
   };
 
@@ -222,6 +256,9 @@ export function App() {
               onResetSearch={() => setIsCardSearched(false)}
               onLookupUser={handleLookupUser}
               onNavigateToLeagues={() => setActiveTab('leagues')}
+              onUpdateCard={(updated) => setCurrentCard(updated)}
+              onRefreshPackFriday={handleRefreshPackFriday}
+              isRefreshing={isRefreshing}
             />
           ) : (
             <div className="space-y-12">
@@ -274,12 +311,12 @@ export function App() {
                     </a>
                   </div>
 
-                  <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.15]">
+                  <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.12]">
                     Turn your GitHub into a <span className="text-transparent bg-clip-text bg-gradient-to-r from-gitfc-neonGreen via-gitfc-electricBlue to-gitfc-gold">Football Card</span>
                   </h1>
 
                   <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-xl font-normal">
-                    Transform your commits, pull requests, streaks, and language diversity into an authentic FIFA Ultimate Team style developer identity card.
+                    Generate authentic EA FC & FIFA-style trading cards from your public GitHub commits, PRs, stars, and language diversity in seconds.
                   </p>
 
                   {/* HORIZONTAL FEATURE BADGES */}
@@ -295,7 +332,7 @@ export function App() {
                     </span>
                   </div>
 
-                  {/* SEARCH INPUT CONTAINER */}
+                  {/* PRIMARY SEARCH & CTA CONTAINER */}
                   <form onSubmit={handleSearchSubmit} className="relative max-w-lg pt-2">
                     <div className="relative flex items-center bg-slate-950/90 border-2 border-gitfc-border rounded-2xl p-1.5 shadow-2xl focus-within:border-gitfc-neonGreen transition-all">
                       <span className="pl-4 text-gitfc-neonGreen font-gaming text-base font-bold">@</span>
@@ -309,9 +346,10 @@ export function App() {
                       <button
                         type="submit"
                         disabled={loading}
-                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black text-sm tracking-wider uppercase hover:shadow-[0_0_20px_rgba(0,255,135,0.5)] shrink-0 flex items-center gap-1.5 transition-all cursor-pointer"
+                        onClick={() => trackEvent('cta_click', { ctaName: 'create_my_card_hero', username: searchQuery })}
+                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black text-sm tracking-wider uppercase hover:shadow-[0_0_25px_rgba(0,255,135,0.6)] shrink-0 flex items-center gap-1.5 transition-all cursor-pointer hover:brightness-110"
                       >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : 'SCOUT PLAYER'}
+                        {loading ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : 'CREATE MY CARD'}
                       </button>
                     </div>
                     {error && <p className="mt-2 text-xs font-mono text-rose-400">{error}</p>}
@@ -324,12 +362,13 @@ export function App() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-400">
-                      <span className="font-gaming font-bold text-slate-300">SCOUT TRENDING DEVS:</span>
+                      <span className="font-gaming font-bold text-slate-300">SCOUT TRENDING PLAYERS:</span>
                       {['torvalds', 'gaearon', 'antfu', 'shadcn', 'mitchellh', 'rauchg'].map((user) => (
                         <button
                           key={user}
                           onClick={() => {
                             setSearchQuery(user);
+                            trackEvent('cta_click', { ctaName: 'trending_dev_pill', username: user });
                             handleLookupUser(user);
                           }}
                           className="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-gitfc-neonGreen/20 hover:text-gitfc-neonGreen hover:border-gitfc-neonGreen/40 border border-slate-800 transition cursor-pointer shadow-xs font-gaming font-semibold"
@@ -354,10 +393,14 @@ export function App() {
                     />
                   </div>
 
-                  {/* Quick Scout Action Button */}
+                  {/* Quick Scout Showcase Action Button */}
                   <button
-                    onClick={() => handleLookupUser(searchQuery || (isConnected && currentCard ? currentCard.username : 'torvalds'))}
-                    className="mt-6 z-10 w-full max-w-[320px] py-3.5 rounded-2xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black text-sm tracking-widest uppercase hover:shadow-[0_0_25px_rgba(0,255,135,0.6)] flex items-center justify-center gap-2 transition-all cursor-pointer"
+                    onClick={() => {
+                      const target = searchQuery || (isConnected && currentCard ? currentCard.username : 'torvalds');
+                      trackEvent('cta_click', { ctaName: 'scout_showcase_card', username: target });
+                      handleLookupUser(target);
+                    }}
+                    className="mt-6 z-10 w-full max-w-[320px] py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-gaming font-black text-sm tracking-widest uppercase hover:shadow-[0_0_25px_rgba(245,197,24,0.6)] flex items-center justify-center gap-2 transition-all cursor-pointer hover:brightness-110"
                   >
                     <Sparkles className="w-4 h-4" /> SCOUT THIS CARD
                   </button>

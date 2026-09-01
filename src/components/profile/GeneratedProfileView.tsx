@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import type { GitFCDevCard } from '../../types';
 import { EAFCCard } from '../card/EAFCCard';
+import { CardCustomizer } from '../card/CardCustomizer';
 import { 
   Download, 
   Share2, 
@@ -14,8 +15,12 @@ import {
   GitCommit, 
   Flame, 
   RotateCcw,
-  ShieldAlert
+  ShieldAlert,
+  Sliders,
+  RefreshCw,
+  PlusCircle
 } from 'lucide-react';
+import { trackEvent } from '../../services/analytics';
 
 interface GeneratedProfileViewProps {
   card: GitFCDevCard;
@@ -28,6 +33,9 @@ interface GeneratedProfileViewProps {
   onLookupUser: (username: string) => Promise<GitFCDevCard | null>;
   onNavigateToLeagues?: () => void;
   onCompare?: (card: GitFCDevCard) => void;
+  onUpdateCard?: (updated: GitFCDevCard) => void;
+  onRefreshPackFriday?: (card: GitFCDevCard) => Promise<void>;
+  isRefreshing?: boolean;
 }
 
 export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
@@ -35,14 +43,23 @@ export const GeneratedProfileView: React.FC<GeneratedProfileViewProps> = ({
   onOpenExportModal,
   onResetSearch,
   onCompare,
+  onUpdateCard,
+  onRefreshPackFriday,
+  isRefreshing = false,
 }) => {
   const [copiedLink, setCopiedLink] = useState(false);
+  const [showCustomizer, setShowCustomizer] = useState(false);
   const attrs = card.attributes;
 
   const handleCopyProfileLink = () => {
     const url = `${window.location.origin}/?card=${encodeURIComponent(card.username)}`;
     navigator.clipboard.writeText(url);
     setCopiedLink(true);
+    trackEvent('card_shared', {
+      username: card.username,
+      ovr: attrs.overall,
+      shareChannel: 'copy_link',
+    });
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
@@ -53,39 +70,103 @@ Attack: ${attrs.att} | Passing: ${attrs.pas} | Vision: ${attrs.vis}
 
 Generate yours here:`;
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
+    trackEvent('card_shared', {
+      username: card.username,
+      ovr: attrs.overall,
+      shareChannel: 'x',
+    });
     window.open(url, '_blank');
   };
 
   return (
     <div className="space-y-12 animate-fadeIn max-w-6xl mx-auto px-2 sm:px-4">
       
-      {/* TOP ACTION BAR: BACK & SHARING */}
+      {/* TOP ACTION BAR: BACK, PACK FRIDAY REFRESH, CUSTOMIZE & SHARING */}
       <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-gitfc-border">
-        <button
-          onClick={onResetSearch}
-          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 border border-gitfc-border text-slate-300 hover:text-white hover:border-gitfc-neonGreen/40 font-gaming text-xs font-bold uppercase transition-all cursor-pointer"
-        >
-          <RotateCcw className="w-3.5 h-3.5" /> SCOUT ANOTHER DEV
-        </button>
+        <div className="flex items-center gap-2.5">
+          <button
+            onClick={() => {
+              trackEvent('cta_click', { ctaName: 'create_own_card_from_profile' });
+              onResetSearch();
+            }}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-gitfc-neonGreen to-emerald-400 text-slate-950 font-gaming text-xs font-black uppercase transition-all shadow-md cursor-pointer hover:brightness-110"
+          >
+            <PlusCircle className="w-3.5 h-3.5" /> CREATE YOUR OWN CARD
+          </button>
 
-        <div className="flex items-center gap-3">
+          <button
+            onClick={onResetSearch}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-gitfc-border text-slate-300 hover:text-white hover:border-gitfc-neonGreen/40 font-gaming text-xs font-bold uppercase transition-all cursor-pointer"
+          >
+            <RotateCcw className="w-3.5 h-3.5" /> SCOUT ANOTHER
+          </button>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5">
+          {onRefreshPackFriday && (
+            <button
+              onClick={() => onRefreshPackFriday(card)}
+              disabled={isRefreshing}
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-400 font-gaming text-xs font-bold uppercase transition cursor-pointer"
+              title="Recompute card stats & check for rating upgrades"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'RECOMPUTING...' : 'PACK FRIDAY REFRESH'}</span>
+            </button>
+          )}
+
+          {onUpdateCard && (
+            <button
+              onClick={() => setShowCustomizer(!showCustomizer)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl border font-gaming text-xs font-bold uppercase transition cursor-pointer ${
+                showCustomizer
+                  ? 'bg-amber-500 text-slate-950 border-amber-400'
+                  : 'bg-slate-900 hover:bg-slate-800 border-slate-700 text-slate-200'
+              }`}
+            >
+              <Sliders className="w-3.5 h-3.5" /> {showCustomizer ? 'CLOSE STUDIO' : 'CUSTOMIZE'}
+            </button>
+          )}
+
           {onCompare && (
             <button
               onClick={() => onCompare(card)}
-              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-gitfc-electricBlue/40 text-gitfc-electricBlue font-gaming text-xs font-bold uppercase transition shadow-sm"
+              className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-gitfc-electricBlue/40 text-gitfc-electricBlue font-gaming text-xs font-bold uppercase transition shadow-sm cursor-pointer"
             >
-              <Swords className="w-3.5 h-3.5" /> FACE-OFF / COMPARE
+              <Swords className="w-3.5 h-3.5" /> COMPARE
             </button>
           )}
 
           <button
             onClick={onOpenExportModal}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming text-xs font-black uppercase tracking-wider hover:shadow-[0_0_20px_rgba(0,255,135,0.5)] transition"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-gaming text-xs font-black uppercase tracking-wider hover:brightness-110 transition cursor-pointer shadow-md"
           >
             <Download className="w-3.5 h-3.5" /> EXPORT HD PNG
           </button>
         </div>
       </div>
+
+      {/* PACK FRIDAY EDITION BADGE IF ACTIVE */}
+      {card.isPackFridayRefreshed && (
+        <div className="p-3.5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-3 text-xs font-gaming text-amber-300">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🔥</span>
+            <span>
+              <strong>{card.edition || 'PACK FRIDAY IN-FORM'}</strong> • Version {card.cardVersion || 2} Live Telemetry
+            </span>
+          </div>
+          <span className="text-[11px] font-mono text-slate-400">
+            Refreshed: {new Date(card.lastRefreshedAt || '').toLocaleDateString()}
+          </span>
+        </div>
+      )}
+
+      {/* OPTIONAL CUSTOMIZER DRAWER */}
+      {showCustomizer && onUpdateCard && (
+        <div className="animate-fadeIn">
+          <CardCustomizer card={card} onUpdateCard={onUpdateCard} />
+        </div>
+      )}
 
       {/* HERO SPOTLIGHT: 3D CARD + IDENTITY PROFILE DOSSIER */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">

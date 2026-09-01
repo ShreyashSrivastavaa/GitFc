@@ -19,7 +19,7 @@ export const LandingDetails: React.FC = () => {
             HOW GITFC WORKS
           </h2>
           <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto font-medium">
-            Turn your GitHub profile into a screenshot-ready football trading card in seconds.
+            Turn any GitHub username into a FIFA-style football trading card in 3 simple steps.
           </p>
         </div>
 
@@ -29,9 +29,9 @@ export const LandingDetails: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-400 font-gaming font-black text-xl flex items-center justify-center border border-emerald-500/30 group-hover:scale-110 transition-transform">
               01
             </div>
-            <h3 className="font-display font-extrabold text-xl text-white">Enter Username</h3>
+            <h3 className="font-display font-extrabold text-xl text-white">Enter Any GitHub Username</h3>
             <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              Type any public GitHub handle. No password or personal token needed. Instant radar scan.
+              Type any public developer handle. No account or OAuth token required to generate a complete player card.
             </p>
           </div>
 
@@ -40,9 +40,9 @@ export const LandingDetails: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 font-gaming font-black text-xl flex items-center justify-center border border-blue-500/30 group-hover:scale-110 transition-transform">
               02
             </div>
-            <h3 className="font-display font-extrabold text-xl text-white">Calibrate Attributes</h3>
+            <h3 className="font-display font-extrabold text-xl text-white">Algorithm Translates Telemetry</h3>
             <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              Our game engine translates output, PRs, issues, streaks, and language diversity into 8 football stats and OVR.
+              Our game engine converts commits, pull requests, streaks, and language diversity into 8 football attributes and an overall OVR rating.
             </p>
           </div>
 
@@ -51,9 +51,9 @@ export const LandingDetails: React.FC = () => {
             <div className="w-12 h-12 rounded-2xl bg-amber-500/10 text-amber-400 font-gaming font-black text-xl flex items-center justify-center border border-amber-500/30 group-hover:scale-110 transition-transform">
               03
             </div>
-            <h3 className="font-display font-extrabold text-xl text-white">Flaunt Your Player Card</h3>
+            <h3 className="font-display font-extrabold text-xl text-white">Customize, Export & Share</h3>
             <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              Download your 3D holographic card, face-off with friends, and climb the Global League Leaderboard.
+              Pick your card rarity tier, download HD PNGs for README badges, or share instant preview links with automatic OG embeds.
             </p>
           </div>
         </div>
