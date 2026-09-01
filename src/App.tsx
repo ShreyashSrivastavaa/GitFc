@@ -60,7 +60,7 @@ export function App() {
       setUserFollowers(savedAuth.followers);
       setUserFollowing(savedAuth.following);
       setUserTeam(createDefaultTeam(savedAuth.userCard));
-      setIsCardSearched(true);
+      // Keep isCardSearched false on normal reload so user sees the home landing page with their active connected banner
     }
 
     const params = new URLSearchParams(window.location.search);
