@@ -112,6 +112,12 @@ export interface GitFCDevCard {
   weaknesses: string[];
   playstyle: string;
   
+  // Pack Friday & Card Evolution Data Model Foundation
+  cardVersion?: number;
+  edition?: string;
+  lastRefreshedAt?: string;
+  isPackFridayRefreshed?: boolean;
+  
   createdAt: string;
 }
 

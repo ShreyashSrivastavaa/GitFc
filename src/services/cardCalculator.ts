@@ -56,7 +56,7 @@ export function calculateFootballAttributes(stats: GitHubRawStats): EAFCAttribut
  */
 export function determinePosition(stats: GitHubRawStats, attrs: EAFCAttributes): PositionMeta {
   // Backend / infra / security / DevOps
-  if (stats.languages.some(l => ['Go', 'Rust', 'Docker', 'Shell', 'C', 'C++'].includes(l)) && (attrs.def >= 75 || attrs.sta >= 80)) {
+  if (stats.languages.some((l: string) => ['Go', 'Rust', 'Docker', 'Shell', 'C', 'C++'].includes(l)) && (attrs.def >= 75 || attrs.sta >= 80)) {
     if (attrs.def > attrs.att) {
       return {
         code: 'GK',
@@ -190,7 +190,7 @@ export function determineArchetype(stats: GitHubRawStats, attrs: EAFCAttributes)
   if (attrs.def >= 82 || stats.issuesClosed > 60) {
     return { archetype: 'Repository Guardian', description: 'Keeping codebases clean, stable, and battle-ready.' };
   }
-  if (stats.languages.some(l => ['Go', 'Rust', 'C++', 'Docker', 'Kubernetes'].includes(l))) {
+  if (stats.languages.some((l: string) => ['Go', 'Rust', 'C++', 'Docker', 'Kubernetes'].includes(l))) {
     return { archetype: 'DevOps Titan', description: 'Rock-solid backend, cloud infra, and deployment architecture.' };
   }
   if (stats.publicRepos > 25 && attrs.sho >= 80) {
@@ -329,11 +329,44 @@ export function buildGitFCCard(stats: GitHubRawStats): GitFCDevCard {
     weaknesses,
     playstyle,
     
+    // Pack Friday & Card Evolution Foundation
+    cardVersion: 1,
+    edition: 'UT 26 First Edition',
+    lastRefreshedAt: new Date().toISOString(),
+    isPackFridayRefreshed: false,
+    
     createdAt: new Date().toISOString().split('T')[0],
+  };
+}
+
+/**
+ * Pack Friday Foundation: Recomputes card attributes and telemetry against latest GitHub activity.
+ * Tracks version increments and provides stat deltas for evolution reveals.
+ * MVP: Can be triggered on-demand via UI or through serverless cron job in future phases.
+ */
+export function recomputeCard(existingCard: GitFCDevCard, updatedStats: GitHubRawStats): GitFCDevCard {
+  const newCard = buildGitFCCard(updatedStats);
+  const currentVersion = existingCard.cardVersion || 1;
+  const isUpgraded = newCard.attributes.overall > existingCard.attributes.overall;
+
+  return {
+    ...newCard,
+    // Preserve custom styling overrides if user configured them
+    rarity: existingCard.rarity || newCard.rarity,
+    clubName: existingCard.clubName || newCard.clubName,
+    countryFlag: existingCard.countryFlag || newCard.countryFlag,
+    chemistryStyle: existingCard.chemistryStyle,
+    
+    // Increment version and mark refresh
+    cardVersion: currentVersion + 1,
+    edition: isUpgraded ? `Pack Friday In-Form (v${currentVersion + 1})` : `Pack Friday Edition (v${currentVersion + 1})`,
+    lastRefreshedAt: new Date().toISOString(),
+    isPackFridayRefreshed: true,
   };
 }
 
 // Backward compatibility helper
 export const buildEAFCCard = buildGitFCCard;
 export const calculateEAFCRatings = calculateFootballAttributes;
+
 
