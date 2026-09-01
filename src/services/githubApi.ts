@@ -31,11 +31,17 @@ export async function fetchGitHubUserStats(username: string): Promise<EAFCDevCar
       reposData = payload.reposData || [];
     } else if (proxyRes.status === 404) {
       throw new Error(`GitHub user "@${username}" not found.`);
+    } else if (proxyRes.status === 429) {
+      throw new Error(`Rate limit reached on scouting. Please wait a minute or connect your GitHub account.`);
     } else if (proxyRes.status === 403) {
-      throw new Error(`GitHub API rate limit exceeded. Please try connecting your account or check back in a few minutes.`);
+      throw new Error(`GitHub API rate limit reached. Please connect with GitHub to continue.`);
     }
   } catch (proxyErr: any) {
-    if (proxyErr.message.includes('not found') || proxyErr.message.includes('rate limit')) {
+    if (
+      proxyErr.message.includes('not found') ||
+      proxyErr.message.includes('Rate limit') ||
+      proxyErr.message.includes('rate limit')
+    ) {
       throw proxyErr;
     }
   }
@@ -55,7 +61,9 @@ export async function fetchGitHubUserStats(username: string): Promise<EAFCDevCar
     userData = await userRes.json();
 
     try {
-      const reposRes = await fetch(`https://api.github.com/users/${encodeURIComponent(cleanUsername)}/repos?per_page=100&sort=updated`);
+      const reposRes = await fetch(
+        `https://api.github.com/users/${encodeURIComponent(cleanUsername)}/repos?per_page=100&sort=updated`
+      );
       if (reposRes.ok) {
         reposData = await reposRes.json();
       }
