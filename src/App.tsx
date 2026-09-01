@@ -31,6 +31,7 @@ export function App() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('generator');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentCard, setCurrentCard] = useState<EAFCDevCard>(PRESET_DEVS[0]);
+  const [authUserCard, setAuthUserCard] = useState<EAFCDevCard | null>(null);
   const [leaderboardCards, setLeaderboardCards] = useState<EAFCDevCard[]>(PRESET_DEVS);
   const [userTeam, setUserTeam] = useState<Team | null>(null);
 
@@ -56,6 +57,7 @@ export function App() {
     const savedAuth = getAuthState();
     if (savedAuth.isConnected && savedAuth.userCard) {
       setIsConnected(true);
+      setAuthUserCard(savedAuth.userCard);
       setCurrentCard(savedAuth.userCard);
       setUserFollowers(savedAuth.followers);
       setUserFollowing(savedAuth.following);
@@ -147,6 +149,7 @@ export function App() {
       const authState = await loginWithGitHubUser(username);
       if (authState.userCard) {
         setIsConnected(true);
+        setAuthUserCard(authState.userCard);
         setCurrentCard(authState.userCard);
         setUserFollowers(authState.followers);
         setUserFollowing(authState.following);
@@ -170,6 +173,7 @@ export function App() {
   const handleLogout = () => {
     logoutUser();
     setIsConnected(false);
+    setAuthUserCard(null);
     setIsCardSearched(false);
     setCurrentCard(PRESET_DEVS[0]);
     setUserTeam(null);
@@ -178,7 +182,10 @@ export function App() {
   const handleViewMyCard = () => {
     const savedAuth = getAuthState();
     if (savedAuth.userCard) {
+      setAuthUserCard(savedAuth.userCard);
       setCurrentCard(savedAuth.userCard);
+    } else if (authUserCard) {
+      setCurrentCard(authUserCard);
     }
     setIsCardSearched(true);
     setActiveTab('generator');
@@ -194,8 +201,9 @@ export function App() {
   };
 
   const handleAcceptInvite = async (invite: TeamInvite) => {
-    if (userTeam && currentCard) {
-      const updated = addPlayerToRoster(userTeam, currentCard, invite.suggestedPosition || 'MID');
+    if (userTeam && (authUserCard || currentCard)) {
+      const activeUser = authUserCard || currentCard;
+      const updated = addPlayerToRoster(userTeam, activeUser, invite.suggestedPosition || 'MID');
       setUserTeam(updated);
     }
     setPendingInvite(null);
@@ -229,7 +237,7 @@ export function App() {
         onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
         onGoHome={handleGoHome}
         isConnected={isConnected}
-        userCard={isConnected ? currentCard : null}
+        userCard={isConnected ? (authUserCard || currentCard) : null}
         onLogout={handleLogout}
         onViewMyCard={handleViewMyCard}
       />
@@ -263,27 +271,32 @@ export function App() {
           ) : (
             <div className="space-y-12">
               {/* CONNECTED USER QUICK ACCESS BANNER IF CONNECTED */}
-              {isConnected && currentCard && (
-                <div className="p-4 rounded-3xl bg-slate-900 border border-emerald-500/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <img src={currentCard.avatarUrl} alt={currentCard.name} className="w-10 h-10 rounded-full border border-amber-400 object-cover" />
-                    <div>
-                      <div className="font-display font-extrabold text-sm text-white flex items-center gap-2">
-                        <span>Connected as {currentCard.name} (@{currentCard.username})</span>
-                        <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-mono border border-emerald-500/30 font-bold">✓ ACTIVE</span>
+              {isConnected && (authUserCard || currentCard) && (
+                (() => {
+                  const loggedInCard = authUserCard || currentCard;
+                  return (
+                    <div className="p-4 rounded-3xl bg-slate-900 border border-emerald-500/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <img src={loggedInCard.avatarUrl} alt={loggedInCard.name} className="w-10 h-10 rounded-full border border-amber-400 object-cover" />
+                        <div>
+                          <div className="font-display font-extrabold text-sm text-white flex items-center gap-2">
+                            <span>Connected as {loggedInCard.name} (@{loggedInCard.username})</span>
+                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-mono border border-emerald-500/30 font-bold">✓ ACTIVE</span>
+                          </div>
+                          <div className="text-xs font-mono text-slate-400">
+                            OVR {loggedInCard.ratings.overall} • {loggedInCard.footballPositionTitle}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs font-mono text-slate-400">
-                        OVR {currentCard.ratings.overall} • {currentCard.footballPositionTitle}
-                      </div>
+                      <button
+                        onClick={handleViewMyCard}
+                        className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-xs hover:brightness-110 shadow-md transition cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Sparkles className="w-4 h-4" /> VIEW MY PLAYER CARD
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={handleViewMyCard}
-                    className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-xs hover:brightness-110 shadow-md transition cursor-pointer flex items-center gap-1.5"
-                  >
-                    <Sparkles className="w-4 h-4" /> VIEW MY PLAYER CARD
-                  </button>
-                </div>
+                  );
+                })()
               )}
 
               {/* HERO SECTION: FLOATING EMPTY CARD + SIDE-BY-SIDE SEARCH */}
@@ -425,7 +438,7 @@ export function App() {
 
         {activeTab === 'dressing-room' && (
           <DressingRoomView
-            card={currentCard}
+            card={authUserCard || currentCard}
             team={userTeam}
             onUpdateTeam={setUserTeam}
             onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
@@ -438,7 +451,7 @@ export function App() {
           <LeaderboardTable
             cards={leaderboardCards}
             isConnected={isConnected}
-            currentUserCard={isConnected ? currentCard : null}
+            currentUserCard={isConnected ? (authUserCard || currentCard) : null}
             following={userFollowing}
             followers={userFollowers}
             userTeam={userTeam}
@@ -464,7 +477,7 @@ export function App() {
         isOpen={isConnectModalOpen}
         onClose={() => setIsConnectModalOpen(false)}
         onConnect={async (username) => {
-          const targetUser = username === 'authenticated_user' ? (currentCard?.username || 'torvalds') : username;
+          const targetUser = username === 'authenticated_user' ? ((authUserCard || currentCard)?.username || 'torvalds') : username;
           await handleConnectGitHubUser(targetUser);
           setActiveTab('generator');
         }}
@@ -473,7 +486,7 @@ export function App() {
       <CreateTeamModal
         isOpen={isCreateTeamOpen}
         onClose={() => setIsCreateTeamOpen(false)}
-        userCard={isConnected ? currentCard : null}
+        userCard={isConnected ? (authUserCard || currentCard) : null}
         onOpenConnectModal={() => setIsConnectModalOpen(true)}
         onCreateTeam={(newTeam) => {
           setUserTeam(newTeam);
