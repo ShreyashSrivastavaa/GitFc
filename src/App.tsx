@@ -4,7 +4,7 @@ import { fetchGitHubUserStats } from './services/githubApi';
 import { PRESET_DEVS } from './services/presets';
 import { createDefaultTeam, addPlayerToRoster } from './services/teamService';
 import { getAuthState, loginWithGitHubUser, logoutUser } from './services/authService';
-import { incrementCounterStats } from './services/statsService';
+import { incrementCounterStats, triggerCounterRevalidation } from './services/statsService';
 import { trackEvent } from './services/analytics';
 import { recomputeCard } from './services/cardCalculator';
 
@@ -81,20 +81,46 @@ export function App() {
       const cardUser = params.get('card');
       if (cardUser) {
         trackEvent('shared_card_viewed', { username: cardUser });
-        handleLookupUser(cardUser);
+        handleLookupUser(cardUser, false);
       }
     }
+
+    // Handle browser Back/Forward navigation
+    const handlePopState = () => {
+      const currentParams = new URLSearchParams(window.location.search);
+      const userParam = currentParams.get('card');
+      if (userParam) {
+        handleLookupUser(userParam, false);
+      } else {
+        setIsCardSearched(false);
+        setActiveTab('generator');
+        triggerCounterRevalidation();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, []);
 
-  const handleLookupUser = async (username: string) => {
+  const handleLookupUser = async (username: string, shouldPushState: boolean = true) => {
     if (!username.trim()) return null;
+    const cleanUser = username.trim();
     setLoading(true);
     setError('');
 
     try {
-      const card = await fetchGitHubUserStats(username);
+      const card = await fetchGitHubUserStats(cleanUser);
       setCurrentCard(card);
       setIsCardSearched(true);
+
+      if (shouldPushState) {
+        const newUrl = `${window.location.pathname}?card=${encodeURIComponent(cleanUser)}`;
+        if (window.location.search !== `?card=${encodeURIComponent(cleanUser)}`) {
+          window.history.pushState({ card: cleanUser }, document.title, newUrl);
+        }
+      }
 
       trackEvent('card_generated', {
         username: card.username,
@@ -104,10 +130,9 @@ export function App() {
         rarity: card.rarity,
       });
 
-      // Increment stats counter ONCE strictly after successful card generation
-      console.log(`[App] Card generation succeeded for @${username}. Triggering counter increment.`);
-      await new Promise((r) => setTimeout(r, 100));
-      incrementCounterStats();
+      // Increment stats counter ONCE strictly after successful card generation/use with deduplication key
+      console.log(`[App] Card generation succeeded for @${cleanUser}. Triggering counter increment.`);
+      await incrementCounterStats(`${cleanUser.toLowerCase()}_${Date.now()}`);
 
       setLeaderboardCards((prev) => {
         if (prev.some((c) => c.username.toLowerCase() === card.username.toLowerCase())) {
@@ -220,6 +245,7 @@ export function App() {
     if (window.location.search) {
       window.history.pushState({}, document.title, window.location.pathname);
     }
+    triggerCounterRevalidation();
   };
 
   return (
@@ -261,7 +287,7 @@ export function App() {
               onOpenExportModal={() => setIsExportModalOpen(true)}
               onOpenConnectModal={() => setIsConnectModalOpen(true)}
               onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
-              onResetSearch={() => setIsCardSearched(false)}
+              onResetSearch={handleGoHome}
               onLookupUser={handleLookupUser}
               onNavigateToLeagues={() => setActiveTab('leagues')}
               onUpdateCard={(updated) => setCurrentCard(updated)}

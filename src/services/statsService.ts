@@ -17,6 +17,9 @@ export const LOCAL_CACHE_KEY = 'gitfc_counter_cache';
 const UPSTASH_REST_URL = 'https://verified-redfish-198404.upstash.io';
 const UPSTASH_REST_TOKEN = 'gQAAAAAAAwcEAAIgcDE3ZDRhOTVjYjBhMjI0MjVhOWFiZDliMTQwYWI0M2M5MQ';
 
+// In-memory set for deduplication against duplicate calls (e.g. React StrictMode, rapid double-clicks)
+const processedGenerations = new Set<string>();
+
 export function formatGenerationsCount(count: number): string {
   return count.toLocaleString();
 }
@@ -105,10 +108,20 @@ export async function fetchLiveCounterStats(): Promise<CounterStats> {
 
 /**
  * Atomically increments the persistent global counter.
+ * Protects against double-counting via generation ID / deduplication bucket.
  * Tries serverless /api/stats/increment first, then direct Upstash REST /incr.
  * Broadcasts optimistic updates immediately to the UI.
  */
-export async function incrementCounterStats(): Promise<CounterStats> {
+export async function incrementCounterStats(actionKey?: string): Promise<CounterStats> {
+  // Deduplicate rapid identical triggers (within 1 second window or by unique action key)
+  const dedupeKey = actionKey ? `gen_${actionKey}` : `time_${Math.floor(Date.now() / 1000)}`;
+  if (processedGenerations.has(dedupeKey)) {
+    return getCounterStatsSync();
+  }
+  processedGenerations.add(dedupeKey);
+  // Auto clean up after 5 seconds to keep memory lean
+  setTimeout(() => processedGenerations.delete(dedupeKey), 5000);
+
   let optimisticCount = getCounterStatsSync().totalGenerations + 1;
 
   // Immediate optimistic event broadcast to UI
@@ -165,6 +178,15 @@ export async function incrementCounterStats(): Promise<CounterStats> {
     formattedCount: formatGenerationsCount(optimisticCount),
     lastUpdated: new Date().toISOString(),
   };
+}
+
+/**
+ * Triggers a counter revalidation across all active UsageCounter components on the page.
+ */
+export async function triggerCounterRevalidation(): Promise<CounterStats> {
+  const freshStats = await fetchLiveCounterStats();
+  broadcastCount(freshStats.totalGenerations);
+  return freshStats;
 }
 
 function saveLocalCache(count: number) {

@@ -35,7 +35,14 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
       }
     };
 
-    window.addEventListener('gitfc_counter_updated', handleCounterUpdate);
+    // Listen to pageshow (browser back/forward cache restore) and visibilitychange (tab switching)
+    const handleVisibilityOrPageShow = () => {
+      if (!isMounted) return;
+      loadLiveStats();
+    };
+
+    window.addEventListener('pageshow', handleVisibilityOrPageShow);
+    document.addEventListener('visibilitychange', handleVisibilityOrPageShow);
 
     // Poll live count every 5 minutes (300,000 ms)
     const interval = setInterval(loadLiveStats, 300000);
@@ -43,6 +50,8 @@ export const UsageCounter: React.FC<UsageCounterProps> = ({
     return () => {
       isMounted = false;
       window.removeEventListener('gitfc_counter_updated', handleCounterUpdate);
+      window.removeEventListener('pageshow', handleVisibilityOrPageShow);
+      document.removeEventListener('visibilitychange', handleVisibilityOrPageShow);
       clearInterval(interval);
     };
   }, []);
