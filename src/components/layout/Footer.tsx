@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, Mail, Star } from 'lucide-react';
+import { Sparkles, Star } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
@@ -10,16 +10,21 @@ export const Footer: React.FC = () => {
           {/* BRAND COLUMN (2 Cols) */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-purple-500/20">
-                <Sparkles className="w-5 h-5 text-white" />
+              <img
+                src="/gitfc-clean.png"
+                alt="GitFC Logo"
+                className="w-9 h-9 object-contain rounded-xl drop-shadow-md"
+              />
+              <div>
+                <div className="font-display font-black text-xl tracking-tight text-white flex items-center gap-1.5">
+                  GITCARDS <span className="text-amber-400 font-extrabold text-sm px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30">UT 26</span>
+                </div>
+                <div className="text-[10px] font-mono text-slate-400">EA FC GitHub Stats Generator</div>
               </div>
-              <span className="font-display font-extrabold text-xl tracking-tight text-white">
-                Upscale<span className="text-indigo-400">Tech</span>Solutions
-              </span>
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              Building modern web experiences, autonomous agentic AI systems, and digital process automation for ambitious enterprises worldwide.
+              Turn your GitHub developer telemetry into authentic EA FC Ultimate Team player cards with dynamic OVR ratings, radar stats, 3D pack opening reveals, and squad builder.
             </p>
 
             {/* SOCIAL ICONS */}
@@ -98,17 +103,17 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* SERVICES COLUMN */}
+          {/* FEATURES COLUMN */}
           <div className="space-y-3">
             <h3 className="font-display font-extrabold text-xs tracking-wider text-slate-200 uppercase">
-              Services
+              GitFC Platform
             </h3>
             <ul className="space-y-2 text-xs">
-              <li className="hover:text-indigo-400 transition cursor-default">AI Automation</li>
-              <li className="hover:text-indigo-400 transition cursor-default">Web Design & Development</li>
-              <li className="hover:text-indigo-400 transition cursor-default">Agentic AI Systems</li>
-              <li className="hover:text-indigo-400 transition cursor-default">AI Strategy & Consulting</li>
-              <li className="hover:text-indigo-400 transition cursor-default">Maintenance & Support</li>
+              <li><a href="/#how-it-works" className="hover:text-amber-400 transition">Card Generator</a></li>
+              <li><a href="/?tab=leagues" className="hover:text-amber-400 transition">Leagues & Tactics</a></li>
+              <li><a href="/?tab=dressing-room" className="hover:text-amber-400 transition">Dressing Room</a></li>
+              <li><a href="/?tab=leaderboard" className="hover:text-amber-400 transition">Global Leaderboard</a></li>
+              <li><a href="/?tab=products" className="hover:text-amber-400 transition">Ecosystem Directory</a></li>
             </ul>
           </div>
         </div>
@@ -116,14 +121,7 @@ export const Footer: React.FC = () => {
         {/* BOTTOM COPYRIGHT & CREATED BY SHREYASH BAR */}
         <div className="pt-6 border-t border-slate-800/60 flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
           <div className="flex flex-wrap items-center gap-2 text-slate-400">
-            <span>© 2026 <strong className="text-slate-200">UpscaleTechSolutions</strong>. All rights reserved.</span>
-            <span>•</span>
-            <a
-              href="mailto:upscaletechsolution@gmail.com"
-              className="text-indigo-400 hover:underline flex items-center gap-1"
-            >
-              <Mail className="w-3.5 h-3.5" /> upscaletechsolution@gmail.com
-            </a>
+            <span>© 2026 <strong className="text-slate-200 font-display">GitFC</strong>. All rights reserved.</span>
           </div>
 
           <div className="flex flex-wrap items-center gap-3 text-slate-400 font-mono">
