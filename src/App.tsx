@@ -23,6 +23,7 @@ import { UsageCounter } from './components/common/UsageCounter';
 import { TeamInviteBanner } from './components/team/TeamInviteBanner';
 import { SEOHead } from './components/common/SEOHead';
 import { Preloader } from './components/common/Preloader';
+import { ProductsView } from './components/products/ProductsView';
 
 import { Sparkles, Loader2 } from 'lucide-react';
 
@@ -78,6 +79,11 @@ export function App() {
       setError(authMessage || 'GitHub sign-in could not be completed. Please try again.');
       window.history.replaceState({}, document.title, window.location.pathname);
     } else {
+      const tabParam = params.get('tab');
+      if (tabParam === 'products') {
+        setActiveTab('products');
+      }
+
       const cardUser = params.get('card');
       if (cardUser) {
         trackEvent('shared_card_viewed', { username: cardUser });
@@ -88,6 +94,12 @@ export function App() {
     // Handle browser Back/Forward navigation
     const handlePopState = () => {
       const currentParams = new URLSearchParams(window.location.search);
+      const tabParam = currentParams.get('tab');
+      if (tabParam === 'products') {
+        setActiveTab('products');
+        return;
+      }
+
       const userParam = currentParams.get('card');
       if (userParam) {
         handleLookupUser(userParam, false);
@@ -487,6 +499,10 @@ export function App() {
               setActiveTab('generator');
             }}
           />
+        )}
+
+        {activeTab === 'products' && (
+          <ProductsView onGoToGenerator={() => setActiveTab('generator')} />
         )}
       </main>
 

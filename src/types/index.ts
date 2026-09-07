@@ -132,7 +132,7 @@ export interface LeaderboardEntry {
   views: number;
 }
 
-export type ActiveTab = 'generator' | 'profile' | 'compare' | 'leaderboard' | 'team-hub' | 'leagues' | 'dressing-room' | 'customizer';
+export type ActiveTab = 'generator' | 'profile' | 'compare' | 'leaderboard' | 'team-hub' | 'leagues' | 'dressing-room' | 'customizer' | 'products';
 
 // Legacy compatibility types for ancillary views
 export type FootballPosition = 'STRIKER' | 'MIDFIELDER' | 'DEFENDER' | 'GOALKEEPER' | 'MANAGER' | 'SUBSTITUTE';

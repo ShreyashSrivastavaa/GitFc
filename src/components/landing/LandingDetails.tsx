@@ -1,9 +1,12 @@
-import React from 'react';
 import { 
   Zap, 
   Layers, 
-  ShieldAlert
+  ShieldAlert,
+  Sparkles,
+  ExternalLink,
+  CheckCircle2
 } from 'lucide-react';
+import { ECOSYSTEM_PRODUCTS } from '../../data/products';
 
 export const LandingDetails: React.FC = () => {
   return (
@@ -164,6 +167,87 @@ export const LandingDetails: React.FC = () => {
               GitFC is a playful, gamified social identity product designed for developers to celebrate open source contributions. Overall ratings and football positions do not measure real-world engineering capability or job performance.
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* SECTION 4: DEVELOPER ECOSYSTEM DIRECTORY / OUR PRODUCTS */}
+      <section id="developer-ecosystem" aria-label="Developer Ecosystem Directory" className="text-center space-y-10 pt-4">
+        <div className="space-y-3">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 font-gaming text-xs font-bold uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5" /> DEVELOPER ECOSYSTEM DIRECTORY
+          </div>
+          <h2 className="font-display font-black text-3xl sm:text-5xl text-white tracking-tight uppercase">
+            OUR PRODUCTS
+          </h2>
+          <p className="text-slate-400 text-sm md:text-base max-w-xl mx-auto font-medium">
+            Developer platforms built by our team alongside <strong className="text-amber-400">GitFC</strong>.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+          {ECOSYSTEM_PRODUCTS.map((product) => {
+            const Icon = product.icon;
+            return (
+              <div
+                key={product.id}
+                className={`bg-slate-900/90 rounded-3xl border border-slate-800 p-6 flex flex-col justify-between group transition-all duration-300 shadow-xl ${product.borderHover} hover:shadow-2xl relative overflow-hidden`}
+              >
+                <div
+                  className={`absolute -right-12 -top-12 w-36 h-36 bg-gradient-to-br ${product.gradient} rounded-full blur-2xl pointer-events-none group-hover:scale-125 transition-transform`}
+                />
+
+                <div className="space-y-4 relative z-10">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center shrink-0 shadow-md ${product.iconBg} ${product.iconColor}`}>
+                        <Icon className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-mono font-bold tracking-wider text-slate-400 uppercase block leading-none mb-1">
+                          {product.category}
+                        </span>
+                        <h3 className="text-base font-display font-bold text-white group-hover:text-amber-400 transition-colors">
+                          {product.name}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-slate-800 border border-slate-700 text-slate-300 font-semibold shrink-0">
+                      {product.badge}
+                    </span>
+                  </div>
+
+                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed min-h-[4rem]">
+                    {product.description}
+                  </p>
+
+                  <div className="flex flex-wrap gap-1.5 pt-1">
+                    {product.highlights.map((item) => (
+                      <span
+                        key={item}
+                        className="inline-flex items-center gap-1.5 text-[11px] px-2 py-0.5 rounded-md bg-slate-950/80 border border-slate-800 text-slate-300"
+                      >
+                        <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />
+                        <span>{item}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-5 mt-4 border-t border-slate-800 relative z-10">
+                  <a
+                    href={product.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r ${product.ctaClass} text-xs tracking-wide shadow-md active:scale-95 transition-all cursor-pointer min-h-[42px]`}
+                  >
+                    <span>Visit {product.name}</span>
+                    <ExternalLink className="h-3.5 w-3.5 stroke-[2.5]" />
+                  </a>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </section>
 

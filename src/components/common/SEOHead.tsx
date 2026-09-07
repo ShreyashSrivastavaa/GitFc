@@ -30,6 +30,10 @@ export function SEOHead({ activeTab, isCardSearched, currentCard }: SEOHeadProps
     } else if (activeTab === 'leaderboard') {
       title = 'Global Developer Leaderboard & OVR Rankings | GitFC';
       description = 'View top GitHub developers ranked by overall rating (OVR), power score, stars earned, and total commits.';
+    } else if (activeTab === 'products') {
+      title = 'Developer Ecosystem Directory & Products | GitFC';
+      description = 'Explore developer platforms built alongside GitFC: ihatelovepdf (100% client-side PDF suite), SystemDesign.website (distributed architecture masterclass), and SnapDevCode (OA & DSA interview platform).';
+      url = 'https://gitfc.vercel.app/?tab=products';
     }
 
     // 1. Update Document Title

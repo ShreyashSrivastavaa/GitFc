@@ -54,18 +54,47 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-          {/* NAVIGATION COLUMN */}
+          {/* DEVELOPER ECOSYSTEM COLUMN */}
           <div className="space-y-3">
-            <h3 className="font-display font-extrabold text-xs tracking-wider text-slate-200 uppercase">
-              Navigation
+            <h3 className="font-display font-extrabold text-xs tracking-wider text-slate-200 uppercase flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Our Products
             </h3>
             <ul className="space-y-2 text-xs">
-              <li><a href="#" className="hover:text-amber-400 transition">Home</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition">Services</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition">Portfolio</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition">About Us</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition">Blog</a></li>
-              <li><a href="#" className="hover:text-amber-400 transition">Contact</a></li>
+              <li>
+                <a
+                  href="https://www.ihatelovepdf.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-rose-400 transition flex items-center gap-1.5 group"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-rose-500 group-hover:scale-125 transition-transform" />
+                  <span>ihatelovepdf</span>
+                  <span className="text-[10px] text-slate-500">PDF Suite</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://systemdesign.website/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-sky-400 transition flex items-center gap-1.5 group"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-sky-500 group-hover:scale-125 transition-transform" />
+                  <span>SystemDesign.website</span>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://www.snapdevcode.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-cyan-400 transition flex items-center gap-1.5 group"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 group-hover:scale-125 transition-transform" />
+                  <span>SnapDevCode</span>
+                  <span className="text-[10px] text-slate-500">OA & DSA</span>
+                </a>
+              </li>
             </ul>
           </div>
 

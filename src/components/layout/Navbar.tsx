@@ -116,6 +116,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           >
             LEADERBOARD
           </button>
+
+          <button
+            onClick={() => handleTabClick('products')}
+            aria-label="Our Products Tab"
+            className={`px-3.5 py-2.5 rounded-xl text-xs font-display font-extrabold transition-all flex items-center gap-1.5 min-h-[44px] ${
+              activeTab === 'products'
+                ? 'bg-amber-500 text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            }`}
+          >
+            <Layout className="w-4 h-4" /> OUR PRODUCTS
+          </button>
         </nav>
 
         {/* RIGHT ACTION BUTTONS */}
@@ -318,6 +330,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             🏆 LEADERBOARD
+          </button>
+
+          <button
+            onClick={() => handleTabClick('products')}
+            className={`w-full px-4 py-3 rounded-xl text-xs font-display font-extrabold transition flex items-center gap-2 min-h-[44px] ${
+              activeTab === 'products' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-300 hover:bg-slate-800'
+            }`}
+          >
+            <Layout className="w-4 h-4" /> OUR PRODUCTS
           </button>
 
           <button
