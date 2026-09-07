@@ -350,3 +350,91 @@ export function removePlayerFromTeam(team: Team, userId: string): Team {
     averageRating,
   };
 }
+
+const STORAGE_KEY_TEAM = 'gitfc_user_team';
+
+export function getStoredTeam(): Team | null {
+  if (typeof localStorage === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_TEAM);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveStoredTeam(team: Team): void {
+  if (typeof localStorage === 'undefined') return;
+  try {
+    localStorage.setItem(STORAGE_KEY_TEAM, JSON.stringify(team));
+  } catch (e) {
+    console.warn('[teamService] Failed to save team to localStorage', e);
+  }
+}
+
+export function createShareableInviteLink(
+  team: Team,
+  targetUsername?: string,
+  position: string = 'MIDFIELDER',
+  message?: string
+): string {
+  const origin = typeof window !== 'undefined' && window.location.origin
+    ? window.location.origin
+    : 'https://gitfc.vercel.app';
+
+  const cleanTarget = targetUsername ? targetUsername.trim().replace(/^@/, '') : '';
+  const payload = {
+    tId: team.id,
+    tNm: team.name,
+    bdg: team.badge || '⚽',
+    mgr: team.manager ? team.manager.username : 'manager',
+    pos: position,
+    msg: message || `Hey! Join my squad "${team.name}" for Season 2026 on GitFC.`,
+    usr: cleanTarget || undefined,
+    ts: Date.now()
+  };
+
+  try {
+    const jsonStr = JSON.stringify(payload);
+    // URL-safe base64
+    const token = btoa(unescape(encodeURIComponent(jsonStr)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
+    return `${origin}/?invite=${token}`;
+  } catch {
+    return `${origin}/?join=${encodeURIComponent(team.inviteCode || 'GITFC')}`;
+  }
+}
+
+export function parseInviteToken(token: string): TeamInvite | null {
+  if (!token) return null;
+  try {
+    // Revert URL-safe base64
+    let base64 = token.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) {
+      base64 += '=';
+    }
+    const jsonStr = decodeURIComponent(escape(atob(base64)));
+    const p = JSON.parse(jsonStr);
+    if (!p || !p.tNm) return null;
+
+    return {
+      id: `inv-${p.ts || Date.now()}`,
+      teamId: p.tId || `team-${Date.now()}`,
+      teamName: p.tNm,
+      teamBadge: p.bdg || '⚽',
+      invitedBy: p.mgr || 'manager',
+      invitedUser: p.usr || 'teammate',
+      suggestedPosition: p.pos || 'MIDFIELDER',
+      message: p.msg || `Hey! Join my squad "${p.tNm}" on GitFC!`,
+      createdAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 7 * 86400000).toISOString(),
+      status: 'pending',
+      inviteCode: p.code || 'GITFC',
+    };
+  } catch (e) {
+    console.warn('[teamService] Could not parse invite token:', e);
+    return null;
+  }
+}

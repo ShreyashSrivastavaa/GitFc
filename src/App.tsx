@@ -2,7 +2,13 @@ import React, { useState, useEffect } from 'react';
 import type { EAFCDevCard, ActiveTab, Team, TeamInvite } from './types';
 import { fetchGitHubUserStats } from './services/githubApi';
 import { PRESET_DEVS } from './services/presets';
-import { createDefaultTeam, addPlayerToRoster } from './services/teamService';
+import { 
+  createDefaultTeam, 
+  addPlayerToRoster, 
+  getStoredTeam, 
+  saveStoredTeam, 
+  parseInviteToken 
+} from './services/teamService';
 import { getAuthState, loginWithGitHubUser, logoutUser } from './services/authService';
 import { incrementCounterStats, triggerCounterRevalidation } from './services/statsService';
 import { trackEvent } from './services/analytics';
@@ -56,13 +62,20 @@ export function App() {
 
     // Check saved session auth
     const savedAuth = getAuthState();
+    const storedTeam = getStoredTeam();
+
+    if (storedTeam) {
+      setUserTeam(storedTeam);
+    } else if (savedAuth.isConnected && savedAuth.userCard) {
+      setUserTeam(createDefaultTeam(savedAuth.userCard));
+    }
+
     if (savedAuth.isConnected && savedAuth.userCard) {
       setIsConnected(true);
       setAuthUserCard(savedAuth.userCard);
       setCurrentCard(savedAuth.userCard);
       setUserFollowers(savedAuth.followers);
       setUserFollowing(savedAuth.following);
-      setUserTeam(createDefaultTeam(savedAuth.userCard));
       // Keep isCardSearched false on normal reload so user sees the home landing page with their active connected banner
     }
 
@@ -84,6 +97,16 @@ export function App() {
         setActiveTab('products');
       }
 
+      // Check for shareable squad invite parameter
+      const inviteParam = params.get('invite');
+      if (inviteParam) {
+        const parsedInvite = parseInviteToken(inviteParam);
+        if (parsedInvite) {
+          setPendingInvite(parsedInvite);
+          trackEvent('invite_link_opened', { teamName: parsedInvite.teamName, manager: parsedInvite.invitedBy });
+        }
+      }
+
       const cardUser = params.get('card');
       if (cardUser) {
         trackEvent('shared_card_viewed', { username: cardUser });
@@ -98,6 +121,14 @@ export function App() {
       if (tabParam === 'products') {
         setActiveTab('products');
         return;
+      }
+
+      const inviteParam = currentParams.get('invite');
+      if (inviteParam) {
+        const parsedInvite = parseInviteToken(inviteParam);
+        if (parsedInvite) {
+          setPendingInvite(parsedInvite);
+        }
       }
 
       const userParam = currentParams.get('card');
@@ -237,18 +268,71 @@ export function App() {
     setIsConnectModalOpen(true);
   };
 
+  const handleUpdateTeam = (updated: Team) => {
+    setUserTeam(updated);
+    saveStoredTeam(updated);
+  };
+
   const handleAcceptInvite = async (invite: TeamInvite) => {
-    if (userTeam && (authUserCard || currentCard)) {
-      const activeUser = authUserCard || currentCard;
-      const updated = addPlayerToRoster(userTeam, activeUser, invite.suggestedPosition || 'MID');
-      setUserTeam(updated);
+    const activeUser = authUserCard || currentCard;
+    if (!activeUser) {
+      setIsConnectModalOpen(true);
+      return;
     }
+
+    const baseTeam: Team = userTeam || {
+      id: invite.teamId,
+      name: invite.teamName,
+      description: 'Competitive developer squad in EA FC GitHub Edition.',
+      badge: invite.teamBadge || '⚽',
+      manager: { username: invite.invitedBy, name: invite.invitedBy } as any,
+      founded: new Date().toISOString().split('T')[0],
+      players: {
+        goalkeeper: [],
+        defenders: [],
+        midfielders: [],
+        forwards: [],
+        substitutes: [],
+      },
+      totalPlayers: 0,
+      formation: '4-4-3',
+      squadValue: 0,
+      squadChemistry: 65,
+      averageRating: 78,
+      leagueId: 'premier',
+      leagueName: 'Premier DevLeague',
+      leaguePosition: 1,
+      wins: 0,
+      draws: 0,
+      losses: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      points: 0,
+      inviteCode: invite.inviteCode,
+      invites: [],
+      isPrivate: false,
+      createdAt: new Date().toISOString().split('T')[0],
+    };
+
+    const updated = addPlayerToRoster(baseTeam, activeUser, invite.suggestedPosition || 'MIDFIELDER');
+    handleUpdateTeam(updated);
     setPendingInvite(null);
+
+    // Clean invite param from URL without reload
+    const url = new URL(window.location.href);
+    url.searchParams.delete('invite');
+    url.searchParams.delete('join');
+    window.history.replaceState({}, document.title, url.toString());
+
     setActiveTab('dressing-room');
   };
 
   const handleDeclineInvite = () => {
     setPendingInvite(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('invite');
+    url.searchParams.delete('join');
+    window.history.replaceState({}, document.title, url.toString());
   };
 
   const handleGoHome = () => {
@@ -468,7 +552,7 @@ export function App() {
           <LeaguesView
             customCards={leaderboardCards}
             userTeam={userTeam}
-            onUpdateTeam={setUserTeam}
+            onUpdateTeam={handleUpdateTeam}
             isConnected={isConnected}
             onOpenConnectModal={() => setIsConnectModalOpen(true)}
           />
@@ -478,7 +562,7 @@ export function App() {
           <DressingRoomView
             card={authUserCard || currentCard}
             team={userTeam}
-            onUpdateTeam={setUserTeam}
+            onUpdateTeam={handleUpdateTeam}
             onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
             onOpenConnectModal={() => setIsConnectModalOpen(true)}
             isConnected={isConnected}
@@ -531,7 +615,7 @@ export function App() {
         userCard={isConnected ? (authUserCard || currentCard) : null}
         onOpenConnectModal={() => setIsConnectModalOpen(true)}
         onCreateTeam={(newTeam) => {
-          setUserTeam(newTeam);
+          handleUpdateTeam(newTeam);
           setActiveTab('dressing-room');
         }}
       />

@@ -20,7 +20,8 @@ export type AnalyticsEvent =
   | 'card_customized'
   | 'card_shared'
   | 'shared_card_viewed'
-  | 'new_user_from_shared_card';
+  | 'new_user_from_shared_card'
+  | 'invite_link_opened';
 
 export interface EventProperties {
   username?: string;
