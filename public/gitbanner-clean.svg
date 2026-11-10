@@ -1,0 +1,186 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Dark Cosmic Tactical Background -->
+    <radialGradient id="canvasBg" cx="30%" cy="30%" r="90%">
+      <stop offset="0%" stop-color="#0e1726" />
+      <stop offset="50%" stop-color="#080c14" />
+      <stop offset="100%" stop-color="#020408" />
+    </radialGradient>
+
+    <!-- Glowing Accent Gradients -->
+    <linearGradient id="primaryNeon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fde047" />
+      <stop offset="50%" stop-color="#eab308" />
+      <stop offset="100%" stop-color="#ca8a04" />
+    </linearGradient>
+
+    <linearGradient id="cardGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#020617" />
+    </linearGradient>
+
+    <linearGradient id="mythicFoil" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ec4899" />
+      <stop offset="50%" stop-color="#8b5cf6" />
+      <stop offset="100%" stop-color="#06b6d4" />
+    </linearGradient>
+
+    <filter id="bigGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="60" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Deep Canvas Background -->
+  <rect width="1200" height="630" fill="url(#canvasBg)" />
+
+  <!-- Ambient Ambient Radial Flares -->
+  <circle cx="200" cy="200" r="280" fill="#38bdf8" opacity="0.12" filter="url(#bigGlow)" />
+  <circle cx="950" cy="380" r="320" fill="#a855f7" opacity="0.15" filter="url(#bigGlow)" />
+
+  <!-- Hexagonal Arena Grid Lines (Subtle tactical backdrop) -->
+  <g stroke="#1e293b" stroke-width="1.2" opacity="0.35" fill="none">
+    <path d="M 0 100 L 1200 100 M 0 250 L 1200 250 M 0 400 L 1200 400 M 0 550 L 1200 550" />
+    <path d="M 150 0 L 150 630 M 350 0 L 350 630 M 550 0 L 550 630 M 750 0 L 750 630 M 950 0 L 950 630" />
+  </g>
+
+  <!-- LEFT COLUMN: Powerful Value Proposition & Brand -->
+  <g transform="translate(80, 110)">
+    <!-- Pill Badge -->
+    <rect x="0" y="0" width="310" height="36" rx="18" fill="#030712" stroke="url(#primaryNeon)" stroke-width="1.8" />
+    <text x="16" y="23" font-family="'Inter', sans-serif" font-weight="900" font-size="12" fill="#38bdf8" letter-spacing="2">
+      ⚡ SEASON 2026 • ARENA LIVE
+    </text>
+
+    <!-- Main Headline -->
+    <text x="0" y="96" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="56" fill="#ffffff" letter-spacing="-2">
+      Turn GitHub Into
+    </text>
+    <text x="0" y="162" font-family="'Inter', system-ui, sans-serif" font-weight="900" font-size="56" fill="url(#primaryNeon)" letter-spacing="-2">
+      Battle Cards.
+    </text>
+
+    <!-- Subtitle Copy -->
+    <text x="0" y="218" font-family="'Inter', sans-serif" font-weight="500" font-size="18" fill="#94a3b8">
+      Your commits, repositories, and languages are your stats.
+    </text>
+    <text x="0" y="246" font-family="'Inter', sans-serif" font-weight="500" font-size="18" fill="#94a3b8">
+      Build 5-card squads and battle in server-resolved duels.
+    </text>
+
+    <!-- Key Feature Bullets -->
+    <g transform="translate(0, 290)">
+      <rect x="0" y="0" width="160" height="42" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.5" />
+      <text x="80" y="26" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="13" fill="#f8fafc">
+        🛡️ 5 Rarity Tiers
+      </text>
+
+      <rect x="176" y="0" width="180" height="42" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.5" />
+      <text x="266" y="26" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="13" fill="#f8fafc">
+        ⚔️ 7 Battle Stats
+      </text>
+
+      <rect x="372" y="0" width="150" height="42" rx="12" fill="#0f172a" stroke="#334155" stroke-width="1.5" />
+      <text x="447" y="26" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="13" fill="#f8fafc">
+        🏆 Ranked ELO
+      </text>
+    </g>
+
+    <!-- Domain Footer -->
+    <text x="0" y="420" font-family="'Inter', sans-serif" font-weight="800" font-size="15" fill="#38bdf8" letter-spacing="1.5">
+      gitfc.vercel.app
+    </text>
+  </g>
+
+  <!-- RIGHT COLUMN: 3D Clashing Cards Showcase -->
+  <g transform="translate(740, 60)">
+    <!-- Card 1: Mythic Apex Card (Linus Torvalds, 95 OVR) -->
+    <g transform="translate(130, 40) rotate(8)">
+      <!-- Outer Card Border Glow -->
+      <rect x="-4" y="-4" width="288" height="428" rx="26" fill="url(#mythicFoil)" />
+      <!-- Card Body -->
+      <rect x="0" y="0" width="280" height="420" rx="24" fill="url(#cardGrad1)" />
+
+      <!-- OVR Header -->
+      <text x="36" y="56" font-family="'Inter', sans-serif" font-weight="900" font-size="44" fill="#ffffff">95</text>
+      <text x="36" y="74" font-family="'Inter', sans-serif" font-weight="800" font-size="11" fill="#ec4899" letter-spacing="2">OVR</text>
+
+      <!-- Mythic Badge -->
+      <rect x="170" y="28" width="84" height="24" rx="12" fill="#831843" stroke="#f472b6" stroke-width="1.5" />
+      <text x="212" y="44" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="10" fill="#fdf2f8">⚡ MYTHIC</text>
+
+      <!-- Avatar Circle -->
+      <circle cx="140" cy="148" r="50" fill="#0f172a" stroke="#f472b6" stroke-width="3" />
+      <text x="140" y="160" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="28" fill="#fdf2f8">LT</text>
+
+      <!-- Name & Archetype -->
+      <text x="140" y="230" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="18" fill="#ffffff">Linus Torvalds</text>
+      <text x="140" y="250" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="700" font-size="11" fill="#94a3b8">Kernel Architect</text>
+
+      <!-- Stats Grid -->
+      <rect x="24" y="272" width="232" height="74" rx="14" fill="#020617" opacity="0.8" stroke="#1e293b" />
+      <text x="64" y="302" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="18" fill="#38bdf8">98</text>
+      <text x="64" y="322" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="9" fill="#64748b">BAK</text>
+
+      <text x="140" y="302" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="18" fill="#10b981">99</text>
+      <text x="140" y="322" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="9" fill="#64748b">OPS</text>
+
+      <text x="216" y="302" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="18" fill="#c084fc">98</text>
+      <text x="216" y="322" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="9" fill="#64748b">LAN</text>
+
+      <!-- Ability Tag -->
+      <rect x="24" y="360" width="232" height="28" rx="8" fill="#1e1b4b" stroke="#6366f1" stroke-width="1" />
+      <text x="140" y="378" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="10" fill="#e0e7ff">
+        ⚡ Kernel Authority (+8 BAK in R3+)
+      </text>
+    </g>
+
+    <!-- Card 2: Legendary Card (Dan Abramov, 92 OVR) -->
+    <g transform="translate(0, 70) rotate(-6)">
+      <!-- Outer Card Border Glow -->
+      <rect x="-3" y="-3" width="276" height="406" rx="24" fill="url(#goldGradient)" />
+      <!-- Card Body -->
+      <rect x="0" y="0" width="270" height="400" rx="22" fill="#0b1329" />
+
+      <!-- OVR Header -->
+      <text x="34" y="54" font-family="'Inter', sans-serif" font-weight="900" font-size="42" fill="#ffffff">92</text>
+      <text x="34" y="72" font-family="'Inter', sans-serif" font-weight="800" font-size="11" fill="#fbbf24" letter-spacing="2">OVR</text>
+
+      <!-- Legendary Badge -->
+      <rect x="150" y="28" width="94" height="24" rx="12" fill="#451a03" stroke="#f59e0b" stroke-width="1.5" />
+      <text x="197" y="44" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="10" fill="#fef3c7">👑 LEGENDARY</text>
+
+      <!-- Avatar Circle -->
+      <circle cx="135" cy="140" r="46" fill="#0f172a" stroke="#f59e0b" stroke-width="2.5" />
+      <text x="135" y="152" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="26" fill="#fef3c7">DA</text>
+
+      <!-- Name & Archetype -->
+      <text x="135" y="218" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="17" fill="#ffffff">Dan Abramov</text>
+      <text x="135" y="238" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="700" font-size="11" fill="#94a3b8">Frontend Visionary</text>
+
+      <!-- Stats Grid -->
+      <rect x="20" y="258" width="230" height="70" rx="12" fill="#020617" opacity="0.8" stroke="#1e293b" />
+      <text x="60" y="288" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="17" fill="#f43f5e">98</text>
+      <text x="60" y="306" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="9" fill="#64748b">FRO</text>
+
+      <text x="135" y="288" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="17" fill="#10b981">95</text>
+      <text x="135" y="306" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="9" fill="#64748b">OPS</text>
+
+      <text x="210" y="288" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="900" font-size="17" fill="#a855f7">92</text>
+      <text x="210" y="306" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="9" fill="#64748b">INV</text>
+
+      <!-- Ability Tag -->
+      <rect x="20" y="344" width="230" height="26" rx="8" fill="#2d1a03" stroke="#d97706" stroke-width="1" />
+      <text x="135" y="361" text-anchor="middle" font-family="'Inter', sans-serif" font-weight="800" font-size="10" fill="#fef3c7">
+        ⚛️ Reconciler (+10 FRO in FRO Round)
+      </text>
+    </g>
+  </g>
+</svg>
