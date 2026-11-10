@@ -136,3 +136,4 @@ export const STAT_METADATA: Record<
     color: '#06b6d4',
   },
 };
+

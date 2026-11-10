@@ -81,3 +81,4 @@ describe('Card Generation Engine (RULESET 1.0.0)', () => {
     expect(card.abilities.length).toBeGreaterThanOrEqual(1);
   });
 });
+

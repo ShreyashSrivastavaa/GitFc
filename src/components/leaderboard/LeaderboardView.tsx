@@ -226,3 +226,4 @@ export const LeaderboardView: React.FC<{ currentUsername?: string }> = ({
     </div>
   );
 };
+

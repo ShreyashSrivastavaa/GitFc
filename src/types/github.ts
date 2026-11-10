@@ -39,3 +39,4 @@ export const GitHubSnapshotSchema = z.object({
   rulesetVersion: z.string(),
 });
 export type GitHubSnapshot = z.infer<typeof GitHubSnapshotSchema>;
+

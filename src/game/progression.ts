@@ -69,3 +69,4 @@ export function getRankTier(elo: number): { tier: RankTier; icon: string; minElo
   if (elo >= 1000) return { tier: 'Silver', icon: '🥈', minElo: 1000 };
   return { tier: 'Bronze', icon: '🥉', minElo: 100 };
 }
+

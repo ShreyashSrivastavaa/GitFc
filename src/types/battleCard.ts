@@ -132,3 +132,4 @@ export const BattleStateSchema = z.object({
   xpEarned: z.number().optional(),
 });
 export type BattleState = z.infer<typeof BattleStateSchema>;
+

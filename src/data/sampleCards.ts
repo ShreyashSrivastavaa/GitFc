@@ -266,3 +266,4 @@ export const SAMPLE_BATTLE_CARDS: BattleCard[] = [
     createdAt: '2026-11-10',
   },
 ];
+

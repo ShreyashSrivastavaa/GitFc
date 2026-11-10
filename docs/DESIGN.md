@@ -64,3 +64,4 @@ GitFC adopts a dark, tactile, collectible aesthetic inspired by trading card gam
 - High-contrast text on all card surfaces: Minimum **4.5:1** contrast ratio against card backgrounds.
 - Keyboard navigation: Full tab index, keyboard space/enter triggers, and visible focus rings (`ring-2 ring-cyan-400 ring-offset-2 ring-offset-slate-950`).
 - Screen readers: Cards provide comprehensive ARIA labels describing Card Name, Overall Rating, Rarity, Primary Position, and Top Stats.
+

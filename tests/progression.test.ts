@@ -51,3 +51,4 @@ describe('Ranked ELO & Anti-Farming Engine', () => {
     expect(getRankTier(850).tier).toBe('Bronze');
   });
 });
+
