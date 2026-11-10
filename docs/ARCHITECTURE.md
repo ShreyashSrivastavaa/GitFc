@@ -258,3 +258,4 @@ Abilities trigger and apply strictly in this sequence:
    - Explicitly excluded from all leaderboard queries (`WHERE is_bot = FALSE`).
 3. **Viral Shareable Challenge Links**:
    - `gitfc.vercel.app/challenge/:battleId` allows sharing direct challenge links to Discord/X. If the invitee is not registered, they authenticate, receive their starter cards, and immediately enter the match.
+

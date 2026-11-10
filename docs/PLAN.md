@@ -80,3 +80,4 @@ flowchart TD
 | **API Integration Tests** | **Vitest + Supertest / HTTP** | Auth guards, session validation, Zod rejection, battle state transitions, idempotency keys, duplicate submissions, and rate limits. |
 | **Cheat Test Suite** | **Vitest** | Explicit attacks: submitting foreign card IDs, modified stat values, replaying completed rounds, out-of-turn moves. |
 | **E2E & Accessibility** | **Playwright + @axe-core/playwright** | End-to-end player journey: sign in → reveal card → open pack → build deck → battle training bot → view rank. |
+
