@@ -1,626 +1,131 @@
-import React, { useState, useEffect } from 'react';
-import type { EAFCDevCard, ActiveTab, Team, TeamInvite } from './types';
-import { fetchGitHubUserStats } from './services/githubApi';
-import { PRESET_DEVS } from './services/presets';
-import { 
-  createDefaultTeam, 
-  addPlayerToRoster, 
-  getStoredTeam, 
-  saveStoredTeam, 
-  parseInviteToken 
-} from './services/teamService';
-import { getAuthState, loginWithGitHubUser, logoutUser } from './services/authService';
-import { incrementCounterStats, triggerCounterRevalidation } from './services/statsService';
-import { trackEvent } from './services/analytics';
-import { recomputeCard } from './services/cardCalculator';
-
-import { Navbar } from './components/layout/Navbar';
-import { Footer } from './components/layout/Footer';
-import { EAFCCard } from './components/card/EAFCCard';
-import { LeaderboardTable } from './components/leaderboard/LeaderboardTable';
-import { ExportModal } from './components/share/ExportModal';
-import { ConnectModal } from './components/layout/ConnectModal';
-import { LeaguesView } from './components/leagues/LeaguesView';
-import { DressingRoomView } from './components/dressingroom/DressingRoomView';
-import { CreateTeamModal } from './components/team/CreateTeamModal';
-import { LandingDetails } from './components/landing/LandingDetails';
-import { GeneratedProfileView } from './components/profile/GeneratedProfileView';
-import { UsageCounter } from './components/common/UsageCounter';
-import { TeamInviteBanner } from './components/team/TeamInviteBanner';
-import { SEOHead } from './components/common/SEOHead';
-import { Preloader } from './components/common/Preloader';
-import { ProductsView } from './components/products/ProductsView';
-
-import { Sparkles, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { NavigationShell, type NavTab } from './components/layout/NavigationShell';
+import { LandingView } from './components/landing/LandingView';
+import { BattleArenaView } from './components/battle/BattleArenaView';
+import { CollectionView } from './components/collection/CollectionView';
+import { LeaderboardView } from './components/leaderboard/LeaderboardView';
+import { ProfileView } from './components/profile/ProfileView';
+import { SAMPLE_BATTLE_CARDS } from './data/sampleCards';
+import type { BattleCard } from './types/battleCard';
 
 export function App() {
-  const [showPreloader, setShowPreloader] = useState(true);
-  const [activeTab, setActiveTab] = useState<ActiveTab>('generator');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [currentCard, setCurrentCard] = useState<EAFCDevCard>(PRESET_DEVS[0]);
-  const [authUserCard, setAuthUserCard] = useState<EAFCDevCard | null>(null);
-  const [leaderboardCards, setLeaderboardCards] = useState<EAFCDevCard[]>(PRESET_DEVS);
-  const [userTeam, setUserTeam] = useState<Team | null>(null);
-
-  const [isCardSearched, setIsCardSearched] = useState(false);
+  const [activeTab, setActiveTab] = useState<NavTab>('home');
+  const [userRating, setUserRating] = useState(1000);
+  const [userShards, setUserShards] = useState(250);
   const [isConnected, setIsConnected] = useState(false);
-  const [userFollowers, setUserFollowers] = useState<string[]>([]);
-  const [userFollowing, setUserFollowing] = useState<string[]>([]);
+  const [username, setUsername] = useState('developer');
 
-  const [pendingInvite, setPendingInvite] = useState<TeamInvite | null>(null);
+  // Active 5-card squads for Arena
+  const [playerDeck] = useState<BattleCard[]>([
+    SAMPLE_BATTLE_CARDS[1], // Gaearon (92)
+    SAMPLE_BATTLE_CARDS[3], // Mitchellh (87)
+    SAMPLE_BATTLE_CARDS[4], // Antirez (86)
+    SAMPLE_BATTLE_CARDS[6], // Rust (78)
+    SAMPLE_BATTLE_CARDS[7], // Builder (65)
+  ]);
 
-  const [loading, setLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [error, setError] = useState('');
+  const [opponentDeck] = useState<BattleCard[]>([
+    SAMPLE_BATTLE_CARDS[0], // Torvalds (95)
+    SAMPLE_BATTLE_CARDS[2], // Shadcn (90)
+    SAMPLE_BATTLE_CARDS[5], // Next.js (88)
+    SAMPLE_BATTLE_CARDS[6], // Rust (78)
+    SAMPLE_BATTLE_CARDS[7], // Builder (65)
+  ]);
 
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isConnectModalOpen, setIsConnectModalOpen] = useState(false);
-  const [isCreateTeamOpen, setIsCreateTeamOpen] = useState(false);
-
-  useEffect(() => {
-    trackEvent('landing_page_view');
-
-    // Check saved session auth
-    const savedAuth = getAuthState();
-    const storedTeam = getStoredTeam();
-
-    if (storedTeam) {
-      setUserTeam(storedTeam);
-    } else if (savedAuth.isConnected && savedAuth.userCard) {
-      setUserTeam(createDefaultTeam(savedAuth.userCard));
-    }
-
-    if (savedAuth.isConnected && savedAuth.userCard) {
-      setIsConnected(true);
-      setAuthUserCard(savedAuth.userCard);
-      setCurrentCard(savedAuth.userCard);
-      setUserFollowers(savedAuth.followers);
-      setUserFollowing(savedAuth.following);
-      // Keep isCardSearched false on normal reload so user sees the home landing page with their active connected banner
-    }
-
-    const params = new URLSearchParams(window.location.search);
-    const authStatus = params.get('auth');
-    const authUser = params.get('username');
-    const authMessage = params.get('message');
-
-    if (authStatus === 'success' && authUser) {
-      trackEvent('github_auth_completed', { username: authUser });
-      handleConnectGitHubUser(authUser);
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else if (authStatus === 'error') {
-      setError(authMessage || 'GitHub sign-in could not be completed. Please try again.');
-      window.history.replaceState({}, document.title, window.location.pathname);
-    } else {
-      const tabParam = params.get('tab');
-      if (tabParam === 'products') {
-        setActiveTab('products');
-      }
-
-      // Check for shareable squad invite parameter
-      const inviteParam = params.get('invite');
-      if (inviteParam) {
-        const parsedInvite = parseInviteToken(inviteParam);
-        if (parsedInvite) {
-          setPendingInvite(parsedInvite);
-          trackEvent('invite_link_opened', { teamName: parsedInvite.teamName, manager: parsedInvite.invitedBy });
-        }
-      }
-
-      const cardUser = params.get('card');
-      if (cardUser) {
-        trackEvent('shared_card_viewed', { username: cardUser });
-        handleLookupUser(cardUser, false);
-      }
-    }
-
-    // Handle browser Back/Forward navigation
-    const handlePopState = () => {
-      const currentParams = new URLSearchParams(window.location.search);
-      const tabParam = currentParams.get('tab');
-      if (tabParam === 'products') {
-        setActiveTab('products');
-        return;
-      }
-
-      const inviteParam = currentParams.get('invite');
-      if (inviteParam) {
-        const parsedInvite = parseInviteToken(inviteParam);
-        if (parsedInvite) {
-          setPendingInvite(parsedInvite);
-        }
-      }
-
-      const userParam = currentParams.get('card');
-      if (userParam) {
-        handleLookupUser(userParam, false);
-      } else {
-        setIsCardSearched(false);
-        setActiveTab('generator');
-        triggerCounterRevalidation();
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, []);
-
-  const handleLookupUser = async (username: string, shouldPushState: boolean = true) => {
-    if (!username.trim()) return null;
-    const cleanUser = username.trim();
-    setLoading(true);
-    setError('');
-
-    try {
-      const card = await fetchGitHubUserStats(cleanUser);
-      setCurrentCard(card);
-      setIsCardSearched(true);
-
-      if (shouldPushState) {
-        const newUrl = `${window.location.pathname}?card=${encodeURIComponent(cleanUser)}`;
-        if (window.location.search !== `?card=${encodeURIComponent(cleanUser)}`) {
-          window.history.pushState({ card: cleanUser }, document.title, newUrl);
-        }
-      }
-
-      trackEvent('card_generated', {
-        username: card.username,
-        ovr: card.attributes?.overall || card.ratings?.overall,
-        position: card.position,
-        archetype: card.archetype,
-        rarity: card.rarity,
-      });
-
-      // Increment stats counter ONCE strictly after successful card generation/use with deduplication key
-      console.log(`[App] Card generation succeeded for @${cleanUser}. Triggering counter increment.`);
-      await incrementCounterStats(`${cleanUser.toLowerCase()}_${Date.now()}`);
-
-      setLeaderboardCards((prev) => {
-        if (prev.some((c) => c.username.toLowerCase() === card.username.toLowerCase())) {
-          return prev;
-        }
-        return [card, ...prev];
-      });
-      return card;
-    } catch (err: any) {
-      setError(err.message || 'Error fetching GitHub stats');
-      return null;
-    } finally {
-      setLoading(false);
-    }
+  const handleConnect = () => {
+    setIsConnected(true);
+    setUsername('torvalds');
+    setUserRating(1250);
   };
 
-  const handleRefreshPackFriday = async (cardToRefresh: EAFCDevCard) => {
-    setIsRefreshing(true);
-    try {
-      // Re-fetch latest stats
-      const freshData = await fetchGitHubUserStats(cardToRefresh.username);
-      const recomputed = recomputeCard(cardToRefresh, freshData.stats);
-      setCurrentCard(recomputed);
-      trackEvent('card_generated', {
-        username: recomputed.username,
-        ovr: recomputed.attributes?.overall,
-        isPackFridayRefresh: true,
-      });
-    } catch (err: any) {
-      console.warn('Pack Friday refresh error:', err);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
+  const handlePreviewUser = async (userToScout: string): Promise<BattleCard | null> => {
+    const match = SAMPLE_BATTLE_CARDS.find(
+      (c) => c.subtitle.toLowerCase().includes(userToScout.toLowerCase()) || c.name.toLowerCase().includes(userToScout.toLowerCase())
+    );
+    if (match) return match;
 
-  const handleConnectGitHubUser = async (username: string) => {
-    setLoading(true);
-    try {
-      const authState = await loginWithGitHubUser(username);
-      if (authState.userCard) {
-        setIsConnected(true);
-        setAuthUserCard(authState.userCard);
-        setCurrentCard(authState.userCard);
-        setUserFollowers(authState.followers);
-        setUserFollowing(authState.following);
-        setUserTeam(createDefaultTeam(authState.userCard));
-        setIsCardSearched(true);
-
-        setLeaderboardCards((prev) => {
-          if (prev.some((c) => c.username.toLowerCase() === authState.userCard!.username.toLowerCase())) {
-            return prev;
-          }
-          return [authState.userCard!, ...prev];
-        });
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to authenticate user');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = () => {
-    logoutUser();
-    setIsConnected(false);
-    setAuthUserCard(null);
-    setIsCardSearched(false);
-    setCurrentCard(PRESET_DEVS[0]);
-    setUserTeam(null);
-  };
-
-  const handleViewMyCard = () => {
-    const savedAuth = getAuthState();
-    if (savedAuth.userCard) {
-      setAuthUserCard(savedAuth.userCard);
-      setCurrentCard(savedAuth.userCard);
-    } else if (authUserCard) {
-      setCurrentCard(authUserCard);
-    }
-    setIsCardSearched(true);
-    setActiveTab('generator');
-  };
-
-  const handleSearchSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    handleLookupUser(searchQuery);
-  };
-
-  const handleConnectGitHub = () => {
-    setIsConnectModalOpen(true);
-  };
-
-  const handleUpdateTeam = (updated: Team) => {
-    setUserTeam(updated);
-    saveStoredTeam(updated);
-  };
-
-  const handleAcceptInvite = async (invite: TeamInvite) => {
-    const activeUser = authUserCard || currentCard;
-    if (!activeUser) {
-      setIsConnectModalOpen(true);
-      return;
-    }
-
-    const baseTeam: Team = userTeam || {
-      id: invite.teamId,
-      name: invite.teamName,
-      description: 'Competitive developer squad in EA FC GitHub Edition.',
-      badge: invite.teamBadge || '⚽',
-      manager: { username: invite.invitedBy, name: invite.invitedBy } as any,
-      founded: new Date().toISOString().split('T')[0],
-      players: {
-        goalkeeper: [],
-        defenders: [],
-        midfielders: [],
-        forwards: [],
-        substitutes: [],
+    // Build dynamic mock card for unauthenticated public preview
+    return {
+      id: `preview-${userToScout}`,
+      type: 'developer',
+      name: userToScout,
+      subtitle: `@${userToScout}`,
+      avatarUrl: `https://github.com/${userToScout}.png`,
+      rarity: 'rare',
+      primaryArchetype: 'Scouted Contributor',
+      stats: {
+        backend: 75,
+        frontend: 72,
+        openSource: 74,
+        innovation: 78,
+        consistency: 76,
+        popularity: 70,
+        languageMastery: 77,
+        overall: 75,
       },
-      totalPlayers: 0,
-      formation: '4-4-3',
-      squadValue: 0,
-      squadChemistry: 65,
-      averageRating: 78,
-      leagueId: 'premier',
-      leagueName: 'Premier DevLeague',
-      leaguePosition: 1,
-      wins: 0,
-      draws: 0,
-      losses: 0,
-      goalsFor: 0,
-      goalsAgainst: 0,
-      points: 0,
-      inviteCode: invite.inviteCode,
-      invites: [],
-      isPrivate: false,
-      createdAt: new Date().toISOString().split('T')[0],
+      abilities: [
+        {
+          id: 'ab-scouted-momentum',
+          name: 'Momentum',
+          description: '+5 in Round 3+',
+          trigger: 'ROUND_3_OR_LATER',
+          effectType: 'BOOST_SELF_STAT',
+          modifierValue: 5,
+          icon: '⚡',
+        },
+      ],
+      rulesetVersion: '1.0.0',
+      createdAt: '2026-11-10',
+      sourceUrl: `https://github.com/${userToScout}`,
     };
-
-    const updated = addPlayerToRoster(baseTeam, activeUser, invite.suggestedPosition || 'MIDFIELDER');
-    handleUpdateTeam(updated);
-    setPendingInvite(null);
-
-    // Clean invite param from URL without reload
-    const url = new URL(window.location.href);
-    url.searchParams.delete('invite');
-    url.searchParams.delete('join');
-    window.history.replaceState({}, document.title, url.toString());
-
-    setActiveTab('dressing-room');
-  };
-
-  const handleDeclineInvite = () => {
-    setPendingInvite(null);
-    const url = new URL(window.location.href);
-    url.searchParams.delete('invite');
-    url.searchParams.delete('join');
-    window.history.replaceState({}, document.title, url.toString());
-  };
-
-  const handleGoHome = () => {
-    setActiveTab('generator');
-    setIsCardSearched(false);
-    if (window.location.search) {
-      window.history.pushState({}, document.title, window.location.pathname);
-    }
-    triggerCounterRevalidation();
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0c10] text-slate-100 flex flex-col font-sans selection:bg-amber-500 selection:text-black transition-colors duration-200 overflow-x-hidden max-w-full w-full">
-      {showPreloader && <Preloader onComplete={() => setShowPreloader(false)} />}
-      <SEOHead
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500 selection:text-slate-950">
+      {/* Navigation Shell */}
+      <NavigationShell
         activeTab={activeTab}
-        isCardSearched={isCardSearched}
-        currentCard={isCardSearched ? currentCard : null}
-      />
-      <Navbar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onConnectGitHub={handleConnectGitHub}
-        onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
-        onGoHome={handleGoHome}
+        onTabChange={(tab) => setActiveTab(tab)}
+        userRating={userRating}
+        userShards={userShards}
         isConnected={isConnected}
-        userCard={isConnected ? (authUserCard || currentCard) : null}
-        onLogout={handleLogout}
-        onViewMyCard={handleViewMyCard}
+        username={username}
+        onConnectClick={handleConnect}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8 space-y-6 overflow-x-hidden">
-        {/* IN-APP TEAM INVITATION NOTIFICATION BANNER */}
-        {pendingInvite && (
-          <TeamInviteBanner
-            invite={pendingInvite}
-            onAccept={handleAcceptInvite}
-            onDecline={handleDeclineInvite}
+      {/* Main View Router */}
+      <main className="flex-1 w-full">
+        {activeTab === 'home' && (
+          <LandingView
+            onBuildDeck={() => setActiveTab('battle')}
+            onChallenge={() => setActiveTab('battle')}
+            onPreviewUser={handlePreviewUser}
           />
         )}
 
-        {activeTab === 'generator' && (
-          isCardSearched ? (
-            <GeneratedProfileView
-              card={currentCard}
-              userTeam={userTeam}
-              isConnected={isConnected}
-              onOpenExportModal={() => setIsExportModalOpen(true)}
-              onOpenConnectModal={() => setIsConnectModalOpen(true)}
-              onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
-              onResetSearch={handleGoHome}
-              onLookupUser={handleLookupUser}
-              onNavigateToLeagues={() => setActiveTab('leagues')}
-              onUpdateCard={(updated) => setCurrentCard(updated)}
-              onRefreshPackFriday={handleRefreshPackFriday}
-              isRefreshing={isRefreshing}
-            />
-          ) : (
-            <div className="space-y-12">
-              {/* CONNECTED USER QUICK ACCESS BANNER IF CONNECTED */}
-              {isConnected && (authUserCard || currentCard) && (
-                (() => {
-                  const loggedInCard = authUserCard || currentCard;
-                  return (
-                    <div className="p-4 rounded-3xl bg-slate-900 border border-emerald-500/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div className="flex items-center gap-3">
-                        <img src={loggedInCard.avatarUrl} alt={loggedInCard.name} className="w-10 h-10 rounded-full border border-amber-400 object-cover" />
-                        <div>
-                          <div className="font-display font-extrabold text-sm text-white flex items-center gap-2">
-                            <span>Connected as {loggedInCard.name} (@{loggedInCard.username})</span>
-                            <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-mono border border-emerald-500/30 font-bold">✓ ACTIVE</span>
-                          </div>
-                          <div className="text-xs font-mono text-slate-400">
-                            OVR {loggedInCard.ratings.overall} • {loggedInCard.footballPositionTitle}
-                          </div>
-                        </div>
-                      </div>
-                      <button
-                        onClick={handleViewMyCard}
-                        className="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-display font-black text-xs hover:brightness-110 shadow-md transition cursor-pointer flex items-center gap-1.5"
-                      >
-                        <Sparkles className="w-4 h-4" /> VIEW MY PLAYER CARD
-                      </button>
-                    </div>
-                  );
-                })()
-              )}
-
-              {/* HERO SECTION: FLOATING EMPTY CARD + SIDE-BY-SIDE SEARCH */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center min-h-[500px]">
-                {/* LEFT COLUMN: HERO TEXT & SEARCH FORM */}
-                <div className="lg:col-span-7 space-y-6 text-left">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono text-xs font-bold border border-emerald-500/30 uppercase tracking-wider">
-                      <Sparkles className="w-3.5 h-3.5" /> YOUR GITHUB. YOUR SQUAD. • 100% CLIENT-SIDE READ-ONLY
-                    </div>
-                    <a
-                      href="https://www.producthunt.com/products/gitfc?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-gitfc"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-block transition-transform hover:scale-105"
-                      aria-label="GitFC on Product Hunt"
-                    >
-                      <img
-                        src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1237125&theme=dark&t=1788158120807"
-                        alt="GitFC - Your GitHub profile, turned into a shareable card | Product Hunt"
-                        width="200"
-                        height="43"
-                        className="h-[34px] w-auto object-contain"
-                      />
-                    </a>
-                  </div>
-
-                  <h1 className="font-display font-black text-3xl sm:text-5xl lg:text-6xl text-white tracking-tight leading-[1.12]">
-                    Turn your GitHub into a <span className="text-transparent bg-clip-text bg-gradient-to-r from-gitfc-neonGreen via-gitfc-electricBlue to-gitfc-gold">Football Card</span>
-                  </h1>
-
-                  <p className="text-slate-300 text-base md:text-lg leading-relaxed max-w-xl font-normal">
-                    Generate authentic EA FC & FIFA-style trading cards from your public GitHub commits, PRs, stars, and language diversity in seconds.
-                  </p>
-
-                  {/* HORIZONTAL FEATURE BADGES */}
-                  <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 text-slate-300 text-xs font-gaming font-semibold border border-gitfc-border flex items-center gap-1.5 shadow-sm">
-                      <span className="text-gitfc-neonGreen font-bold">⚡</span> 8 Authentic Attributes
-                    </span>
-                    <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 text-slate-300 text-xs font-gaming font-semibold border border-gitfc-border flex items-center gap-1.5 shadow-sm">
-                      <span className="text-gitfc-electricBlue font-bold">🎯</span> Tactical Dev Positions
-                    </span>
-                    <span className="px-3 py-1.5 rounded-xl bg-slate-900/90 text-slate-300 text-xs font-gaming font-semibold border border-gitfc-border flex items-center gap-1.5 shadow-sm">
-                      <span className="text-gitfc-gold font-bold">✨</span> 3D Holographic Export
-                    </span>
-                  </div>
-
-                  {/* PRIMARY SEARCH & CTA CONTAINER */}
-                  <form onSubmit={handleSearchSubmit} className="relative max-w-lg pt-2">
-                    <div className="relative flex items-center bg-slate-950/90 border-2 border-gitfc-border rounded-2xl p-1.5 shadow-2xl focus-within:border-gitfc-neonGreen transition-all">
-                      <span className="pl-4 text-gitfc-neonGreen font-gaming text-base font-bold">@</span>
-                      <input
-                        type="text"
-                        placeholder="Enter GitHub username (e.g. torvalds)"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-2 pr-4 py-3 bg-transparent text-white placeholder-slate-500 text-sm font-medium focus:outline-none"
-                      />
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        onClick={() => trackEvent('cta_click', { ctaName: 'create_my_card_hero', username: searchQuery })}
-                        className="px-6 py-3 rounded-xl bg-gradient-to-r from-gitfc-neonGreen via-emerald-400 to-teal-400 text-slate-950 font-gaming font-black text-sm tracking-wider uppercase hover:shadow-[0_0_25px_rgba(0,255,135,0.6)] shrink-0 flex items-center gap-1.5 transition-all cursor-pointer hover:brightness-110"
-                      >
-                        {loading ? <Loader2 className="w-4 h-4 animate-spin text-slate-950" /> : 'CREATE MY CARD'}
-                      </button>
-                    </div>
-                    {error && <p className="mt-2 text-xs font-mono text-rose-400">{error}</p>}
-                  </form>
-
-                  {/* SUB-BADGES & QUICK DEVS */}
-                  <div className="space-y-3 pt-1">
-                    <div className="flex flex-wrap items-center gap-4 text-[11px] font-mono text-slate-400">
-                      <UsageCounter prefixEmoji="⚡" />
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-400">
-                      <span className="font-gaming font-bold text-slate-300">SCOUT TRENDING PLAYERS:</span>
-                      {['torvalds', 'gaearon', 'antfu', 'shadcn', 'mitchellh', 'rauchg'].map((user) => (
-                        <button
-                          key={user}
-                          onClick={() => {
-                            setSearchQuery(user);
-                            trackEvent('cta_click', { ctaName: 'trending_dev_pill', username: user });
-                            handleLookupUser(user);
-                          }}
-                          className="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-300 hover:bg-gitfc-neonGreen/20 hover:text-gitfc-neonGreen hover:border-gitfc-neonGreen/40 border border-slate-800 transition cursor-pointer shadow-xs font-gaming font-semibold"
-                        >
-                          @{user}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                {/* RIGHT COLUMN: FLOATING SHOWCASE CARD WITH AMBIENT GLOW */}
-                <div className="lg:col-span-5 flex flex-col items-center justify-center relative py-6">
-                  {/* Ambient Radial Glow Aura */}
-                  <div className="absolute w-[340px] h-[480px] bg-gradient-to-tr from-gitfc-neonGreen/20 via-gitfc-electricBlue/20 to-gitfc-gold/20 rounded-full blur-3xl pointer-events-none animate-glow-pulse" />
-
-                  {/* Floating Animated Showcase Card */}
-                  <div className="relative z-10 animate-float drop-shadow-[0_25px_40px_rgba(0,0,0,0.85)]">
-                    <EAFCCard
-                      card={PRESET_DEVS[0]}
-                      interactive={true}
-                    />
-                  </div>
-
-                  {/* Quick Scout Showcase Action Button */}
-                  <button
-                    onClick={() => {
-                      const target = searchQuery || (isConnected && currentCard ? currentCard.username : 'torvalds');
-                      trackEvent('cta_click', { ctaName: 'scout_showcase_card', username: target });
-                      handleLookupUser(target);
-                    }}
-                    className="mt-6 z-10 w-full max-w-[320px] py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 text-slate-950 font-gaming font-black text-sm tracking-widest uppercase hover:shadow-[0_0_25px_rgba(245,197,24,0.6)] flex items-center justify-center gap-2 transition-all cursor-pointer hover:brightness-110"
-                  >
-                    <Sparkles className="w-4 h-4" /> SCOUT THIS CARD
-                  </button>
-                </div>
-              </div>
-
-              {/* LANDING DETAILS: HOW IT WORKS, GITHUB TO FOOTBALL TRANSLATION */}
-              <LandingDetails />
-            </div>
-          )
-        )}
-
-        {activeTab === 'leagues' && (
-          <LeaguesView
-            customCards={leaderboardCards}
-            userTeam={userTeam}
-            onUpdateTeam={handleUpdateTeam}
-            isConnected={isConnected}
-            onOpenConnectModal={() => setIsConnectModalOpen(true)}
-          />
-        )}
-
-        {activeTab === 'dressing-room' && (
-          <DressingRoomView
-            card={authUserCard || currentCard}
-            team={userTeam}
-            onUpdateTeam={handleUpdateTeam}
-            onOpenCreateTeamModal={() => setIsCreateTeamOpen(true)}
-            onOpenConnectModal={() => setIsConnectModalOpen(true)}
-            isConnected={isConnected}
-          />
-        )}
-
-        {activeTab === 'leaderboard' && (
-          <LeaderboardTable
-            cards={leaderboardCards}
-            isConnected={isConnected}
-            currentUserCard={isConnected ? (authUserCard || currentCard) : null}
-            following={userFollowing}
-            followers={userFollowers}
-            userTeam={userTeam}
-            onConnectGitHub={handleConnectGitHub}
-            onSelectCard={(card) => {
-              setCurrentCard(card);
-              setActiveTab('generator');
+        {activeTab === 'battle' && (
+          <BattleArenaView
+            playerDeck={playerDeck}
+            opponentDeck={opponentDeck}
+            onBattleComplete={(winner) => {
+              if (winner === 'player') {
+                setUserRating((prev) => prev + 16);
+                setUserShards((prev) => prev + 50);
+              } else if (winner === 'opponent') {
+                setUserRating((prev) => Math.max(100, prev - 14));
+              }
             }}
+            onExit={() => setActiveTab('home')}
           />
         )}
 
-        {activeTab === 'products' && (
-          <ProductsView onGoToGenerator={() => setActiveTab('generator')} />
-        )}
+        {activeTab === 'collection' && <CollectionView />}
+
+        {activeTab === 'leaderboard' && <LeaderboardView currentUsername={username} />}
+
+        {activeTab === 'profile' && <ProfileView username={username} />}
       </main>
-
-      <Footer />
-
-      <ExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        card={currentCard}
-        cardElementId="ea-fc-export-card"
-      />
-
-      <ConnectModal
-        isOpen={isConnectModalOpen}
-        onClose={() => setIsConnectModalOpen(false)}
-        onConnect={async (username) => {
-          const targetUser = username === 'authenticated_user' ? ((authUserCard || currentCard)?.username || 'torvalds') : username;
-          await handleConnectGitHubUser(targetUser);
-          setActiveTab('generator');
-        }}
-      />
-
-      <CreateTeamModal
-        isOpen={isCreateTeamOpen}
-        onClose={() => setIsCreateTeamOpen(false)}
-        userCard={isConnected ? (authUserCard || currentCard) : null}
-        onOpenConnectModal={() => setIsConnectModalOpen(true)}
-        onCreateTeam={(newTeam) => {
-          handleUpdateTeam(newTeam);
-          setActiveTab('dressing-room');
-        }}
-      />
     </div>
   );
 }
-
 export default App;

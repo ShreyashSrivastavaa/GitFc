@@ -1,7 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { resolveBattleRound, validateDeck } from '../src/game/battleEngine';
 import { SAMPLE_BATTLE_CARDS } from '../src/data/sampleCards';
-import type { BattleCard } from '../src/types/battleCard';
 
 describe('Server Battle Engine (RULESET 1.0.0)', () => {
   const torvalds = SAMPLE_BATTLE_CARDS.find((c) => c.id === 'dev-torvalds')!;

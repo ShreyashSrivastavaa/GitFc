@@ -1,21 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { resolveBattleRound } from '../src/game/battleEngine';
 import { SAMPLE_BATTLE_CARDS } from '../src/data/sampleCards';
-import type { BattleCard } from '../src/types/battleCard';
 
 describe('Anti-Cheat & Battle Integrity Attack Suite', () => {
-  const torvalds = SAMPLE_BATTLE_CARDS.find((c) => c.id === 'dev-torvalds')!;
   const gaearon = SAMPLE_BATTLE_CARDS.find((c) => c.id === 'dev-gaearon')!;
 
   it('attack: client tampered stats (e.g. client asserts 9999 Frontend)', () => {
-    // Simulated malicious payload where client modified stat block before sending
-    const forgedCard: BattleCard = {
-      ...gaearon,
-      stats: {
-        ...gaearon.stats,
-        frontend: 9999, // Exploit attempt
-      },
-    };
 
     // The server should reject or cap values to 99
     // In our architecture, the server re-loads card from DB using card.id

@@ -7,7 +7,6 @@ declare global {
   interface Window {
     dataLayer?: any[];
     gtag?: (...args: any[]) => void;
-    va?: (action: string, options?: any) => void;
   }
 }
 
