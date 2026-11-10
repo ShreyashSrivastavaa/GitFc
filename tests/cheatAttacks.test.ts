@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest';
 import { SAMPLE_BATTLE_CARDS } from '../src/data/sampleCards';
+import { resolveBattleRound } from '../src/game/battleEngine';
 
 describe('Anti-Cheat & Battle Integrity Attack Suite', () => {
   const gaearon = SAMPLE_BATTLE_CARDS.find((c) => c.id === 'dev-gaearon')!;
+  const torvalds = SAMPLE_BATTLE_CARDS.find((c) => c.id === 'dev-torvalds')!;
 
   it('attack: client tampered stats (e.g. client asserts 9999 Frontend)', () => {
 
@@ -55,5 +57,43 @@ describe('Anti-Cheat & Battle Integrity Attack Suite', () => {
     expect(() => validateSubmission(attackerInjectedCardId)).toThrow(
       'UNAUTHORIZED_CARD: Card does not belong to active locked deck'
     );
+  });
+
+  it('attack: using unequipped or already consumed power-up', () => {
+    const equippedPowerUps = new Set(['coffee']);
+    const usedPowerUpsInMatch = new Set<string>();
+
+    const applyPowerUp = (pId: string) => {
+      if (!equippedPowerUps.has(pId)) {
+        throw new Error('ILLEGAL_POWERUP: Power-up not in equipped loadout');
+      }
+      if (usedPowerUpsInMatch.has(pId)) {
+        throw new Error('ILLEGAL_POWERUP: Power-up already consumed this match');
+      }
+      usedPowerUpsInMatch.add(pId);
+    };
+
+    applyPowerUp('coffee');
+    // Try replaying used power-up
+    expect(() => applyPowerUp('coffee')).toThrow(
+      'ILLEGAL_POWERUP: Power-up already consumed this match'
+    );
+    // Try unequipped power-up
+    expect(() => applyPowerUp('merge-conflict')).toThrow(
+      'ILLEGAL_POWERUP: Power-up not in equipped loadout'
+    );
+  });
+
+  it('attack: attempting to use Epic/Legendary power-up in Ranked format', () => {
+    expect(() =>
+      resolveBattleRound({
+        roundIndex: 1,
+        category: 'backend',
+        playerCard: gaearon,
+        opponentCard: torvalds,
+        playerPowerUp: 'code-review', // Epic, not permitted in Ranked
+        isRanked: true,
+      })
+    ).toThrow('ILLEGAL_POWERUP: code-review is not permitted in Ranked battles');
   });
 });

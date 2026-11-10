@@ -88,4 +88,54 @@ describe('Server Battle Engine (RULESET 1.0.0)', () => {
     expect(validation.isLegal).toBe(false);
     expect(validation.violations.some((v) => v.includes('Maximum 2 Legendary'))).toBe(true);
   });
+
+  it('applies Coffee power-up to boost round score by +2', () => {
+    // Builder (68 Frontend) vs Builder (68 Frontend)
+    const resWithout = resolveBattleRound({
+      roundIndex: 1,
+      category: 'frontend',
+      playerCard: builder,
+      opponentCard: builder,
+    });
+    // With Coffee, player gets +2
+    const resWith = resolveBattleRound({
+      roundIndex: 1,
+      category: 'frontend',
+      playerCard: builder,
+      opponentCard: builder,
+      playerPowerUp: 'coffee',
+    });
+
+    expect(resWith.playerFinalScore).toBe(resWithout.playerFinalScore + 2);
+    expect(resWith.winner).toBe('player');
+    expect(resWith.playerPowerUpApplied).toContain('Coffee (+2)');
+  });
+
+  it('Code Review power-up cancels opponent ability', () => {
+    // Gaearon has Reconciler (+10 in frontend)
+    // If player uses code-review, Gaearon ability is canceled!
+    const resCanceled = resolveBattleRound({
+      roundIndex: 1,
+      category: 'frontend',
+      playerCard: builder,
+      opponentCard: gaearon,
+      playerPowerUp: 'code-review',
+    });
+
+    // Opponent should not have Reconciler applied
+    const oppMods = resCanceled.opponentModifiers.filter((m) => m.name.includes('Reconciler'));
+    expect(oppMods.length).toBe(0);
+  });
+
+  it('generates humorous developer battle commentary', () => {
+    const res = resolveBattleRound({
+      roundIndex: 1,
+      category: 'backend',
+      playerCard: torvalds,
+      opponentCard: gaearon,
+    });
+
+    expect(res.commentary).toBeDefined();
+    expect(res.commentary.length).toBeGreaterThan(10);
+  });
 });

@@ -251,3 +251,226 @@ export function generateDeveloperCard(snapshot: GitHubSnapshot): BattleCard {
     sourceUrl: `https://github.com/${snapshot.username}`,
   };
 }
+
+const BACKEND_LANGS = ['Go', 'Rust', 'Python', 'Java', 'C#', 'C', 'C++', 'PHP', 'Ruby', 'Kotlin', 'Scala', 'Elixir', 'Shell', 'Dockerfile'];
+const FRONTEND_LANGS = ['TypeScript', 'JavaScript', 'HTML', 'CSS', 'Vue', 'Svelte', 'Astro', 'SCSS', 'Swift', 'Dart'];
+
+/**
+ * Generates a Repository Card derived from user's public repository metrics
+ */
+export function generateRepoCard(repo: {
+  name: string;
+  fullName?: string;
+  description?: string | null;
+  stars: number;
+  forks: number;
+  primaryLanguage?: string | null;
+  sizeBytes?: number;
+  url?: string;
+}, ownerUsername: string): BattleCard {
+  const lang = repo.primaryLanguage || 'TypeScript';
+  const isBackend = BACKEND_LANGS.includes(lang);
+  const isFrontend = FRONTEND_LANGS.includes(lang);
+
+  const starPower = Math.min(99, Math.max(30, Math.round(Math.log10(repo.stars + 1) * 22 + 35)));
+  const forkPower = Math.min(99, Math.max(25, Math.round(Math.log10(repo.forks + 1) * 18 + 30)));
+  const sizePower = Math.min(99, Math.max(35, Math.round(Math.log10((repo.sizeBytes || 50000) + 1) * 12 + 20)));
+
+  const backend = isBackend ? Math.min(98, starPower + 10) : Math.max(30, starPower - 15);
+  const frontend = isFrontend ? Math.min(98, starPower + 10) : Math.max(30, starPower - 15);
+  const openSource = Math.min(99, Math.max(30, Math.round((starPower * 0.7) + (forkPower * 0.3))));
+  const innovation = Math.min(99, Math.max(35, Math.round((starPower * 0.5) + (sizePower * 0.5))));
+  const consistency = Math.min(95, Math.max(40, Math.round((starPower * 0.4) + 45)));
+  const popularity = Math.min(99, Math.max(25, starPower));
+  const languageMastery = Math.min(98, Math.max(40, sizePower + 15));
+
+  const overall = clamp(
+    backend * 0.16 +
+      frontend * 0.16 +
+      openSource * 0.18 +
+      innovation * 0.14 +
+      consistency * 0.14 +
+      popularity * 0.12 +
+      languageMastery * 0.1,
+    35,
+    98
+  );
+
+  const rarity = determineRarity(overall);
+  const primaryArchetype = isBackend ? 'Backend Repository' : isFrontend ? 'Frontend Framework' : 'Open Source Weapon';
+
+  const abilities = [];
+  if (rarity === 'rare' || rarity === 'epic' || rarity === 'legendary' || rarity === 'mythic') {
+    abilities.push({
+      id: `ab-repo-${repo.name.toLowerCase()}`,
+      name: `${lang} Engine`,
+      description: `+6 to ${isBackend ? 'Backend' : 'Frontend'} in ${isBackend ? 'Backend' : 'Frontend'} round`,
+      trigger: 'CATEGORY_MATCH' as const,
+      effectType: 'EXTRA_CATEGORY_BOOST' as const,
+      targetStat: (isBackend ? 'backend' : 'frontend') as any,
+      modifierValue: 6,
+      icon: '📦',
+    });
+  }
+
+  const stats: StatBlock = {
+    backend,
+    frontend,
+    openSource,
+    innovation,
+    consistency,
+    popularity,
+    languageMastery,
+    overall,
+  };
+
+  return {
+    id: `repo-${ownerUsername.toLowerCase()}-${repo.name.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+    type: 'repository',
+    name: repo.name,
+    subtitle: repo.fullName || `${ownerUsername}/${repo.name}`,
+    rarity,
+    stats,
+    primaryArchetype,
+    abilities,
+    rulesetVersion: CURRENT_RULESET_VERSION,
+    createdAt: new Date().toISOString().split('T')[0],
+    sourceUrl: repo.url || `https://github.com/${ownerUsername}/${repo.name}`,
+  };
+}
+
+/**
+ * Generates a Language Card derived from depth in a programming language
+ */
+export function generateLanguageCard(lang: {
+  language: string;
+  bytes: number;
+  repoCount?: number;
+  percentage?: number;
+}, ownerUsername: string): BattleCard {
+  const isBackend = BACKEND_LANGS.includes(lang.language);
+  const isFrontend = FRONTEND_LANGS.includes(lang.language);
+  const depthScore = Math.min(98, Math.max(45, Math.round(Math.log10(lang.bytes + 1) * 11 + 25)));
+
+  const backend = isBackend ? depthScore : Math.max(30, depthScore - 20);
+  const frontend = isFrontend ? depthScore : Math.max(30, depthScore - 20);
+  const openSource = Math.min(95, depthScore - 5);
+  const innovation = Math.min(96, Math.max(40, depthScore));
+  const consistency = Math.min(95, Math.max(45, depthScore - 2));
+  const popularity = Math.min(94, depthScore - 8);
+  const languageMastery = Math.min(99, Math.max(50, depthScore + 8));
+
+  const overall = clamp(
+    backend * 0.14 +
+      frontend * 0.14 +
+      openSource * 0.14 +
+      innovation * 0.14 +
+      consistency * 0.14 +
+      popularity * 0.1 +
+      languageMastery * 0.2,
+    40,
+    98
+  );
+
+  const rarity = determineRarity(overall);
+
+  const abilities = [
+    {
+      id: `ab-lang-${lang.language.toLowerCase()}`,
+      name: `${lang.language} Specialization`,
+      description: `+7 Language Depth when category is Language Mastery`,
+      trigger: 'CATEGORY_MATCH' as const,
+      effectType: 'EXTRA_CATEGORY_BOOST' as const,
+      targetStat: 'languageMastery' as const,
+      modifierValue: 7,
+      icon: '⚡',
+    },
+  ];
+
+  const stats: StatBlock = {
+    backend,
+    frontend,
+    openSource,
+    innovation,
+    consistency,
+    popularity,
+    languageMastery,
+    overall,
+  };
+
+  return {
+    id: `lang-${ownerUsername.toLowerCase()}-${lang.language.toLowerCase().replace(/[^a-z0-9]/g, '-')}`,
+    type: 'language',
+    name: `${lang.language} Mastery`,
+    subtitle: `Deep Specialization (${((lang.bytes) / 1024 / 1024).toFixed(1)} MB)`,
+    rarity,
+    stats,
+    primaryArchetype: `${lang.language} Specialist`,
+    abilities,
+    rulesetVersion: CURRENT_RULESET_VERSION,
+    createdAt: new Date().toISOString().split('T')[0],
+  };
+}
+
+/**
+ * Generates the user's complete self-contained squad from their own GitHub data:
+ * 1 Developer Card + Top Repository Cards + Top Language Cards
+ */
+export function generateUserFullSquad(snapshot: any): BattleCard[] {
+  const cards: BattleCard[] = [];
+
+  // 1. Developer Card
+  cards.push(generateDeveloperCard(snapshot));
+
+  // 2. Repository Cards
+  const topRepos = snapshot.topRepos || [
+    {
+      name: `${snapshot.username}-core`,
+      fullName: `${snapshot.username}/${snapshot.username}-core`,
+      stars: Math.max(12, Math.round((snapshot.rawMetrics.starsReceived || 30) * 0.45)),
+      forks: Math.max(4, Math.round((snapshot.rawMetrics.forksCount || 10) * 0.4)),
+      primaryLanguage: snapshot.rawMetrics.topLanguageName || 'TypeScript',
+      sizeBytes: 1500000,
+    },
+    {
+      name: 'api-service',
+      fullName: `${snapshot.username}/api-service`,
+      stars: Math.max(8, Math.round((snapshot.rawMetrics.starsReceived || 20) * 0.3)),
+      forks: Math.max(2, Math.round((snapshot.rawMetrics.forksCount || 8) * 0.3)),
+      primaryLanguage: 'Go',
+      sizeBytes: 900000,
+    },
+    {
+      name: 'web-client',
+      fullName: `${snapshot.username}/web-client`,
+      stars: Math.max(15, Math.round((snapshot.rawMetrics.starsReceived || 25) * 0.35)),
+      forks: Math.max(3, Math.round((snapshot.rawMetrics.forksCount || 6) * 0.3)),
+      primaryLanguage: 'TypeScript',
+      sizeBytes: 1200000,
+    },
+  ];
+
+  for (const repo of topRepos) {
+    cards.push(generateRepoCard(repo, snapshot.username));
+  }
+
+  // 3. Language Cards
+  const languages = snapshot.languages || [
+    {
+      language: snapshot.rawMetrics.topLanguageName || 'TypeScript',
+      bytes: snapshot.rawMetrics.topLanguageBytes || 2400000,
+      percentage: 60,
+    },
+    {
+      language: 'Python',
+      bytes: Math.round((snapshot.rawMetrics.topLanguageBytes || 2000000) * 0.5),
+      percentage: 25,
+    },
+  ];
+
+  for (const lang of languages) {
+    cards.push(generateLanguageCard(lang, snapshot.username));
+  }
+
+  return cards;
+}

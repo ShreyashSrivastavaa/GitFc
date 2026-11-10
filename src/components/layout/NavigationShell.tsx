@@ -1,7 +1,7 @@
 import React from 'react';
-import { Home, Swords, Layers, Trophy, User, Sparkles } from 'lucide-react';
+import { Home, Swords, Layers, Trophy, User, Sparkles, Gift, Target } from 'lucide-react';
 
-export type NavTab = 'home' | 'battle' | 'collection' | 'leaderboard' | 'profile';
+export type NavTab = 'home' | 'battle' | 'packs' | 'trivia' | 'collection' | 'leaderboard' | 'profile';
 
 interface NavigationShellProps {
   activeTab: NavTab;
@@ -23,11 +23,13 @@ export const NavigationShell: React.FC<NavigationShellProps> = ({
   onConnectClick,
 }) => {
   const navItems: { id: NavTab; label: string; icon: React.ReactNode }[] = [
-    { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
-    { id: 'battle', label: 'Battle', icon: <Swords className="w-5 h-5" /> },
-    { id: 'collection', label: 'Cards', icon: <Layers className="w-5 h-5" /> },
-    { id: 'leaderboard', label: 'Rankings', icon: <Trophy className="w-5 h-5" /> },
-    { id: 'profile', label: 'Profile', icon: <User className="w-5 h-5" /> },
+    { id: 'home', label: 'Home', icon: <Home className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: 'battle', label: 'Battle', icon: <Swords className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: 'packs', label: 'Packs', icon: <Gift className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: 'trivia', label: 'Higher/Lower', icon: <Target className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: 'collection', label: 'Cards', icon: <Layers className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: 'leaderboard', label: 'Rankings', icon: <Trophy className="w-4 h-4 sm:w-5 sm:h-5" /> },
+    { id: 'profile', label: 'Profile', icon: <User className="w-4 h-4 sm:w-5 sm:h-5" /> },
   ];
 
   return (

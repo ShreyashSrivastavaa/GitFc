@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { computeStatBlock, determineRarity, generateDeveloperCard } from '../src/game/cardGenerator';
+import { computeStatBlock, determineRarity, generateDeveloperCard, generateUserFullSquad } from '../src/game/cardGenerator';
 import type { GitHubRawMetrics, GitHubSnapshot } from '../src/types/github';
 
 describe('Card Generation Engine (RULESET 1.0.0)', () => {
@@ -79,6 +79,30 @@ describe('Card Generation Engine (RULESET 1.0.0)', () => {
     expect(card.stats.overall).toBeGreaterThan(70);
     expect(['common', 'rare', 'epic', 'legendary', 'mythic']).toContain(card.rarity);
     expect(card.abilities.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('generates Repository Cards and Language Cards from user own data', () => {
+    const snapshot: GitHubSnapshot = {
+      id: 'snap-1',
+      username: baseMetrics.username,
+      name: baseMetrics.name,
+      avatarUrl: baseMetrics.avatarUrl,
+      rawMetrics: baseMetrics,
+      fetchedAt: new Date().toISOString(),
+      expiresAt: new Date(Date.now() + 86400000).toISOString(),
+      rulesetVersion: '1.0.0',
+    };
+
+    const squad = generateUserFullSquad(snapshot);
+    expect(squad.length).toBeGreaterThanOrEqual(5);
+
+    const devCards = squad.filter((c) => c.type === 'developer');
+    const repoCards = squad.filter((c) => c.type === 'repository');
+    const langCards = squad.filter((c) => c.type === 'language');
+
+    expect(devCards.length).toBe(1);
+    expect(repoCards.length).toBeGreaterThanOrEqual(2);
+    expect(langCards.length).toBeGreaterThanOrEqual(1);
   });
 });
 

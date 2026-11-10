@@ -27,6 +27,29 @@ export const GitHubRawMetricsSchema = z.object({
 });
 export type GitHubRawMetrics = z.infer<typeof GitHubRawMetricsSchema>;
 
+export const GitHubRepoItemSchema = z.object({
+  id: z.string().optional(),
+  name: z.string(),
+  fullName: z.string(),
+  description: z.string().nullable().optional(),
+  stars: z.number().int().nonnegative().default(0),
+  forks: z.number().int().nonnegative().default(0),
+  primaryLanguage: z.string().nullable().optional(),
+  updatedAt: z.string().optional(),
+  isFork: z.boolean().default(false),
+  sizeBytes: z.number().int().optional(),
+  url: z.string().optional(),
+});
+export type GitHubRepoItem = z.infer<typeof GitHubRepoItemSchema>;
+
+export const GitHubLanguageDepthSchema = z.object({
+  language: z.string(),
+  bytes: z.number().int().nonnegative(),
+  repoCount: z.number().int().nonnegative(),
+  percentage: z.number().min(0).max(100),
+});
+export type GitHubLanguageDepth = z.infer<typeof GitHubLanguageDepthSchema>;
+
 export const GitHubSnapshotSchema = z.object({
   id: z.string(),
   userId: z.string().optional(),
@@ -34,6 +57,8 @@ export const GitHubSnapshotSchema = z.object({
   name: z.string().nullable().optional(),
   avatarUrl: z.string().url(),
   rawMetrics: GitHubRawMetricsSchema,
+  topRepos: z.array(GitHubRepoItemSchema).optional(),
+  languages: z.array(GitHubLanguageDepthSchema).optional(),
   fetchedAt: z.string(),
   expiresAt: z.string(),
   rulesetVersion: z.string(),

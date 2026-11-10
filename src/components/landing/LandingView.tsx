@@ -1,24 +1,34 @@
 import React, { useState } from 'react';
 import { BattleCardView } from '../card/BattleCardView';
 import { SAMPLE_BATTLE_CARDS } from '../../data/sampleCards';
-import { Swords, Sparkles, Search, ArrowRight } from 'lucide-react';
+import { getTodayBoss, getDailyChallenges } from '../../game/gameModes';
+import { Swords, Sparkles, Search, ArrowRight, Flame, Gift, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import type { BattleCard } from '../../types/battleCard';
 
 interface LandingViewProps {
   onBuildDeck: () => void;
   onChallenge: (username?: string) => void;
+  onBattleBoss: () => void;
+  onOpenPacks: () => void;
   onPreviewUser: (username: string) => Promise<BattleCard | null>;
+  dailyStreak?: number;
 }
 
 export const LandingView: React.FC<LandingViewProps> = ({
   onBuildDeck,
   onChallenge,
+  onBattleBoss,
+  onOpenPacks,
   onPreviewUser,
+  dailyStreak = 3,
 }) => {
   const [previewQuery, setPreviewQuery] = useState('');
   const [activeCard, setActiveCard] = useState<BattleCard>(SAMPLE_BATTLE_CARDS[0]);
   const [loading, setLoading] = useState(false);
   const [previewError, setPreviewError] = useState('');
+
+  const todayBoss = getTodayBoss();
+  const dailyChallenges = getDailyChallenges();
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -34,7 +44,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
         setPreviewError(`Could not find GitHub user @${previewQuery}`);
       }
     } catch {
-      setPreviewError('Failed to scout developer. Please try again.');
+      setPreviewError('Failed to load developer profile. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -42,8 +52,42 @@ export const LandingView: React.FC<LandingViewProps> = ({
 
   return (
     <div className="w-full flex flex-col items-center pb-24 md:pb-16">
+      {/* Top Banner: Daily Streak & Active Events */}
+      <div className="w-full bg-slate-900/60 border-b border-slate-800/80 px-4 py-2.5">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center gap-1 font-bold text-amber-400">
+              <Flame className="w-4 h-4 fill-amber-400" />
+              <span>{dailyStreak}-Day Battle Streak</span>
+            </span>
+            <span className="text-slate-600">•</span>
+            <span className="text-slate-400">Streak protection active</span>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onOpenPacks}
+              className="flex items-center gap-1.5 text-cyan-400 hover:text-cyan-300 font-bold transition-colors"
+            >
+              <Gift className="w-3.5 h-3.5" />
+              <span>Daily Pack Ready</span>
+            </button>
+            <span className="text-slate-600">•</span>
+            <button
+              type="button"
+              onClick={onBattleBoss}
+              className="flex items-center gap-1.5 text-purple-400 hover:text-purple-300 font-bold transition-colors"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Today's Boss: {todayBoss.name}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Hero Section */}
-      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 md:pt-14 pb-12 flex flex-col lg:flex-row items-center gap-10 lg:gap-14">
+      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 pt-8 md:pt-12 pb-12 flex flex-col lg:flex-row items-center gap-10 lg:gap-14">
         {/* Left Hero Messaging */}
         <div className="flex-1 text-center lg:text-left space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-bold uppercase tracking-wider">
@@ -52,11 +96,11 @@ export const LandingView: React.FC<LandingViewProps> = ({
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.08]">
-            Turn Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-purple-400">GitHub Profile</span> Into a Battle Deck.
+            Turn Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-sky-300 to-purple-400">GitHub Profile</span> Into a Battle Squad.
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-            Your profile is your player. Your repositories are your weapons. Your commits, PRs, and languages are your stats. Build a 5-card strategic squad and compete in server-resolved tactical battles.
+            Your profile is your player. Your repositories and top languages are your cards. Build a 5-card strategic squad and compete in server-resolved tactical battles.
           </p>
 
           {/* Primary Action Buttons */}
@@ -66,24 +110,32 @@ export const LandingView: React.FC<LandingViewProps> = ({
               onClick={onBuildDeck}
               className="w-full sm:w-auto px-8 py-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-sm uppercase tracking-wider shadow-lg shadow-cyan-500/25 transition-all hover:scale-[1.02] active:scale-95 flex items-center justify-center gap-2"
             >
-              <span>BUILD YOUR DECK</span>
+              <span>ENTER THE ARENA</span>
               <ArrowRight className="w-4 h-4" />
             </button>
 
             <button
               type="button"
-              onClick={() => onChallenge()}
-              className="w-full sm:w-auto px-7 py-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm uppercase tracking-wider border border-slate-700 hover:border-slate-600 transition-all flex items-center justify-center gap-2"
+              onClick={onBattleBoss}
+              className="w-full sm:w-auto px-7 py-4 rounded-xl bg-purple-950/70 hover:bg-purple-900 text-purple-200 font-bold text-sm uppercase tracking-wider border border-purple-500/40 hover:border-purple-400 transition-all flex items-center justify-center gap-2"
             >
-              <Swords className="w-4 h-4 text-cyan-400" />
-              <span>CHALLENGE A DEVELOPER</span>
+              <Swords className="w-4 h-4 text-purple-400" />
+              <span>FIGHT TODAY'S BOSS</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => onChallenge()}
+              className="w-full sm:w-auto px-6 py-4 rounded-xl bg-slate-900 hover:bg-slate-850 text-slate-300 font-bold text-sm uppercase tracking-wider border border-slate-800 hover:border-slate-750 transition-all flex items-center justify-center gap-2"
+            >
+              <span>CHALLENGE BY LINK</span>
             </button>
           </div>
 
-          {/* Instant Username Scout Form */}
+          {/* Instant Username Profile Preview Form */}
           <div className="pt-4 max-w-md mx-auto lg:mx-0">
             <p className="text-xs font-semibold text-slate-400 mb-2">
-              Preview any public GitHub profile with no login:
+              Preview your card stats from any public GitHub profile:
             </p>
             <form onSubmit={handleSearch} className="flex items-center gap-2">
               <div className="relative flex-1">
@@ -101,7 +153,7 @@ export const LandingView: React.FC<LandingViewProps> = ({
                 disabled={loading}
                 className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl border border-slate-700 transition-colors disabled:opacity-50"
               >
-                {loading ? 'Scouting...' : 'Scout'}
+                {loading ? 'Loading...' : 'Preview'}
               </button>
             </form>
             {previewError && (
@@ -139,13 +191,90 @@ export const LandingView: React.FC<LandingViewProps> = ({
         </div>
       </section>
 
+      {/* Daily Challenges & Boss Row */}
+      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-8 border-t border-slate-800/80">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Daily Boss Card */}
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-950/40 via-slate-900 to-slate-950 border border-purple-500/30 flex flex-col justify-between space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase bg-purple-950 text-purple-300 border border-purple-500/40">
+                  DAILY OPEN-SOURCE BOSS
+                </span>
+                <span className="text-xs font-bold text-amber-400">+{todayBoss.rewardCommits} Commits</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <img
+                  src={todayBoss.avatarUrl}
+                  alt={todayBoss.name}
+                  className="w-12 h-12 rounded-xl object-cover border border-purple-400/50"
+                />
+                <div>
+                  <h3 className="font-black text-white text-base">{todayBoss.name}</h3>
+                  <p className="text-xs text-purple-300 font-semibold">{todayBoss.title}</p>
+                </div>
+              </div>
+              <p className="text-xs text-slate-400 mt-2 leading-relaxed">{todayBoss.description}</p>
+            </div>
+
+            <button
+              type="button"
+              onClick={onBattleBoss}
+              className="w-full py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs uppercase tracking-wider transition-colors"
+            >
+              CHALLENGE BOSS (UNRANKED)
+            </button>
+          </div>
+
+          {/* Daily Challenges Box */}
+          <div className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col justify-between space-y-4">
+            <div>
+              <div className="flex items-center justify-between mb-3">
+                <span className="font-black text-white text-sm">3 DAILY CHALLENGES</span>
+                <span className="text-[11px] text-slate-400">Resets in 14h 22m</span>
+              </div>
+              <div className="space-y-2.5">
+                {dailyChallenges.map((ch) => (
+                  <div
+                    key={ch.id}
+                    className="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2
+                        className={`w-4 h-4 ${ch.completed ? 'text-emerald-400' : 'text-slate-600'}`}
+                      />
+                      <div>
+                        <div className="font-bold text-white">{ch.title}</div>
+                        <div className="text-[10px] text-slate-400">{ch.description}</div>
+                      </div>
+                    </div>
+                    <span className="font-bold text-amber-400 tabular-nums shrink-0">
+                      +{ch.rewardCommits} 🪙
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={onOpenPacks}
+              className="w-full py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
+            >
+              <Gift className="w-4 h-4 text-cyan-400" />
+              <span>VIEW POWER-UP PACKS</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
       {/* 3-Step How It Works Section */}
-      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12 border-t border-slate-800/80">
-        <div className="text-center space-y-2 mb-10">
+      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-800/80">
+        <div className="text-center space-y-2 mb-8">
           <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
             HOW GITFC WORKS
           </h2>
-          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+          <p className="text-slate-400 text-xs max-w-xl mx-auto">
             From raw GitHub activity to competitive, turn-based battle outcomes in three steps.
           </p>
         </div>
@@ -155,9 +284,9 @@ export const LandingView: React.FC<LandingViewProps> = ({
             <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-black text-lg">
               1
             </div>
-            <h3 className="text-lg font-bold text-white">Generate Your Cards</h3>
+            <h3 className="text-lg font-bold text-white">Generate Your Squad</h3>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Sign in with GitHub. GitFC derives your Developer Card and top Repository Cards with 7 transparent, versioned stats and unique abilities.
+              Connect your GitHub account. GitFC derives your Developer Card, Repository Cards, and Language Cards directly from your own public activity.
             </p>
           </div>
 
@@ -165,9 +294,9 @@ export const LandingView: React.FC<LandingViewProps> = ({
             <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 font-black text-lg">
               2
             </div>
-            <h3 className="text-lg font-bold text-white">Build a Balanced Deck</h3>
+            <h3 className="text-lg font-bold text-white">Build a Tactical Deck</h3>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Assemble a 5-card squad under a strict budget cap (≤ 415 OVR). Balance Backend power with Frontend velocity and language synergies.
+              Assemble a 5-card squad under a strict budget cap (≤ 415 OVR). Equip up to 2 power-ups (Coffee, Stack Overflow, Rubber Duck) to shape key rounds.
             </p>
           </div>
 
@@ -177,41 +306,9 @@ export const LandingView: React.FC<LandingViewProps> = ({
             </div>
             <h3 className="text-lg font-bold text-white">Battle & Climb the Ladder</h3>
             <p className="text-sm text-slate-400 leading-relaxed">
-              Play asynchronous Best-of-3 or Best-of-5 rounds. Secretly commit cards each round, trigger abilities, and climb the verified ELO leaderboard.
+              Play Best-of-5 rounds with simultaneous secret card selection. Challenge the Daily Boss or climb the verified ELO leaderboard.
             </p>
           </div>
-        </div>
-      </section>
-
-      {/* Rarity Showcase */}
-      <section className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-10 border-t border-slate-800/80">
-        <div className="text-center space-y-1 mb-8">
-          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight uppercase">
-            5 Deterministic Rarity Tiers
-          </h2>
-          <p className="text-slate-400 text-xs">
-            Rarity is earned purely by overall rating—never bought or gambled.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-          {[
-            { name: 'Common', ovr: '≤ 69', desc: 'Dependable Foundation', icon: '🛡️', color: 'border-slate-500' },
-            { name: 'Rare', ovr: '70–79', desc: 'Specialized 1 Ability', icon: '💎', color: 'border-cyan-400' },
-            { name: 'Epic', ovr: '80–88', desc: 'High-Impact Synergies', icon: '🔮', color: 'border-purple-400' },
-            { name: 'Legendary', ovr: '89–94', desc: 'Elite Open Source Icons', icon: '👑', color: 'border-amber-400' },
-            { name: 'Mythic', ovr: '≥ 95', desc: 'Generational Architects', icon: '⚡', color: 'border-pink-500' },
-          ].map((r) => (
-            <div
-              key={r.name}
-              className={`p-4 rounded-xl bg-slate-900/80 border ${r.color} flex flex-col items-center text-center`}
-            >
-              <span className="text-2xl mb-1">{r.icon}</span>
-              <span className="font-black text-white text-sm">{r.name}</span>
-              <span className="text-xs font-bold text-slate-300 tabular-nums">{r.ovr} OVR</span>
-              <span className="text-[10px] text-slate-400 mt-1">{r.desc}</span>
-            </div>
-          ))}
         </div>
       </section>
 
